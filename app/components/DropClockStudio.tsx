@@ -35,7 +35,7 @@ interface DropClockStudioProps {
   isStandalone?: boolean;
 }
 
-// Crisp Monochrome Lucide-style SVG Icons (Zero external package dependencies)
+// Crisp Monochrome Lucide-style SVG Icons
 const ClockIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" />
@@ -118,12 +118,6 @@ const AlertTriangleIcon = () => (
     <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
     <line x1="12" y1="9" x2="12" y2="13" />
     <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-
-const ZapIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
   </svg>
 );
 
@@ -388,86 +382,59 @@ export function DropClockStudio({
           boxSizing: "border-box",
         }}
       >
-        {/* 1. TOP HEADER & ONBOARDING CALL-TO-ACTION */}
+        {/* 2. CLEAN HEADER (SCRUBBED OF JARGON & PROMOTIONS) */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingBottom: "18px",
+            paddingBottom: "16px",
             borderBottom: "1px solid #1f1f23",
             marginBottom: "24px",
             flexWrap: "wrap",
-            gap: "16px",
+            gap: "12px",
           }}
         >
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-              <h1
-                style={{
-                  fontSize: "1.25rem",
-                  fontWeight: "600",
-                  letterSpacing: "-0.02em",
-                  margin: 0,
-                  color: "#fafafa",
-                }}
-              >
-                DropClock Studio
-              </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h1
+              style={{
+                fontSize: "1.1875rem",
+                fontWeight: "600",
+                letterSpacing: "-0.02em",
+                margin: 0,
+                color: "#fafafa",
+              }}
+            >
+              DropClock Studio
+            </h1>
 
-              {/* Theme Live Status Pill */}
+            <span
+              style={{
+                fontSize: "0.6875rem",
+                fontWeight: "500",
+                color: "#a1a1aa",
+                backgroundColor: "#18181b",
+                border: "1px solid #27272a",
+                padding: "2px 8px",
+                borderRadius: "9999px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
               <span
                 style={{
-                  fontSize: "0.6875rem",
-                  fontWeight: "500",
-                  color: "#a1a1aa",
-                  backgroundColor: "#18181b",
-                  border: "1px solid #27272a",
-                  padding: "3px 10px",
-                  borderRadius: "9999px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
+                  width: "5px",
+                  height: "5px",
+                  borderRadius: "50%",
+                  backgroundColor: "#10b981",
                 }}
-              >
-                <span
-                  style={{
-                    width: "5px",
-                    height: "5px",
-                    borderRadius: "50%",
-                    backgroundColor: "#10b981",
-                  }}
-                />
-                Active Store Theme: Dawn 15.0 (Live)
-              </span>
-
-              {/* Mode indicator */}
-              <span
-                style={{
-                  fontSize: "0.6875rem",
-                  fontWeight: "500",
-                  color: isStandalone ? "#a1a1aa" : "#10b981",
-                  backgroundColor: isStandalone ? "rgba(161, 161, 170, 0.1)" : "rgba(16, 185, 129, 0.1)",
-                  border: isStandalone ? "1px solid rgba(161, 161, 170, 0.2)" : "1px solid rgba(16, 185, 129, 0.2)",
-                  padding: "2px 8px",
-                  borderRadius: "9999px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                {isStandalone ? "Sandbox Preview Mode" : "Shopify Edge CDN Active"}
-              </span>
-            </div>
-            <p style={{ fontSize: "0.8125rem", color: "#71717a", margin: "4px 0 0 0" }}>
-              {isStandalone
-                ? "Interactive sandbox environment. Changes simulate live storefront countdown arithmetic."
-                : "Live shipping cutoff arithmetic and real-time storefront capsule preview."}
-            </p>
+              />
+              Dawn 15.0 (Active)
+            </span>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {/* Standalone Reset Button */}
             {isStandalone && isDirty && (
               <button
                 type="button"
@@ -476,14 +443,11 @@ export function DropClockStudio({
                   backgroundColor: "#27272a",
                   color: "#fafafa",
                   border: "1px solid #3f3f46",
-                  borderRadius: "8px",
-                  padding: "8px 14px",
-                  fontSize: "0.8125rem",
+                  borderRadius: "6px",
+                  padding: "7px 12px",
+                  fontSize: "0.75rem",
                   fontWeight: "500",
                   cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
                   transition: "all 0.15s ease",
                 }}
               >
@@ -491,23 +455,23 @@ export function DropClockStudio({
               </button>
             )}
 
-            {/* Primary CTA: Add to Theme Editor */}
             <a
               href={`https://${shop}/admin/themes/current/editor?template=product`}
               target="_blank"
               rel="noreferrer"
               style={{
-                backgroundColor: "#10b981",
-                color: "#09090b",
-                borderRadius: "8px",
-                padding: "8px 16px",
+                backgroundColor: "#18181b",
+                color: "#fafafa",
+                border: "1px solid #27272a",
+                borderRadius: "6px",
+                padding: "7px 14px",
                 fontSize: "0.8125rem",
-                fontWeight: "600",
+                fontWeight: "500",
                 textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "6px",
-                boxShadow: "0 1px 2px rgba(16, 185, 129, 0.25)",
+                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05)",
                 transition: "all 0.15s ease",
               }}
             >
@@ -526,9 +490,19 @@ export function DropClockStudio({
             alignItems: "start",
           }}
         >
-          {/* LEFT PANE: Precision Parameter Controls */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-            {/* 1. Cutoff Time Controller with Dynamic Timezone */}
+          {/* 3. LEFT PANE: Scrollable Configuration Column with pb-8 */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "18px",
+              maxHeight: "calc(100vh - 120px)",
+              overflowY: "auto",
+              paddingRight: "8px",
+              paddingBottom: "32px",
+            }}
+          >
+            {/* 1. Cutoff Time Controller */}
             <div
               style={{
                 backgroundColor: "#121215",
@@ -673,7 +647,7 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 2. WIDGET DISPLAY PRESET SELECTOR (PILL VS. MINIMAL VS. URGENCY BAR) */}
+            {/* 2. Display Preset Selector */}
             <div
               style={{
                 backgroundColor: "#121215",
@@ -818,7 +792,7 @@ export function DropClockStudio({
                 })}
               </div>
 
-              {/* Expandable Custom Lead Days Stepper (1 to 30 days) */}
+              {/* Expandable Custom Lead Days Stepper */}
               {(isCustomLeadDays || leadDays > 2) && (
                 <div
                   style={{
@@ -893,7 +867,7 @@ export function DropClockStudio({
                     </button>
                   </div>
                   <span style={{ fontSize: "0.8125rem", color: "#71717a" }}>
-                    Custom transit fulfillment window (1–30 days)
+                    Transit fulfillment window (1–30 days)
                   </span>
                 </div>
               )}
@@ -1031,7 +1005,7 @@ export function DropClockStudio({
                 })}
               </div>
 
-              {/* Swatch Pickers with Functional Native Color Launchers */}
+              {/* Swatch Pickers */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
                   { label: "Accent Color", val: primaryColor, setVal: setPrimaryColor },
@@ -1105,31 +1079,28 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 4. STICKY DOCKED ACTION / SAVE BAR FOR LEFT CONTROL COLUMN */}
+            {/* 3. DOCKED BOTTOM ACTION BAR (CLEAN, NO OVERLAPPING) */}
             <div
               style={{
                 position: "sticky",
-                bottom: "20px",
-                zIndex: 10,
-                backgroundColor: "#121215",
-                border: isDirty ? "1px solid #10b981" : "1px solid #1f1f23",
-                borderRadius: "12px",
-                padding: "14px 18px",
-                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.4)",
+                bottom: 0,
+                backgroundColor: "#09090b",
+                borderTop: "1px solid #1f1f23",
+                paddingTop: "14px",
+                paddingBottom: "8px",
+                marginTop: "8px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: "12px",
-                backdropFilter: "blur(12px)",
-                transition: "border-color 0.2s ease",
               }}
             >
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: "0.8125rem", fontWeight: "600", color: "#fafafa" }}>
-                  {isDirty ? "Unsaved Customizations" : "Settings Synced"}
+                  {isDirty ? "Unsaved Changes" : "Settings Synced"}
                 </span>
                 <span style={{ fontSize: "0.6875rem", color: isDirty ? "#34d399" : "#71717a" }}>
-                  {isDirty ? "Live store metafield pending sync" : "Active on Shopify Edge CDN"}
+                  {isDirty ? "Ready to publish to store" : "Active on Shopify Edge CDN"}
                 </span>
               </div>
 
@@ -1144,7 +1115,7 @@ export function DropClockStudio({
                       color: "#a1a1aa",
                       border: "1px solid #27272a",
                       borderRadius: "6px",
-                      padding: "6px 12px",
+                      padding: "7px 12px",
                       fontSize: "0.75rem",
                       fontWeight: "500",
                       cursor: "pointer",
@@ -1368,27 +1339,31 @@ export function DropClockStudio({
                   </div>
                 </div>
 
-                {/* 1. HIGH-RESOLUTION STUDIO PRODUCT PHOTOGRAPH */}
+                {/* 1. ISOLATED PRODUCT FLAT-LAY CONTAINER */}
                 <div
                   style={{
-                    width: "100%",
-                    height: previewViewport === "mobile" ? "220px" : "260px",
-                    backgroundColor: "#f4f4f5",
-                    borderRadius: "10px",
-                    border: "1px solid rgba(228, 228, 231, 0.6)",
-                    marginBottom: "16px",
-                    overflow: "hidden",
                     position: "relative",
+                    width: "100%",
+                    aspectRatio: "4 / 3",
+                    backgroundColor: "#f4f4f5",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    border: "1px solid rgba(228, 228, 231, 0.8)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "16px",
                   }}
                 >
                   <img
                     src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80"
-                    alt="Minimal Heavyweight Studio Tee"
+                    alt="Classic Studio Tee"
                     loading="lazy"
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "contain",
+                      padding: "16px",
                       display: "block",
                     }}
                   />
@@ -1433,7 +1408,7 @@ export function DropClockStudio({
                   $42.00
                 </div>
 
-                {/* 3. SHOPIFY DAWN VARIANT SELECTOR */}
+                {/* Shopify Dawn Variant Selector */}
                 <div style={{ marginBottom: "16px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                     <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#3f3f46", textTransform: "uppercase", letterSpacing: "0.04em" }}>
@@ -1485,7 +1460,7 @@ export function DropClockStudio({
                   </div>
                 </div>
 
-                {/* 2. THE LIVE DYNAMIC DROPCLOCK WIDGET (SEAMLESS INLINE TYPOGRAPHY) */}
+                {/* 4. THE LIVE DYNAMIC DROPCLOCK WIDGET (POLISHED TYPOGRAPHY) */}
                 {mockStockState === "backorder" ? (
                   /* Gentle Backorder Notice Pill */
                   <div
@@ -1526,7 +1501,7 @@ export function DropClockStudio({
                           boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                         }}
                       >
-                        {/* Unified Inline Sentence */}
+                        {/* Natural Inline Flow */}
                         <div
                           style={{
                             fontSize: "0.8125rem",
@@ -1549,17 +1524,16 @@ export function DropClockStudio({
                           />
                           <span>
                             Order within{" "}
-                            <strong
+                            <span
                               style={{
                                 color: primaryColor,
                                 fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                                 fontWeight: "600",
-                                letterSpacing: "-0.01em",
                               }}
                             >
                               {preview.hours}h {preview.minutes}m {preview.seconds}s
-                            </strong>{" "}
-                            for {preview.isPastCutoff ? "tomorrow's" : "same-day"} dispatch
+                            </span>{" "}
+                            for dispatch {preview.isPastCutoff ? "tomorrow" : "today"}
                           </span>
                         </div>
 
@@ -1608,7 +1582,7 @@ export function DropClockStudio({
                           </span>
                           <span>
                             Order within{" "}
-                            <strong
+                            <span
                               style={{
                                 color: primaryColor,
                                 fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
@@ -1616,8 +1590,8 @@ export function DropClockStudio({
                               }}
                             >
                               {preview.hours}h {preview.minutes}m {preview.seconds}s
-                            </strong>{" "}
-                            for {preview.isPastCutoff ? "tomorrow's" : "same-day"} dispatch
+                            </span>{" "}
+                            for dispatch {preview.isPastCutoff ? "tomorrow" : "today"}
                           </span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.75rem", color: "#64748b", flexShrink: 0 }}>
@@ -1663,7 +1637,7 @@ export function DropClockStudio({
                             />
                             <span>
                               Order within{" "}
-                              <strong
+                              <span
                                 style={{
                                   color: primaryColor,
                                   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
@@ -1671,7 +1645,7 @@ export function DropClockStudio({
                                 }}
                               >
                                 {preview.hours}h {preview.minutes}m {preview.seconds}s
-                              </strong>
+                              </span>
                             </span>
                           </div>
                           <span
@@ -1684,7 +1658,7 @@ export function DropClockStudio({
                               borderRadius: "4px",
                             }}
                           >
-                            {preview.isPastCutoff ? "Tomorrow" : "Same-Day Dispatch"}
+                            {preview.isPastCutoff ? "Tomorrow" : "Today"}
                           </span>
                         </div>
 
@@ -1755,7 +1729,7 @@ export function DropClockStudio({
                   {mockStockState === "in_stock" ? "Add to Cart" : "Sold Out"}
                 </button>
 
-                {/* 3. SHOP PAY DIRECT CHECKOUT BUTTON */}
+                {/* Shop Pay Direct Checkout Button */}
                 <button
                   type="button"
                   disabled
@@ -1807,40 +1781,6 @@ export function DropClockStudio({
                 >
                   More payment options
                 </div>
-              </div>
-            </div>
-
-            {/* Merchant-Centric Performance Footer with Lucide SVG Icons */}
-            <div
-              style={{
-                backgroundColor: "#18181b",
-                borderTop: "1px solid #27272a",
-                padding: "12px 18px",
-                display: "flex",
-                justifyContent: "space-around",
-                alignItems: "center",
-                fontSize: "0.75rem",
-                color: "#a1a1aa",
-                fontWeight: "500",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ color: "#10b981", display: "inline-flex" }}>
-                  <ZapIcon />
-                </span>
-                <span>0ms Storefront Drag</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ color: "#10b981", display: "inline-flex" }}>
-                  <CheckIcon />
-                </span>
-                <span>Native CDN Delivery</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ color: "#10b981", display: "inline-flex" }}>
-                  <CheckIcon />
-                </span>
-                <span>Lighthouse Score: 100/100</span>
               </div>
             </div>
           </div>
