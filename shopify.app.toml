@@ -3,7 +3,7 @@
 client_id = "88689745373b37439f8a9885c878251c"
 name = "DropClock"
 handle = "dropclock"
-application_url = "https://dropclock.example.com"
+application_url = "https://drop-clock-zeta.vercel.app"
 embedded = true
 
 [build]
@@ -16,9 +16,9 @@ scopes = "read_products,write_products"
 
 [auth]
 redirect_urls = [
-  "https://dropclock.example.com/auth/callback",
-  "https://dropclock.example.com/auth/shopify/callback",
-  "https://dropclock.example.com/api/auth/callback"
+  "https://drop-clock-zeta.vercel.app/auth/callback",
+  "https://drop-clock-zeta.vercel.app/auth/shopify/callback",
+  "https://drop-clock-zeta.vercel.app/api/auth/callback"
 ]
 
 [webhooks]
