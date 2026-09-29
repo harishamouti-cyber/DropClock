@@ -16,11 +16,22 @@ import {
 } from "@shopify/polaris";
 import { SaveBar } from "@shopify/app-bridge-react";
 import { useState, useMemo, useEffect } from "react";
-import { authenticate } from "~/shopify.server";
+import { authenticate, DROPCLOCK_PRO_MONTHLY } from "~/shopify.server";
 import prisma from "~/db.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { session, admin } = await authenticate.admin(request);
+  const { session, admin, billing } = await authenticate.admin(request);
+
+  // Enforce recurring subscription with automatic test-mode fallback
+  await billing.require({
+    plans: [DROPCLOCK_PRO_MONTHLY],
+    isTest: process.env.NODE_ENV !== "production",
+    onFailure: async () =>
+      billing.request({
+        plan: DROPCLOCK_PRO_MONTHLY,
+        isTest: process.env.NODE_ENV !== "production",
+      }),
+  });
 
   let settings = await prisma.dropClockSettings.findUnique({
     where: { shop: session.shop },
@@ -56,7 +67,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { admin, session } = await authenticate.admin(request);
+  const { admin, session, billing } = await authenticate.admin(request);
+
+  // Verify active charge or trial before persisting changes
+  await billing.require({
+    plans: [DROPCLOCK_PRO_MONTHLY],
+    isTest: process.env.NODE_ENV !== "production",
+    onFailure: async () =>
+      billing.request({
+        plan: DROPCLOCK_PRO_MONTHLY,
+        isTest: process.env.NODE_ENV !== "production",
+      }),
+  });
+
   const formData = await request.formData();
 
   const cutoffHour = parseInt(formData.get("cutoffHour") as string, 10) || 14;

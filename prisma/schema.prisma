@@ -1,6 +1,6 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:dev.sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -16,6 +16,8 @@ model Session {
   expires     DateTime?
   accessToken String
   userId      BigInt?
+
+  @@index([shop])
 }
 
 model DropClockSettings {
@@ -24,15 +26,17 @@ model DropClockSettings {
   cutoffHour      Int      @default(14)
   cutoffMinute    Int      @default(0)
   leadDays        Int      @default(2)
-  workingDays     String   @default("[1,2,3,4,5]") // 1 = Mon, 5 = Fri
-  blackoutDates   String   @default("[]")          // JSON Array of "YYYY-MM-DD"
+  workingDays     String   @default("[1,2,3,4,5]") @db.Text
+  blackoutDates   String   @default("[]")          @db.Text
   enableTagRules  Boolean  @default(true)
-  tagRulesJson    String   @default("[]")          // Array of {tag: string, cutoffHour: number, leadDays: number}
-  marketOverrides String   @default("{}")          // e.g. {"CA": 4, "GB": 6, "AU": 8}
+  tagRulesJson    String   @default("[]")          @db.Text
+  marketOverrides String   @default("{}")          @db.Text
   presetStyle     String   @default("capsule")     // "capsule" | "urgency" | "minimal"
   primaryColor    String   @default("#008060")
   bgColor         String   @default("#f4f6f8")
   textColor       String   @default("#202223")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([shop])
 }

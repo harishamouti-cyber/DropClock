@@ -3,11 +3,15 @@ import {
   AppDistribution,
   shopifyApp,
   LATEST_API_VERSION,
+  BillingInterval,
 } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
 
 export const apiVersion = LATEST_API_VERSION;
+
+// Standardized Recurring Billing Plan Constant
+export const DROPCLOCK_PRO_MONTHLY = "DropClock Pro";
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY || "dummy_key",
@@ -18,6 +22,18 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
+  billing: {
+    [DROPCLOCK_PRO_MONTHLY]: {
+      lineItems: [
+        {
+          amount: 8.99,
+          currencyCode: "USD",
+          interval: BillingInterval.Every30Days,
+        },
+      ],
+      trialDays: 7,
+    },
+  },
   future: {
     unstable_newEmbeddedAuthStrategy: true,
   },
