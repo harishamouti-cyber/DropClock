@@ -23,6 +23,15 @@ export async function loader() {
   });
 }
 
+export async function action({ request }: { request: Request }) {
+  const formData = await request.formData();
+  return json({
+    success: true,
+    message: "Preview settings updated successfully",
+    data: Object.fromEntries(formData),
+  });
+}
+
 export default function StandalonePreviewRoute() {
   return (
     <AppProvider i18n={{}}>

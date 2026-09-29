@@ -254,38 +254,77 @@ export function DropClockStudio({
   // Device Viewport Toggle (Desktop Full vs Mobile 375px)
   const [viewportMode, setViewportMode] = useState<"desktop" | "mobile">("desktop");
 
+  // Save feedback states
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
+  const [baselineSettings, setBaselineSettings] = useState(settings);
+
+  useEffect(() => {
+    setBaselineSettings(settings);
+  }, [settings]);
+
   // Calculate Form Dirty State for App Bridge SaveBar
   const isDirty = useMemo(() => {
     return (
-      cutoffHour !== settings.cutoffHour ||
-      cutoffMinute !== settings.cutoffMinute ||
-      leadDays !== settings.leadDays ||
-      presetStyle !== (settings.presetStyle || "capsule") ||
-      primaryColor.toLowerCase() !== (settings.primaryColor || "").toLowerCase() ||
-      bgColor.toLowerCase() !== (settings.bgColor || "").toLowerCase() ||
-      textColor.toLowerCase() !== (settings.textColor || "").toLowerCase() ||
-      JSON.stringify(workingDays) !== settings.workingDays
+      cutoffHour !== baselineSettings.cutoffHour ||
+      cutoffMinute !== baselineSettings.cutoffMinute ||
+      leadDays !== baselineSettings.leadDays ||
+      presetStyle !== (baselineSettings.presetStyle || "capsule") ||
+      primaryColor.toLowerCase() !== (baselineSettings.primaryColor || "").toLowerCase() ||
+      bgColor.toLowerCase() !== (baselineSettings.bgColor || "").toLowerCase() ||
+      textColor.toLowerCase() !== (baselineSettings.textColor || "").toLowerCase() ||
+      JSON.stringify(workingDays) !== baselineSettings.workingDays
     );
-  }, [cutoffHour, cutoffMinute, leadDays, presetStyle, primaryColor, bgColor, textColor, workingDays, settings]);
+  }, [cutoffHour, cutoffMinute, leadDays, presetStyle, primaryColor, bgColor, textColor, workingDays, baselineSettings]);
 
   const handleDiscard = () => {
-    setCutoffHour(settings.cutoffHour);
-    setCutoffMinute(settings.cutoffMinute);
-    setLeadDays(settings.leadDays);
-    setIsCustomLeadDays(settings.leadDays > 2);
-    setPresetStyle(settings.presetStyle || "capsule");
-    setPrimaryColor(settings.primaryColor || "#008060");
-    setBgColor(settings.bgColor || "#F4F6F8");
-    setTextColor(settings.textColor || "#202223");
+    setCutoffHour(baselineSettings.cutoffHour);
+    setCutoffMinute(baselineSettings.cutoffMinute);
+    setLeadDays(baselineSettings.leadDays);
+    setIsCustomLeadDays(baselineSettings.leadDays > 2);
+    setPresetStyle(baselineSettings.presetStyle || "capsule");
+    setPrimaryColor(baselineSettings.primaryColor || "#008060");
+    setBgColor(baselineSettings.bgColor || "#F4F6F8");
+    setTextColor(baselineSettings.textColor || "#202223");
     try {
-      setWorkingDays(JSON.parse(settings.workingDays || "[1,2,3,4,5]"));
+      setWorkingDays(JSON.parse(baselineSettings.workingDays || "[1,2,3,4,5]"));
     } catch {
       setWorkingDays([1, 2, 3, 4, 5]);
     }
     safeHideSaveBar();
   };
 
-  const handleSave = () => {
+  const handleSave = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+
+    // If in standalone preview mode (no active Shopify iframe session):
+    const isStandaloneMode = isStandalone || (typeof window !== "undefined" && !window.shopify);
+    if (isStandaloneMode) {
+      setIsSaving(true);
+      // Simulate instant save feedback in UI
+      setTimeout(() => {
+        setIsSaving(false);
+        setHasSaved(true);
+        setBaselineSettings({
+          ...baselineSettings,
+          cutoffHour,
+          cutoffMinute,
+          leadDays,
+          presetStyle,
+          primaryColor,
+          bgColor,
+          textColor,
+          workingDays: JSON.stringify(workingDays),
+        });
+        setTimeout(() => setHasSaved(false), 2500);
+      }, 600);
+      safeHideSaveBar();
+      return;
+    }
+
+    // Inside Shopify Admin: execute the actual authenticated Remix action submission
     const formData = new FormData();
     formData.append("cutoffHour", cutoffHour.toString());
     formData.append("cutoffMinute", cutoffMinute.toString());
@@ -1109,8 +1148,8 @@ export function DropClockStudio({
                 <span style={{ fontSize: "0.8125rem", fontWeight: "600", color: "#fafafa" }}>
                   {isDirty ? "Unsaved Changes" : "Settings Synced"}
                 </span>
-                <span style={{ fontSize: "0.6875rem", color: isDirty ? "#34d399" : "#71717a" }}>
-                  {isDirty ? "Ready to publish to store" : "Active on Shopify Edge CDN"}
+                <span style={{ fontSize: "0.6875rem", color: hasSaved ? "#34d399" : isDirty ? "#34d399" : "#71717a" }}>
+                  {hasSaved ? "Settings saved successfully" : isDirty ? "Ready to publish to store" : "Active on Shopify Edge CDN"}
                 </span>
               </div>
 
@@ -1119,7 +1158,7 @@ export function DropClockStudio({
                   <button
                     type="button"
                     onClick={handleDiscard}
-                    disabled={navigation.state === "submitting"}
+                    disabled={navigation.state === "submitting" || isSaving}
                     style={{
                       backgroundColor: "transparent",
                       color: "#a1a1aa",
@@ -1137,24 +1176,29 @@ export function DropClockStudio({
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={!isDirty || navigation.state === "submitting"}
+                  disabled={(!isDirty && !hasSaved) || navigation.state === "submitting" || isSaving}
                   style={{
-                    backgroundColor: isDirty ? "#10b981" : "#27272a",
-                    color: isDirty ? "#09090b" : "#71717a",
+                    backgroundColor: hasSaved ? "#059669" : isDirty ? "#10b981" : "#27272a",
+                    color: isDirty || hasSaved ? "#09090b" : "#71717a",
                     border: "none",
                     borderRadius: "6px",
                     padding: "7px 16px",
                     fontSize: "0.75rem",
                     fontWeight: "600",
-                    cursor: isDirty && navigation.state !== "submitting" ? "pointer" : "not-allowed",
+                    cursor: (isDirty || hasSaved) && navigation.state !== "submitting" && !isSaving ? "pointer" : "not-allowed",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "6px",
                     transition: "all 0.15s ease",
                   }}
                 >
-                  {navigation.state === "submitting" ? (
+                  {navigation.state === "submitting" || isSaving ? (
                     "Saving..."
+                  ) : hasSaved ? (
+                    <>
+                      <CheckIcon />
+                      <span>Settings Saved</span>
+                    </>
                   ) : (
                     <>
                       <CheckIcon />
