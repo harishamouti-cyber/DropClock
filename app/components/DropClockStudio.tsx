@@ -252,7 +252,7 @@ export function DropClockStudio({
   const [selectedSize, setSelectedSize] = useState<"S" | "M" | "L" | "XL">("M");
 
   // Device Viewport Toggle (Desktop Full vs Mobile 375px)
-  const [previewViewport, setPreviewViewport] = useState<"desktop" | "mobile">("desktop");
+  const [viewportMode, setViewportMode] = useState<"desktop" | "mobile">("desktop");
 
   // Calculate Form Dirty State for App Bridge SaveBar
   const isDirty = useMemo(() => {
@@ -1220,7 +1220,7 @@ export function DropClockStudio({
               >
                 <button
                   type="button"
-                  onClick={() => setPreviewViewport("desktop")}
+                  onClick={() => setViewportMode("desktop")}
                   style={{
                     padding: "3px 8px",
                     borderRadius: "4px",
@@ -1228,8 +1228,8 @@ export function DropClockStudio({
                     fontSize: "0.6875rem",
                     fontWeight: "500",
                     cursor: "pointer",
-                    backgroundColor: previewViewport === "desktop" ? "#3f3f46" : "transparent",
-                    color: previewViewport === "desktop" ? "#fafafa" : "#a1a1aa",
+                    backgroundColor: viewportMode === "desktop" ? "#3f3f46" : "transparent",
+                    color: viewportMode === "desktop" ? "#fafafa" : "#a1a1aa",
                     transition: "all 0.15s ease",
                   }}
                 >
@@ -1237,7 +1237,7 @@ export function DropClockStudio({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPreviewViewport("mobile")}
+                  onClick={() => setViewportMode("mobile")}
                   style={{
                     padding: "3px 8px",
                     borderRadius: "4px",
@@ -1245,8 +1245,8 @@ export function DropClockStudio({
                     fontSize: "0.6875rem",
                     fontWeight: "500",
                     cursor: "pointer",
-                    backgroundColor: previewViewport === "mobile" ? "#3f3f46" : "transparent",
-                    color: previewViewport === "mobile" ? "#fafafa" : "#a1a1aa",
+                    backgroundColor: viewportMode === "mobile" ? "#3f3f46" : "transparent",
+                    color: viewportMode === "mobile" ? "#fafafa" : "#a1a1aa",
                     transition: "all 0.15s ease",
                   }}
                 >
@@ -1269,8 +1269,11 @@ export function DropClockStudio({
             >
               {/* Authentic Shopify Dawn Product Card Mock */}
               <div
+                className={`transition-all duration-300 ease-in-out mx-auto ${
+                  viewportMode === "mobile" ? "max-w-[375px]" : "max-w-xl"
+                }`}
                 style={{
-                  maxWidth: previewViewport === "mobile" ? "375px" : "440px",
+                  maxWidth: viewportMode === "mobile" ? "375px" : "576px",
                   width: "100%",
                   backgroundColor: "#ffffff",
                   color: "#18181b",
@@ -1278,7 +1281,8 @@ export function DropClockStudio({
                   padding: "24px",
                   boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  transition: "max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transition: "max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  margin: "0 auto",
                 }}
               >
                 {/* Stock State Quick Switcher */}
@@ -1616,7 +1620,7 @@ export function DropClockStudio({
                           color: textColor,
                           fontSize: "0.8125rem",
                           gap: "8px",
-                          flexWrap: previewViewport === "mobile" ? "wrap" : "nowrap",
+                          flexWrap: viewportMode === "mobile" ? "wrap" : "nowrap",
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
