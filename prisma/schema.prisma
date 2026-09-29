@@ -1,0 +1,38 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Session {
+  id          String    @id
+  shop        String
+  state       String
+  isOnline    Boolean   @default(false)
+  scope       String?
+  expires     DateTime?
+  accessToken String
+  userId      BigInt?
+}
+
+model DropClockSettings {
+  id              String   @id @default(uuid())
+  shop            String   @unique
+  cutoffHour      Int      @default(14)
+  cutoffMinute    Int      @default(0)
+  leadDays        Int      @default(2)
+  workingDays     String   @default("[1,2,3,4,5]") // 1 = Mon, 5 = Fri
+  blackoutDates   String   @default("[]")          // JSON Array of "YYYY-MM-DD"
+  enableTagRules  Boolean  @default(true)
+  tagRulesJson    String   @default("[]")          // Array of {tag: string, cutoffHour: number, leadDays: number}
+  marketOverrides String   @default("{}")          // e.g. {"CA": 4, "GB": 6, "AU": 8}
+  presetStyle     String   @default("capsule")     // "capsule" | "urgency" | "minimal"
+  primaryColor    String   @default("#008060")
+  bgColor         String   @default("#f4f6f8")
+  textColor       String   @default("#202223")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

@@ -1,0 +1,37 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "dropclock-client-id"
+name = "DropClock"
+handle = "dropclock"
+application_url = "https://dropclock.example.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "dropclock-dev.myshopify.com"
+
+[access_scopes]
+# Minimal Scope Strategy: strictly necessary scopes, zero Protected Customer Data (PCD)
+scopes = "read_products,write_products"
+
+[auth]
+redirect_urls = [
+  "https://dropclock.example.com/auth/callback",
+  "https://dropclock.example.com/auth/shopify/callback",
+  "https://dropclock.example.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2026-01"
+
+[[webhooks.subscriptions]]
+topics = [ "app/uninstalled" ]
+uri = "/webhooks/app/uninstalled"
+
+[webhooks.privacy_compliance]
+customer_data_request_url = "/webhooks/gdpr/data-request"
+customer_deletion_url = "/webhooks/gdpr/customer-deletion"
+shop_deletion_url = "/webhooks/gdpr/shop-deletion"
+
+[pos]
+embedded = false

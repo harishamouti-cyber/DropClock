@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Build and distribution outputs
+dist/
+build/
+.cache/
+
+# Local databases and SQLite
+dev.sqlite
+dev.sqlite-journal
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# Shopify CLI and cache
+.shopify/
+.system_generated/
+
+# Logs and runtime data
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Playwright generated media artifacts (checked in selectively if needed)
+assets/screenshots/temp/
+test-results/
+playwright-report/

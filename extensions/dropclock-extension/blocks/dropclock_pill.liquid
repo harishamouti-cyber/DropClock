@@ -1,0 +1,300 @@
+{% comment %}
+  DropClock - 0ms Shipping Cutoff & Arrival ETA Capsule
+  Reads shop settings directly from Metafields to avoid external script calls.
+{% endcomment %}
+
+{% assign config = shop.metafields.dropclock.settings.value %}
+{% assign base_cutoff_hour = config.cutoffHour | default: 14 %}
+{% assign base_cutoff_minute = config.cutoffMinute | default: 0 %}
+{% assign base_lead_days = config.leadDays | default: 2 %}
+{% assign working_days = config.workingDays | default: "[1,2,3,4,5]" %}
+{% assign blackout_dates = config.blackoutDates | default: "[]" %}
+{% assign market_overrides = config.marketOverrides | default: "{}" %}
+
+{% comment %} Evaluate Tag Overrides {% endcomment %}
+{% assign active_cutoff_hour = base_cutoff_hour %}
+{% assign active_cutoff_minute = base_cutoff_minute %}
+{% assign active_lead_days = base_lead_days %}
+
+{% if config.tagRulesJson %}
+  {% for rule in config.tagRulesJson %}
+    {% if product.tags contains rule.tag %}
+      {% assign active_cutoff_hour = rule.cutoffHour %}
+      {% assign active_lead_days = rule.leadDays %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% assign current_country = localization.country.iso_code %}
+{% assign current_variant = product.selected_or_first_available_variant %}
+{% assign is_available = product.selected_or_first_available_variant.available %}
+
+<div 
+  class="dropclock-wrapper"
+  id="dropclock-{{ block.id }}"
+  data-cutoff-hour="{{ active_cutoff_hour }}"
+  data-cutoff-minute="{{ active_cutoff_minute }}"
+  data-lead-days="{{ active_lead_days }}"
+  data-working-days='{{ working_days }}'
+  data-blackouts='{{ blackout_dates }}'
+  data-market-overrides='{{ market_overrides }}'
+  data-current-country="{{ current_country }}"
+  data-available="{{ is_available }}"
+  style="
+    --dc-primary: {{ block.settings.primary_color | default: config.primaryColor | default: '#008060' }};
+    --dc-bg: {{ block.settings.bg_color | default: config.bgColor | default: '#f4f6f8' }};
+    --dc-text: {{ block.settings.text_color | default: config.textColor | default: '#202223' }};
+    --dc-radius: {{ block.settings.corner_radius | default: 8 }}px;
+  "
+>
+  {% if current_variant.available %}
+    <div class="dropclock-container {{ block.settings.style_preset | default: 'capsule' }}">
+      <div class="dropclock-pulse-icon">
+        <span class="dropclock-pulse-dot"></span>
+        <!-- Lucide Clock Icon -->
+        <svg class="dropclock-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+
+      <div class="dropclock-text-stack">
+        <div class="dropclock-line-timer">
+          Order within <strong class="dc-timer-countdown">--h --m</strong> for 
+          <span class="dc-dispatch-target">Same-Day Dispatch</span>
+        </div>
+        <div class="dropclock-line-eta">
+          <!-- Lucide Truck Icon -->
+          <svg class="dropclock-truck-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+          <span>Estimated Delivery: <strong class="dc-eta-target">Calculating...</strong></span>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="dropclock-backorder-notice">
+      <!-- Lucide Alert Circle Icon -->
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>Backorder Item: Ships as soon as restocked.</span>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  .dropclock-wrapper {
+    margin: 14px 0;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .dropclock-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--dc-bg);
+    color: var(--dc-text);
+    border-radius: var(--dc-radius);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-sizing: border-box;
+  }
+  .dropclock-pulse-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--dc-primary);
+  }
+  .dropclock-pulse-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--dc-primary);
+    box-shadow: 0 0 0 0 rgba(0, 128, 96, 0.7);
+    animation: dc-pulse 1.8s infinite;
+  }
+  @keyframes dc-pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 128, 96, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(0, 128, 96, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 128, 96, 0); }
+  }
+  .dropclock-text-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .dropclock-line-timer strong {
+    color: var(--dc-primary);
+    font-weight: 600;
+  }
+  .dropclock-line-eta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    opacity: 0.88;
+  }
+  .dropclock-truck-svg {
+    stroke: currentColor;
+    opacity: 0.75;
+  }
+  .dropclock-backorder-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: var(--dc-radius);
+    background: #fff8e5;
+    color: #8a6100;
+    border: 1px solid rgba(138, 97, 0, 0.15);
+  }
+</style>
+
+<script>
+  (function() {
+    function initDropClock() {
+      const root = document.getElementById('dropclock-{{ block.id }}');
+      if (!root) return;
+
+      const isAvailable = root.getAttribute('data-available') === 'true';
+      if (!isAvailable) return;
+
+      const cutoffHour = parseInt(root.getAttribute('data-cutoff-hour'), 10);
+      const cutoffMin = parseInt(root.getAttribute('data-cutoff-minute'), 10);
+      let leadDays = parseInt(root.getAttribute('data-lead-days'), 10);
+      
+      let workingDays = [1, 2, 3, 4, 5];
+      try { workingDays = JSON.parse(root.getAttribute('data-working-days')); } catch(e) {}
+
+      let blackouts = [];
+      try { blackouts = JSON.parse(root.getAttribute('data-blackouts')); } catch(e) {}
+
+      let marketOverrides = {};
+      try { marketOverrides = JSON.parse(root.getAttribute('data-market-overrides')); } catch(e) {}
+      
+      const currentCountry = root.getAttribute('data-current-country');
+      if (marketOverrides && marketOverrides[currentCountry]) {
+        leadDays += parseInt(marketOverrides[currentCountry], 10);
+      }
+
+      const timerEl = root.querySelector('.dc-timer-countdown');
+      const labelEl = root.querySelector('.dc-dispatch-target');
+      const etaEl = root.querySelector('.dc-eta-target');
+
+      function calculate() {
+        const now = new Date();
+        const cutoff = new Date();
+        cutoff.setHours(cutoffHour, cutoffMin, 0, 0);
+
+        let diff = cutoff - now;
+        let pastCutoff = diff <= 0;
+
+        if (pastCutoff) {
+          cutoff.setDate(cutoff.getDate() + 1);
+          diff = cutoff - now;
+          if (labelEl) labelEl.textContent = 'Next-Day Dispatch';
+        } else {
+          if (labelEl) labelEl.textContent = 'Same-Day Dispatch';
+        }
+
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        if (timerEl) timerEl.textContent = `${hours}h ${minutes}m`;
+
+        // Calculate delivery arrival date skipping non-working & blackout dates
+        let eta = new Date();
+        let addedDays = 0;
+        let totalLead = leadDays + (pastCutoff ? 1 : 0);
+
+        while (addedDays < totalLead) {
+          eta.setDate(eta.getDate() + 1);
+          const dayOfWeek = eta.getDay();
+          const isoString = eta.toISOString().split('T')[0];
+
+          if (workingDays.includes(dayOfWeek) && !blackouts.includes(isoString)) {
+            addedDays++;
+          }
+        }
+
+        if (etaEl) {
+          etaEl.textContent = eta.toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+          });
+        }
+      }
+
+      calculate();
+      setInterval(calculate, 60000);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initDropClock);
+    } else {
+      initDropClock();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "DropClock Cutoff & ETA",
+  "target": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "style_preset",
+      "label": "Display Style",
+      "options": [
+        { "value": "capsule", "label": "Modern Capsule (Recommended)" },
+        { "value": "urgency", "label": "Urgency Highlight" },
+        { "value": "minimal", "label": "Minimal Text Line" }
+      ],
+      "default": "capsule"
+    },
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Accent / Countdown Color",
+      "default": "#008060"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Card Color",
+      "default": "#f4f6f8"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Primary Text Color",
+      "default": "#202223"
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Border Radius",
+      "default": 8
+    }
+  ]
+}
+{% endschema %}

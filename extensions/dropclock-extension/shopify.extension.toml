@@ -1,0 +1,8 @@
+name = "DropClock Extension"
+type = "theme"
+
+[[blocks]]
+name = "DropClock Cutoff & ETA"
+target = "section"
+template = "product"
+file = "dropclock_pill.liquid"
