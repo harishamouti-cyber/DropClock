@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "prisma generate && remix vite:build",
+    "build": "node scripts/db-sync.js && remix vite:build",
     "dev": "shopify app dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
