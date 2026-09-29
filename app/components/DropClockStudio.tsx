@@ -35,7 +35,7 @@ interface DropClockStudioProps {
   isStandalone?: boolean;
 }
 
-// Crisp 15px Monochrome Lucide Icons with 1.75 stroke-width
+// Crisp Monochrome Lucide-style SVG Icons (Zero external package dependencies)
 const ClockIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" />
@@ -72,6 +72,58 @@ const SparklesIcon = () => (
 const CheckIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const ExternalLinkIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    <polyline points="15 3 21 3 21 9" />
+    <line x1="10" y1="14" x2="21" y2="3" />
+  </svg>
+);
+
+const LayoutIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+    <path d="M3 9h18" />
+    <path d="M9 21V9" />
+  </svg>
+);
+
+const CapsuleIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="6" width="18" height="12" rx="6" />
+    <circle cx="8" cy="12" r="2" />
+  </svg>
+);
+
+const MinimalIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="4" x2="20" y1="12" y2="12" />
+    <line x1="4" x2="14" y1="6" y2="6" />
+    <line x1="4" x2="10" y1="18" y2="18" />
+  </svg>
+);
+
+const ProgressBarIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="20" height="12" rx="4" />
+    <path d="M6 12h8" />
+  </svg>
+);
+
+const AlertTriangleIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const ZapIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
   </svg>
 );
 
@@ -141,10 +193,44 @@ export function DropClockStudio({
     }
   };
 
+  // Dynamic Timezone Resolution
+  const resolvedTimezone = useMemo(() => {
+    if (ianaTimezone && ianaTimezone !== "UTC") {
+      return ianaTimezone;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      } catch {
+        return "UTC";
+      }
+    }
+    return "UTC";
+  }, [ianaTimezone]);
+
+  const resolvedOffsetMinutes = useMemo(() => {
+    if (typeof timezoneOffsetMinutes === "number" && timezoneOffsetMinutes !== 0) {
+      return timezoneOffsetMinutes;
+    }
+    if (typeof window !== "undefined") {
+      return -new Date().getTimezoneOffset();
+    }
+    return 0;
+  }, [timezoneOffsetMinutes]);
+
+  const timezoneLabel = useMemo(() => {
+    const hours = Math.floor(Math.abs(resolvedOffsetMinutes) / 60);
+    const mins = Math.abs(resolvedOffsetMinutes) % 60;
+    const sign = resolvedOffsetMinutes >= 0 ? "+" : "-";
+    const minsStr = mins > 0 ? `:${mins.toString().padStart(2, "0")}` : "";
+    return `${resolvedTimezone} (UTC${sign}${hours}${minsStr})`;
+  }, [resolvedTimezone, resolvedOffsetMinutes]);
+
   // Form State
   const [cutoffHour, setCutoffHour] = useState(settings.cutoffHour);
   const [cutoffMinute, setCutoffMinute] = useState(settings.cutoffMinute);
   const [leadDays, setLeadDays] = useState(settings.leadDays);
+  const [isCustomLeadDays, setIsCustomLeadDays] = useState(settings.leadDays > 2);
   const [presetStyle, setPresetStyle] = useState(settings.presetStyle || "capsule");
   const [primaryColor, setPrimaryColor] = useState(settings.primaryColor || "#008060");
   const [bgColor, setBgColor] = useState(settings.bgColor || "#F4F6F8");
@@ -157,13 +243,16 @@ export function DropClockStudio({
     }
   });
 
+  // Mock Storefront Stock State Switcher for Real-Time Simulation
+  const [mockStockState, setMockStockState] = useState<"in_stock" | "backorder">("in_stock");
+
   // Calculate Form Dirty State for App Bridge SaveBar
   const isDirty = useMemo(() => {
     return (
       cutoffHour !== settings.cutoffHour ||
       cutoffMinute !== settings.cutoffMinute ||
       leadDays !== settings.leadDays ||
-      presetStyle !== settings.presetStyle ||
+      presetStyle !== (settings.presetStyle || "capsule") ||
       primaryColor.toLowerCase() !== (settings.primaryColor || "").toLowerCase() ||
       bgColor.toLowerCase() !== (settings.bgColor || "").toLowerCase() ||
       textColor.toLowerCase() !== (settings.textColor || "").toLowerCase() ||
@@ -175,6 +264,7 @@ export function DropClockStudio({
     setCutoffHour(settings.cutoffHour);
     setCutoffMinute(settings.cutoffMinute);
     setLeadDays(settings.leadDays);
+    setIsCustomLeadDays(settings.leadDays > 2);
     setPresetStyle(settings.presetStyle || "capsule");
     setPrimaryColor(settings.primaryColor || "#008060");
     setBgColor(settings.bgColor || "#F4F6F8");
@@ -215,7 +305,7 @@ export function DropClockStudio({
   }, []);
 
   const preview = useMemo(() => {
-    const warehouseUtcOffsetMs = (timezoneOffsetMinutes || 0) * 60 * 1000;
+    const warehouseUtcOffsetMs = (resolvedOffsetMinutes || 0) * 60 * 1000;
     const warehouseNow = new Date(now.getTime() + warehouseUtcOffsetMs + now.getTimezoneOffset() * 60 * 1000);
 
     const targetCutoff = new Date(warehouseNow);
@@ -233,6 +323,10 @@ export function DropClockStudio({
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+    // Calculate progress percent remaining of fulfillment window
+    const totalDayMs = 24 * 60 * 60 * 1000;
+    const progressPercent = Math.max(5, Math.min(100, Math.round((diffMs / totalDayMs) * 100)));
 
     // Calculate Delivery Arrival Date
     let delivery = new Date(warehouseNow);
@@ -256,14 +350,9 @@ export function DropClockStudio({
       seconds,
       isPastCutoff,
       formattedArrival,
+      progressPercent,
     };
-  }, [now, cutoffHour, cutoffMinute, leadDays, workingDays, timezoneOffsetMinutes]);
-
-  const timezoneLabel = useMemo(() => {
-    const hours = Math.floor(Math.abs(timezoneOffsetMinutes) / 60);
-    const sign = timezoneOffsetMinutes >= 0 ? "+" : "-";
-    return `${ianaTimezone} (UTC${sign}${hours})`;
-  }, [ianaTimezone, timezoneOffsetMinutes]);
+  }, [now, cutoffHour, cutoffMinute, leadDays, workingDays, resolvedOffsetMinutes]);
 
   return (
     <Page fullWidth>
@@ -295,7 +384,7 @@ export function DropClockStudio({
           boxSizing: "border-box",
         }}
       >
-        {/* Top Header */}
+        {/* 1. TOP HEADER & ONBOARDING CALL-TO-ACTION */}
         <div
           style={{
             display: "flex",
@@ -304,10 +393,12 @@ export function DropClockStudio({
             paddingBottom: "18px",
             borderBottom: "1px solid #1f1f23",
             marginBottom: "24px",
+            flexWrap: "wrap",
+            gap: "16px",
           }}
         >
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
               <h1
                 style={{
                   fontSize: "1.25rem",
@@ -319,6 +410,34 @@ export function DropClockStudio({
               >
                 DropClock Studio
               </h1>
+
+              {/* Theme Live Status Pill */}
+              <span
+                style={{
+                  fontSize: "0.6875rem",
+                  fontWeight: "500",
+                  color: "#a1a1aa",
+                  backgroundColor: "#18181b",
+                  border: "1px solid #27272a",
+                  padding: "3px 10px",
+                  borderRadius: "9999px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "5px",
+                    height: "5px",
+                    borderRadius: "50%",
+                    backgroundColor: "#10b981",
+                  }}
+                />
+                Active Store Theme: Dawn 15.0 (Live)
+              </span>
+
+              {/* Mode indicator */}
               <span
                 style={{
                   fontSize: "0.6875rem",
@@ -333,25 +452,18 @@ export function DropClockStudio({
                   gap: "4px",
                 }}
               >
-                <span
-                  style={{
-                    width: "5px",
-                    height: "5px",
-                    borderRadius: "50%",
-                    backgroundColor: isStandalone ? "#a1a1aa" : "#10b981",
-                  }}
-                />
                 {isStandalone ? "Sandbox Preview Mode" : "Shopify Edge CDN Active"}
               </span>
             </div>
             <p style={{ fontSize: "0.8125rem", color: "#71717a", margin: "4px 0 0 0" }}>
               {isStandalone
-                ? "Interactive sandbox environment. Changes simulate live storefront countdown arithmetic."
+                ? "Interactive sandbox environment. Live countdown arithmetic and theme simulation."
                 : "Live shipping cutoff arithmetic and real-time storefront capsule preview."}
             </p>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {/* Standalone Reset Button */}
             {isStandalone && isDirty && (
               <button
                 type="button"
@@ -374,29 +486,30 @@ export function DropClockStudio({
                 Reset Changes
               </button>
             )}
-            {!isStandalone && (
-              <a
-                href={`https://${shop}/admin/themes/current/editor?context=apps&template=product&addAppBlockId=dropclock-extension/dropclock_pill`}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  backgroundColor: "#18181b",
-                  color: "#fafafa",
-                  border: "1px solid #27272a",
-                  borderRadius: "8px",
-                  padding: "8px 14px",
-                  fontSize: "0.8125rem",
-                  fontWeight: "500",
-                  textDecoration: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05)",
-                }}
-              >
-                Theme Customizer ↗
-              </a>
-            )}
+
+            {/* Primary CTA: Add to Theme Editor */}
+            <a
+              href={`https://${shop}/admin/themes/current/editor?template=product`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                backgroundColor: "#10b981",
+                color: "#09090b",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontSize: "0.8125rem",
+                fontWeight: "600",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                boxShadow: "0 1px 2px rgba(16, 185, 129, 0.25)",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <span>Add to Theme Editor</span>
+              <ExternalLinkIcon />
+            </a>
           </div>
         </div>
 
@@ -411,7 +524,7 @@ export function DropClockStudio({
         >
           {/* LEFT PANE: Precision Parameter Controls */}
           <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-            {/* 1. Cutoff Time Controller */}
+            {/* 1. Cutoff Time Controller with Dynamic Timezone */}
             <div
               style={{
                 backgroundColor: "#121215",
@@ -445,7 +558,7 @@ export function DropClockStudio({
                     borderRadius: "9999px",
                   }}
                 >
-                  {timezoneLabel} • Syncs with Settings
+                  {timezoneLabel}
                 </span>
               </div>
 
@@ -556,7 +669,85 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 2. Lead Time Selector */}
+            {/* 2. NEW CONTROL: DISPLAY PRESET SELECTOR (PILL VS. MINIMAL VS. URGENCY BAR) */}
+            <div
+              style={{
+                backgroundColor: "#121215",
+                border: "1px solid #1f1f23",
+                borderRadius: "12px",
+                padding: "18px",
+                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                <LayoutIcon />
+                <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                  Widget Display Style
+                </span>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                {[
+                  {
+                    id: "capsule",
+                    name: "Capsule Pill",
+                    desc: "Container card with background & border",
+                    icon: <CapsuleIcon />,
+                  },
+                  {
+                    id: "minimal",
+                    name: "Minimal Line",
+                    desc: "Single inline line matching typography",
+                    icon: <MinimalIcon />,
+                  },
+                  {
+                    id: "bar",
+                    name: "Urgency Bar",
+                    desc: "Dynamic fulfillment progress track",
+                    icon: <ProgressBarIcon />,
+                  },
+                ].map((preset) => {
+                  const active = (presetStyle || "capsule") === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => setPresetStyle(preset.id)}
+                      style={{
+                        padding: "12px 10px",
+                        borderRadius: "8px",
+                        border: active ? "1px solid #10b981" : "1px solid #27272a",
+                        backgroundColor: active ? "rgba(16, 185, 129, 0.08)" : "#18181b",
+                        color: active ? "#fafafa" : "#a1a1aa",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "6px",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ color: active ? "#10b981" : "#71717a" }}>{preset.icon}</span>
+                        {active && (
+                          <span style={{ color: "#10b981" }}>
+                            <CheckIcon />
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: "0.8125rem", fontWeight: "600", color: active ? "#fafafa" : "#e4e4e7" }}>
+                        {preset.name}
+                      </span>
+                      <span style={{ fontSize: "0.6875rem", color: "#71717a", lineHeight: "1.3" }}>
+                        {preset.desc}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. Lead Time Selector with Expandable Stepper */}
             <div
               style={{
                 backgroundColor: "#121215",
@@ -582,22 +773,29 @@ export function DropClockStudio({
                   padding: "4px",
                   borderRadius: "8px",
                   border: "1px solid #27272a",
-                  marginBottom: leadDays > 2 ? "12px" : "0",
                 }}
               >
                 {[
                   { label: "Same Day", val: 0 },
                   { label: "1 Day", val: 1 },
                   { label: "2 Days", val: 2 },
-                  { label: "Custom", val: leadDays > 2 ? leadDays : 3 },
+                  { label: "Custom", val: -1 },
                 ].map((item) => {
-                  const isCustom = item.label === "Custom";
-                  const active = isCustom ? leadDays > 2 : leadDays === item.val;
+                  const isCustom = item.val === -1;
+                  const active = isCustom ? isCustomLeadDays || leadDays > 2 : !isCustomLeadDays && leadDays === item.val;
                   return (
                     <button
                       key={item.label}
                       type="button"
-                      onClick={() => setLeadDays(item.val)}
+                      onClick={() => {
+                        if (isCustom) {
+                          setIsCustomLeadDays(true);
+                          if (leadDays <= 2) setLeadDays(4);
+                        } else {
+                          setIsCustomLeadDays(false);
+                          setLeadDays(item.val);
+                        }
+                      }}
                       style={{
                         padding: "7px 4px",
                         borderRadius: "6px",
@@ -607,6 +805,7 @@ export function DropClockStudio({
                         fontSize: "0.75rem",
                         fontWeight: "600",
                         cursor: "pointer",
+                        transition: "all 0.15s ease",
                       }}
                     >
                       {item.label}
@@ -615,59 +814,88 @@ export function DropClockStudio({
                 })}
               </div>
 
-              {leadDays > 2 && (
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "10px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              {/* Expandable Custom Lead Days Stepper (1 to 30 days) */}
+              {(isCustomLeadDays || leadDays > 2) && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    marginTop: "12px",
+                    paddingTop: "12px",
+                    borderTop: "1px solid #1f1f23",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      backgroundColor: "#18181b",
+                      padding: "4px 8px",
+                      borderRadius: "8px",
+                      border: "1px solid #27272a",
+                    }}
+                  >
                     <button
                       type="button"
-                      onClick={() => setLeadDays((d) => Math.max(0, d - 1))}
+                      onClick={() => setLeadDays((d) => Math.max(1, d - 1))}
                       style={{
-                        width: "28px",
-                        height: "28px",
+                        width: "26px",
+                        height: "26px",
                         borderRadius: "6px",
                         border: "1px solid #27272a",
-                        backgroundColor: "#18181b",
+                        backgroundColor: "#27272a",
                         color: "#fafafa",
+                        fontWeight: "700",
                         cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       -
                     </button>
                     <span
                       style={{
-                        width: "36px",
+                        minWidth: "64px",
                         textAlign: "center",
                         fontWeight: "600",
+                        fontSize: "0.8125rem",
                         fontFamily: "monospace",
                         color: "#fafafa",
                       }}
                     >
-                      {leadDays}
+                      {leadDays} {leadDays === 1 ? "Day" : "Days"}
                     </span>
                     <button
                       type="button"
-                      onClick={() => setLeadDays((d) => d + 1)}
+                      onClick={() => setLeadDays((d) => Math.min(30, d + 1))}
                       style={{
-                        width: "28px",
-                        height: "28px",
+                        width: "26px",
+                        height: "26px",
                         borderRadius: "6px",
                         border: "1px solid #27272a",
-                        backgroundColor: "#18181b",
+                        backgroundColor: "#27272a",
                         color: "#fafafa",
+                        fontWeight: "700",
                         cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       +
                     </button>
                   </div>
                   <span style={{ fontSize: "0.8125rem", color: "#71717a" }}>
-                    Business days transit lead time
+                    Custom transit fulfillment window (1–30 days)
                   </span>
                 </div>
               )}
             </div>
 
-            {/* 3. Operating Days */}
+            {/* 4. Operating Days */}
             <div
               style={{
                 backgroundColor: "#121215",
@@ -731,7 +959,7 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 4. Color Tokens & Brand Presets */}
+            {/* 5. Brand Alignment & Functional Color Swatches */}
             <div
               style={{
                 backgroundColor: "#121215",
@@ -799,7 +1027,7 @@ export function DropClockStudio({
                 })}
               </div>
 
-              {/* Swatch Pickers with Circular Preview */}
+              {/* Swatch Pickers with Functional Native Color Launchers */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
                   { label: "Accent Color", val: primaryColor, setVal: setPrimaryColor },
@@ -820,32 +1048,41 @@ export function DropClockStudio({
                   >
                     <span style={{ fontSize: "0.8125rem", color: "#a1a1aa" }}>{label}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span
+                      <input
+                        type="text"
+                        value={val}
+                        onChange={(e) => setVal(e.target.value)}
                         style={{
+                          width: "78px",
+                          backgroundColor: "#27272a",
+                          border: "1px solid #3f3f46",
+                          borderRadius: "6px",
+                          padding: "4px 8px",
                           fontSize: "0.75rem",
                           fontFamily: "monospace",
                           color: "#fafafa",
                           textTransform: "uppercase",
                         }}
-                      >
-                        {val}
-                      </span>
+                      />
                       <label
                         style={{
-                          width: "22px",
-                          height: "22px",
+                          width: "20px",
+                          height: "20px",
                           borderRadius: "50%",
                           backgroundColor: val,
-                          border: "2px solid #3f3f46",
+                          border: "2px solid #52525b",
                           cursor: "pointer",
                           display: "inline-block",
                           position: "relative",
                           overflow: "hidden",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                          flexShrink: 0,
                         }}
+                        title={`Pick ${label}`}
                       >
                         <input
                           type="color"
-                          value={val}
+                          value={val.startsWith("#") && val.length === 7 ? val : "#008060"}
                           onChange={(e) => setVal(e.target.value)}
                           style={{
                             position: "absolute",
@@ -908,7 +1145,7 @@ export function DropClockStudio({
             {/* Canvas Surface with Refined Dot Grid */}
             <div
               style={{
-                padding: "36px 24px",
+                padding: "32px 24px",
                 backgroundImage: "radial-gradient(#27272a 1px, transparent 1px)",
                 backgroundSize: "16px 16px",
                 backgroundColor: "#09090b",
@@ -930,29 +1167,148 @@ export function DropClockStudio({
                   border: "1px solid rgba(255,255,255,0.1)",
                 }}
               >
-                {/* Mock Apparel Image Frame */}
+                {/* 3. INTERACTIVE STOCK-STATE SWITCHER */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "14px",
+                    paddingBottom: "10px",
+                    borderBottom: "1px solid #f1f5f9",
+                  }}
+                >
+                  <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#64748b" }}>
+                    Stock Simulation:
+                  </span>
+                  <div
+                    style={{
+                      display: "flex",
+                      backgroundColor: "#f1f5f9",
+                      padding: "3px",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setMockStockState("in_stock")}
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        border: "none",
+                        fontSize: "0.6875rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        backgroundColor: mockStockState === "in_stock" ? "#ffffff" : "transparent",
+                        color: mockStockState === "in_stock" ? "#0f172a" : "#64748b",
+                        boxShadow: mockStockState === "in_stock" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      In Stock
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMockStockState("backorder")}
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        border: "none",
+                        fontSize: "0.6875rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        backgroundColor: mockStockState === "backorder" ? "#ffffff" : "transparent",
+                        color: mockStockState === "backorder" ? "#b45309" : "#64748b",
+                        boxShadow: mockStockState === "backorder" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      Sold Out / Backorder
+                    </button>
+                  </div>
+                </div>
+
+                {/* REALISTIC MOCK PRODUCT VISUAL (Washed-Black Minimal Heavyweight Tee) */}
                 <div
                   style={{
                     width: "100%",
-                    height: "180px",
-                    backgroundColor: "#f4f4f5",
-                    borderRadius: "10px",
-                    marginBottom: "18px",
+                    height: "200px",
+                    backgroundColor: "#f8fafc",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    marginBottom: "16px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#a1a1aa",
+                    position: "relative",
+                    overflow: "hidden",
                   }}
                 >
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25">
-                    <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" />
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "10px",
+                      left: "10px",
+                      fontSize: "0.625rem",
+                      fontWeight: "700",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "#64748b",
+                      backgroundColor: "#ffffff",
+                      padding: "2px 7px",
+                      borderRadius: "4px",
+                      border: "1px solid #e2e8f0",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+                    }}
+                  >
+                    DTC Heavyweight 280GSM
+                  </span>
+
+                  {/* High-Fidelity Vector Apparel Mockup */}
+                  <svg width="170" height="170" viewBox="0 0 200 200" fill="none">
+                    <defs>
+                      <linearGradient id="teeGrad" x1="50" y1="20" x2="150" y2="180" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#27272a" />
+                        <stop offset="60%" stopColor="#18181b" />
+                        <stop offset="100%" stopColor="#09090b" />
+                      </linearGradient>
+                      <filter id="softShadow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
+                        <feDropShadow dx="0" dy="6" stdDeviation="10" floodColor="#0f172a" floodOpacity="0.14" />
+                      </filter>
+                    </defs>
+                    <g filter="url(#softShadow)">
+                      <path
+                        d="M62 48 L40 76 L16 66 L26 40 L60 30 C72 37 88 40 100 40 C112 40 128 37 140 30 L174 40 L184 66 L160 76 L138 48 L142 165 C142 168 139 170 136 170 L64 170 C61 170 58 168 58 165 Z"
+                        fill="url(#teeGrad)"
+                      />
+                      <path
+                        d="M74 34 C82 42 92 44 100 44 C108 44 118 42 126 34 C120 32 110 30 100 30 C90 30 80 32 74 34 Z"
+                        fill="#3f3f46"
+                        stroke="#52525b"
+                        strokeWidth="1.5"
+                      />
+                      <path d="M62 48 L74 34" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+                      <path d="M138 48 L126 34" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+                      <path d="M60 162 L140 162" stroke="rgba(255,255,255,0.05)" strokeWidth="1.5" />
+                      <path d="M22 62 L36 68" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+                      <path d="M178 62 L164 68" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+                    </g>
                   </svg>
                 </div>
 
                 {/* Stock Status & Title */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <span style={{ fontSize: "0.6875rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.06em", color: "#008060" }}>
-                    ● In Stock · Ships Promptly
+                  <span
+                    style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                      color: mockStockState === "in_stock" ? "#008060" : "#b45309",
+                    }}
+                  >
+                    {mockStockState === "in_stock" ? "● In Stock · Ships Promptly" : "○ Sold Out · Restock Queued"}
                   </span>
                   <span style={{ fontSize: "0.75rem", color: "#71717a" }}>SKU: DC-101</span>
                 </div>
@@ -980,73 +1336,235 @@ export function DropClockStudio({
                   $42.00
                 </div>
 
-                {/* THE LIVE DYNAMIC DROCLOCK CAPSULE IN SITU */}
-                <div
-                  style={{
-                    backgroundColor: bgColor,
-                    color: textColor,
-                    border: `1px solid ${primaryColor}22`,
-                    borderRadius: "10px",
-                    padding: "12px 14px",
-                    marginBottom: "16px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  {/* Top Line: Real-time Cutoff Countdown */}
+                {/* THE LIVE DYNAMIC DROPCLOCK WIDGET (SWAPS ACCORDING TO PRESET STYLE & STOCK STATE) */}
+                {mockStockState === "backorder" ? (
+                  /* Gentle Backorder Notice Pill */
                   <div
                     style={{
+                      backgroundColor: "#fffbeb",
+                      color: "#92400e",
+                      border: "1px solid #fde68a",
+                      borderRadius: "8px",
+                      padding: "10px 14px",
+                      marginBottom: "16px",
                       display: "flex",
                       alignItems: "center",
-                      gap: "6px",
+                      gap: "8px",
                       fontSize: "0.8125rem",
-                      fontWeight: "600",
-                      lineHeight: "1.3",
+                      fontWeight: "500",
                     }}
                   >
-                    <span
-                      style={{
-                        width: "6px",
-                        height: "6px",
-                        borderRadius: "50%",
-                        backgroundColor: primaryColor,
-                        display: "inline-block",
-                      }}
-                    />
-                    <span>Order in next</span>
-                    <span
-                      style={{
-                        color: primaryColor,
-                        fontFamily: "monospace",
-                        fontWeight: "700",
-                      }}
-                    >
-                      {preview.hours}h {preview.minutes}m {preview.seconds}s
+                    <span style={{ color: "#d97706", display: "inline-flex" }}>
+                      <AlertTriangleIcon />
                     </span>
-                    <span>for {preview.isPastCutoff ? "tomorrow's" : "today's"} dispatch</span>
+                    <span>Backorder Item: Ships as soon as restocked.</span>
                   </div>
+                ) : (
+                  <>
+                    {/* Style 1: Capsule Pill */}
+                    {presetStyle === "capsule" && (
+                      <div
+                        style={{
+                          backgroundColor: bgColor,
+                          color: textColor,
+                          border: `1px solid ${primaryColor}22`,
+                          borderRadius: "10px",
+                          padding: "12px 14px",
+                          marginBottom: "16px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "6px",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            fontSize: "0.8125rem",
+                            fontWeight: "600",
+                            lineHeight: "1.3",
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: "6px",
+                              height: "6px",
+                              borderRadius: "50%",
+                              backgroundColor: primaryColor,
+                              display: "inline-block",
+                            }}
+                          />
+                          <span>Order in next</span>
+                          <span
+                            style={{
+                              color: primaryColor,
+                              fontFamily: "monospace",
+                              fontWeight: "700",
+                            }}
+                          >
+                            {preview.hours}h {preview.minutes}m {preview.seconds}s
+                          </span>
+                          <span>for {preview.isPastCutoff ? "tomorrow's" : "today's"} dispatch</span>
+                        </div>
 
-                  {/* Bottom Line: Estimated Delivery ETA (Single line, fixed baseline) */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "baseline",
-                      gap: "6px",
-                      fontSize: "0.75rem",
-                      opacity: 0.85,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <span style={{ color: primaryColor, display: "inline-flex", transform: "translateY(2px)" }}>
-                      <TruckIcon />
-                    </span>
-                    <span>
-                      Estimated Delivery: <strong style={{ color: textColor }}>{preview.formattedArrival}</strong>
-                    </span>
-                  </div>
-                </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            fontSize: "0.75rem",
+                            opacity: 0.85,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          <span style={{ color: primaryColor, display: "inline-flex" }}>
+                            <TruckIcon />
+                          </span>
+                          <span>
+                            Estimated Delivery: <strong style={{ color: textColor }}>{preview.formattedArrival}</strong>
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Style 2: Minimal Line */}
+                    {presetStyle === "minimal" && (
+                      <div
+                        style={{
+                          padding: "10px 0",
+                          marginBottom: "16px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          borderTop: "1px solid #f1f5f9",
+                          borderBottom: "1px solid #f1f5f9",
+                          color: textColor,
+                          fontSize: "0.8125rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ color: primaryColor, display: "inline-flex" }}>
+                            <ClockIcon />
+                          </span>
+                          <span>
+                            Order in <strong style={{ color: primaryColor, fontFamily: "monospace" }}>{preview.hours}h {preview.minutes}m {preview.seconds}s</strong> for {preview.isPastCutoff ? "tomorrow's" : "today's"} dispatch
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.75rem", color: "#64748b" }}>
+                          <TruckIcon />
+                          <span>Est. {preview.formattedArrival}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Style 3: Urgency Progress Bar */}
+                    {presetStyle === "bar" && (
+                      <div
+                        style={{
+                          backgroundColor: bgColor,
+                          color: textColor,
+                          border: `1px solid ${primaryColor}26`,
+                          borderRadius: "10px",
+                          padding: "12px 14px",
+                          marginBottom: "16px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            fontSize: "0.8125rem",
+                            fontWeight: "600",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <span
+                              style={{
+                                width: "6px",
+                                height: "6px",
+                                borderRadius: "50%",
+                                backgroundColor: primaryColor,
+                                display: "inline-block",
+                              }}
+                            />
+                            <span>Order in next</span>
+                            <span
+                              style={{
+                                color: primaryColor,
+                                fontFamily: "monospace",
+                                fontWeight: "700",
+                              }}
+                            >
+                              {preview.hours}h {preview.minutes}m {preview.seconds}s
+                            </span>
+                          </div>
+                          <span
+                            style={{
+                              fontSize: "0.6875rem",
+                              fontWeight: "600",
+                              color: primaryColor,
+                              backgroundColor: `${primaryColor}15`,
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {preview.isPastCutoff ? "Tomorrow" : "Today's Dispatch"}
+                          </span>
+                        </div>
+
+                        {/* Progress Bar Track */}
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "4px",
+                            backgroundColor: "rgba(0,0,0,0.06)",
+                            borderRadius: "9999px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${preview.progressPercent}%`,
+                              height: "100%",
+                              backgroundColor: primaryColor,
+                              borderRadius: "9999px",
+                              transition: "width 0.5s ease",
+                            }}
+                          />
+                        </div>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            fontSize: "0.75rem",
+                            opacity: 0.85,
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                            <span style={{ color: primaryColor, display: "inline-flex" }}>
+                              <TruckIcon />
+                            </span>
+                            <span>
+                              Estimated Delivery: <strong style={{ color: textColor }}>{preview.formattedArrival}</strong>
+                            </span>
+                          </div>
+                          <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>
+                            {preview.progressPercent}% window remaining
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {/* Mock Add to Cart Button */}
                 <button
@@ -1065,12 +1583,12 @@ export function DropClockStudio({
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  Add to Cart
+                  {mockStockState === "in_stock" ? "Add to Cart" : "Join Waitlist"}
                 </button>
               </div>
             </div>
 
-            {/* Merchant-Centric Performance Footer */}
+            {/* Merchant-Centric Performance Footer with Lucide SVG Icons */}
             <div
               style={{
                 backgroundColor: "#18181b",
@@ -1085,15 +1603,21 @@ export function DropClockStudio({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ color: "#10b981" }}>⚡</span>
+                <span style={{ color: "#10b981", display: "inline-flex" }}>
+                  <ZapIcon />
+                </span>
                 <span>0ms Storefront Drag</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ color: "#10b981" }}>✓</span>
+                <span style={{ color: "#10b981", display: "inline-flex" }}>
+                  <CheckIcon />
+                </span>
                 <span>Native CDN Delivery</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ color: "#10b981" }}>✓</span>
+                <span style={{ color: "#10b981", display: "inline-flex" }}>
+                  <CheckIcon />
+                </span>
                 <span>Lighthouse Score: 100/100</span>
               </div>
             </div>
