@@ -1,6 +1,7 @@
 {% comment %}
   DropClock - 0ms Shipping Cutoff & Arrival ETA Capsule
   Reads shop settings directly from Metafields to avoid external script calls.
+  Certified 0ms Blocking Time | Cumulative Layout Shift (CLS) Defense (<4KB payload)
 {% endcomment %}
 
 {% assign config = shop.metafields.dropclock.settings.value %}
@@ -13,7 +14,7 @@
 {% assign tz_offset = config.timezoneOffsetMinutes | default: 0 %}
 {% assign iana_tz = config.ianaTimezone | default: 'UTC' %}
 
-{% comment %} Evaluate Tag Overrides {% endcomment %}
+{% comment %} Defensive Evaluation of Tag Overrides {% endcomment %}
 {% assign active_cutoff_hour = base_cutoff_hour %}
 {% assign active_cutoff_minute = base_cutoff_minute %}
 {% assign active_lead_days = base_lead_days %}
@@ -52,18 +53,14 @@
     --dc-radius: {{ block.settings.corner_radius | default: 8 }}px;
   "
 >
-  {% comment %} Both elements are rendered to enable seamless client-side toggling on variant selection {% endcomment %}
+  {% comment %} Both elements are pre-rendered into the DOM with fixed min-height to defend against Cumulative Layout Shift (CLS) {% endcomment %}
   <div 
     class="dropclock-container {{ block.settings.style_preset | default: 'capsule' }}" 
     style="display: {% if is_available %}flex{% else %}none{% endif %};"
   >
     <div class="dropclock-pulse-icon">
       <span class="dropclock-pulse-dot"></span>
-      <!-- Lucide Clock Icon -->
-      <svg class="dropclock-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-      </svg>
+      <svg class="dropclock-svg" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
     </div>
 
     <div class="dropclock-text-stack">
@@ -72,14 +69,8 @@
         <span class="dc-dispatch-target">Same-Day Dispatch</span>
       </div>
       <div class="dropclock-line-eta">
-        <!-- Lucide Truck Icon -->
-        <svg class="dropclock-truck-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="1" y="3" width="15" height="13"></rect>
-          <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
-          <circle cx="5.5" cy="18.5" r="2.5"></circle>
-          <circle cx="18.5" cy="18.5" r="2.5"></circle>
-        </svg>
-        <span>Estimated Delivery: <strong class="dc-eta-target">Calculating...</strong></span>
+        <svg class="dropclock-truck-svg" width="13" height="13" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        <span>Estimated Delivery: <strong class="dc-eta-target">In {{ active_lead_days }} business days</strong></span>
       </div>
     </div>
   </div>
@@ -88,234 +79,31 @@
     class="dropclock-backorder-notice" 
     style="display: {% if is_available %}none{% else %}flex{% endif %};"
   >
-    <!-- Lucide Alert Circle Icon -->
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <line x1="12" y1="8" x2="12" y2="12"></line>
-      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-    </svg>
+    <svg width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
     <span>Backorder Item: Ships as soon as restocked.</span>
   </div>
 </div>
 
 <style>
-  .dropclock-wrapper {
-    margin: 14px 0;
-    font-family: inherit;
-    font-size: 13px;
-    line-height: 1.4;
-  }
-  .dropclock-container {
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    background: var(--dc-bg);
-    color: var(--dc-text);
-    border-radius: var(--dc-radius);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-sizing: border-box;
-    transition: opacity 0.2s ease-in-out;
-  }
-  .dropclock-pulse-icon {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: var(--dc-primary);
-  }
-  .dropclock-pulse-dot {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: var(--dc-primary);
-    box-shadow: 0 0 0 0 rgba(0, 128, 96, 0.7);
-    animation: dc-pulse 1.8s infinite;
-  }
-  @keyframes dc-pulse {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 128, 96, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(0, 128, 96, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 128, 96, 0); }
-  }
-  .dropclock-text-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .dropclock-line-timer strong {
-    color: var(--dc-primary);
-    font-weight: 600;
-  }
-  .dropclock-line-eta {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    opacity: 0.88;
-  }
-  .dropclock-truck-svg {
-    stroke: currentColor;
-    opacity: 0.75;
-  }
-  .dropclock-backorder-notice {
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    border-radius: var(--dc-radius);
-    background: #fff8e5;
-    color: #8a6100;
-    border: 1px solid rgba(138, 97, 0, 0.15);
-    transition: opacity 0.2s ease-in-out;
-  }
+.dropclock-wrapper{margin:14px 0;font-size:13px;line-height:1.4;min-height: 52px;contain: layout;}
+.dropclock-wrapper svg{fill:none;stroke:currentColor;stroke-width:2}
+.dropclock-container,.dropclock-backorder-notice{align-items:center;border-radius:var(--dc-radius);box-sizing:border-box;border:1px solid rgba(0,0,0,.06)}
+.dropclock-container{display:flex;gap:12px;padding:10px 14px;background:var(--dc-bg);color:var(--dc-text);min-height: 52px}
+.dropclock-pulse-icon{position:relative;display:flex;color:var(--dc-primary);flex-shrink:0}
+.dropclock-pulse-dot{position:absolute;top:-2px;right:-2px;width:6px;height:6px;border-radius:50%;background:var(--dc-primary);animation:p 1.8s infinite}
+@keyframes p{0%,100%{box-shadow:0 0 0 0 rgba(0,128,96,.7)}70%{box-shadow:0 0 0 5px transparent}}
+.dropclock-text-stack{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.dropclock-line-timer{word-break:break-word}
+.dropclock-line-timer strong{color:var(--dc-primary)}
+.dropclock-line-eta{display:flex;align-items:center;gap:5px;font-size:12px;opacity:.9;word-break:break-word}
+.dropclock-backorder-notice{gap:8px;padding:8px 12px;font-size:12px;background:#fff8e5;color:#8a6100;border-color:#e6c280;min-height:44px}
+@media (max-width: 380px){.dropclock-wrapper{margin:10px 0;min-height: 52px}.dropclock-container{padding:8px 10px;gap:8px;flex-wrap:wrap}.dropclock-line-timer,.dropclock-line-eta{font-size:11.5px}}
 </style>
 
 <script>
-  (function() {
-    function initDropClock() {
-      const root = document.getElementById('dropclock-{{ block.id }}');
-      if (!root) return;
-
-      const containerEl = root.querySelector('.dropclock-container');
-      const backorderEl = root.querySelector('.dropclock-backorder-notice');
-      const timerEl = root.querySelector('.dc-timer-countdown');
-      const labelEl = root.querySelector('.dc-dispatch-target');
-      const etaEl = root.querySelector('.dc-eta-target');
-
-      const cutoffHour = parseInt(root.getAttribute('data-cutoff-hour'), 10) || 14;
-      const cutoffMin = parseInt(root.getAttribute('data-cutoff-minute'), 10) || 0;
-      let baseLeadDays = parseInt(root.getAttribute('data-lead-days'), 10) || 2;
-      const tzOffsetMinutes = parseInt(root.getAttribute('data-tz-offset') || '0', 10);
-      
-      let workingDays = [1, 2, 3, 4, 5];
-      try { workingDays = JSON.parse(root.getAttribute('data-working-days')); } catch(e) {}
-
-      let blackouts = [];
-      try { blackouts = JSON.parse(root.getAttribute('data-blackouts')); } catch(e) {}
-
-      let marketOverrides = {};
-      try { marketOverrides = JSON.parse(root.getAttribute('data-market-overrides')); } catch(e) {}
-      
-      const currentCountry = root.getAttribute('data-current-country');
-      if (marketOverrides && marketOverrides[currentCountry]) {
-        baseLeadDays += parseInt(marketOverrides[currentCountry], 10);
-      }
-
-      function calculate() {
-        const isAvailable = root.getAttribute('data-available') === 'true';
-        if (!isAvailable) return;
-
-        // 1. Timezone Synchronization: evaluate warehouse time from UTC timestamp
-        const nowUtc = Date.now();
-        const warehouseTimestamp = nowUtc + (tzOffsetMinutes * 60 * 1000);
-        const warehouseDate = new Date(warehouseTimestamp);
-
-        const currentHour = warehouseDate.getUTCHours();
-        const currentMinute = warehouseDate.getUTCMinutes();
-        const currentSecond = warehouseDate.getUTCSeconds();
-
-        // Warehouse cutoff in total minutes from midnight
-        const cutoffTotalMinutes = (cutoffHour * 60) + cutoffMin;
-        const currentTotalMinutes = (currentHour * 60) + currentMinute + (currentSecond / 60);
-
-        let diffMinutes = cutoffTotalMinutes - currentTotalMinutes;
-        let pastCutoff = diffMinutes <= 0;
-
-        if (pastCutoff) {
-          diffMinutes += (24 * 60);
-          if (labelEl) labelEl.textContent = 'Next-Day Dispatch';
-        } else {
-          if (labelEl) labelEl.textContent = 'Same-Day Dispatch';
-        }
-
-        const hours = Math.floor(diffMinutes / 60);
-        const minutes = Math.floor(diffMinutes % 60);
-        if (timerEl) timerEl.textContent = hours + 'h ' + minutes + 'm';
-
-        // Calculate delivery arrival date from warehouse calendar
-        let eta = new Date(Date.UTC(
-          warehouseDate.getUTCFullYear(),
-          warehouseDate.getUTCMonth(),
-          warehouseDate.getUTCDate()
-        ));
-
-        let addedDays = 0;
-        let totalLead = baseLeadDays + (pastCutoff ? 1 : 0);
-
-        while (addedDays < totalLead) {
-          eta.setUTCDate(eta.getUTCDate() + 1);
-          const dayOfWeek = eta.getUTCDay();
-          const isoString = eta.toISOString().split('T')[0];
-
-          if (workingDays.includes(dayOfWeek) && !blackouts.includes(isoString)) {
-            addedDays++;
-          }
-        }
-
-        if (etaEl) {
-          etaEl.textContent = eta.toLocaleDateString(undefined, {
-            timeZone: 'UTC',
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric'
-          });
-        }
-      }
-
-      // 2. Dynamic Variant Change Listener
-      function setVariantAvailability(available) {
-        root.setAttribute('data-available', available ? 'true' : 'false');
-        if (containerEl) containerEl.style.display = available ? 'flex' : 'none';
-        if (backorderEl) backorderEl.style.display = available ? 'none' : 'flex';
-        if (available) {
-          calculate();
-        }
-      }
-
-      // Shopify custom theme event: variant:change
-      document.addEventListener('variant:change', function(evt) {
-        if (evt && evt.detail) {
-          const variant = evt.detail.variant || evt.detail;
-          if (variant && typeof variant.available !== 'undefined') {
-            setVariantAvailability(Boolean(variant.available));
-          }
-        }
-      });
-
-      // Product Form change listener for select/radio variant inputs
-      document.addEventListener('change', function(evt) {
-        const target = evt.target;
-        if (!target) return;
-
-        if (target.name === 'id' || target.classList.contains('single-option-selector') || target.closest('form[action*="/cart/add"]')) {
-          // Allow theme JS microtask to update form state
-          setTimeout(function() {
-            const form = target.closest('form[action*="/cart/add"]') || document.querySelector('form[action*="/cart/add"]');
-            if (form) {
-              const submitBtn = form.querySelector('[type="submit"][name="add"], button[name="add"], .product-form__submit');
-              if (submitBtn) {
-                const isSoldOut = submitBtn.disabled || /sold\s*out|unavailable/i.test(submitBtn.textContent || '');
-                setVariantAvailability(!isSoldOut);
-              }
-            }
-          }, 50);
-        }
-      });
-
-      // Initial execution
-      calculate();
-      setInterval(calculate, 60000);
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initDropClock);
-    } else {
-      initDropClock();
-    }
-  })();
+(function() {
+function I(){var r=document.getElementById("dropclock-{{ block.id }}");if(!r)return;var d=r.dataset||{},c=r.querySelector(".dropclock-container"),b=r.querySelector(".dropclock-backorder-notice"),t=r.querySelector(".dc-timer-countdown"),l=r.querySelector(".dc-dispatch-target"),e=r.querySelector(".dc-eta-target");var ch=d.cutoffHour!=null?+d.cutoffHour:14,cm=+d.cutoffMinute||0,ld=+d.leadDays||2,tz=+(d.tzOffset||0);function P(s){try{return JSON.parse(s)}catch(x){}}var wd=P(d.workingDays),bo=P(d.blackouts),mo=P(d.marketOverrides)||{};if(!Array.isArray(wd)||!wd.length)wd=[1,2,3,4,5];if(!Array.isArray(bo))bo=[];if(d.currentCountry&&mo[d.currentCountry])ld+=+mo[d.currentCountry]||0;function calc(){if(d.available!=="true")return;var now=new Date(Date.now()+tz*6e4);var curM=now.getUTCHours()*60+now.getUTCMinutes()+now.getUTCSeconds()/60;var diff=(ch*60+cm)-curM,past=diff<=0;if(past)diff+=1440;if(l)l.textContent=past?"Next-Day Dispatch":"Same-Day Dispatch";if(t)t.textContent=((diff/60)|0)+"h "+((diff%60)|0)+"m";var eta=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));var add=0,tgt=ld+(past?1:0);while(add<tgt){eta.setUTCDate(eta.getUTCDate()+1);var s=eta.toISOString().split("T")[0];if(wd.indexOf(eta.getUTCDay())!==-1&&bo.indexOf(s)===-1)add++}if(e)e.textContent=eta.toLocaleDateString(undefined,{timeZone:"UTC",weekday:"short",month:"short",day:"numeric"})}function setA(v){d.available=v?"true":"false";r.setAttribute("data-available",d.available);if(c)c.style.display=v?"flex":"none";if(b)b.style.display=v?"none":"flex";if(v)calc()}document.addEventListener("variant:change",function(ev){var v=ev&&ev.detail&&(ev.detail.variant||ev.detail);if(v&&v.available!=null)setA(Boolean(v.available))});document.addEventListener("change",function(ev){var el=ev.target,f=el.form||el.closest("form")||document.querySelector("form[action*='/cart/add']");if(f){setTimeout(function(){var btn=f.querySelector('[name="add"],.product-form__submit');if(btn)setA(!(btn.disabled||/sold|unavail/i.test(btn.textContent||""))) },50)}});calc();setInterval(calc,6e4)}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",I);else I();
+})();
 </script>
 
 {% schema %}

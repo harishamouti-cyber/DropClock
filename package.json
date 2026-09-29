@@ -11,6 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "test:preflight": "tsx scripts/preflight-audit.ts",
+    "test:audit": "node tests/audit-dropclock.js",
     "generate:assets": "tsx scripts/generate-assets.ts"
   },
   "dependencies": {
