@@ -12,6 +12,7 @@ node_modules/
 dist/
 build/
 .cache/
+.vercel/
 
 # Local databases and SQLite
 dev.sqlite
