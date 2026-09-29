@@ -17,13 +17,14 @@
 {% comment %} Defensive Evaluation of Tag Overrides {% endcomment %}
 {% assign active_cutoff_hour = base_cutoff_hour %}
 {% assign active_cutoff_minute = base_cutoff_minute %}
-{% assign active_lead_days = base_lead_days %}
+{% assign effective_lead_days = config.leadDays | default: 2 %}
+{% assign rules = config.tagRules | default: config.tagRulesJson %}
 
-{% if config.tagRulesJson %}
-  {% for rule in config.tagRulesJson %}
+{% if rules %}
+  {% for rule in rules %}
     {% if product.tags contains rule.tag %}
-      {% assign active_cutoff_hour = rule.cutoffHour %}
-      {% assign active_lead_days = rule.leadDays %}
+      {% assign effective_lead_days = rule.leadDays %}
+      {% if rule.cutoffHour %}{% assign active_cutoff_hour = rule.cutoffHour %}{% endif %}
       {% break %}
     {% endif %}
   {% endfor %}
@@ -38,8 +39,9 @@
   id="dropclock-{{ block.id }}"
   data-cutoff-hour="{{ active_cutoff_hour }}"
   data-cutoff-minute="{{ active_cutoff_minute }}"
-  data-lead-days="{{ active_lead_days }}"
+  data-lead-days="{{ effective_lead_days }}"
   data-working-days='{{ working_days }}'
+  data-blackout-dates="{{ config.blackoutDates | json | escape }}"
   data-blackouts='{{ blackout_dates }}'
   data-market-overrides='{{ market_overrides }}'
   data-tz-offset="{{ tz_offset }}"
@@ -102,7 +104,7 @@
 
 <script>
 (function() {
-function I(){var r=document.getElementById("dropclock-{{ block.id }}");if(!r)return;var d=r.dataset||{},c=r.querySelector(".dropclock-container"),b=r.querySelector(".dropclock-backorder-notice"),t=r.querySelector(".dc-timer-countdown"),l=r.querySelector(".dc-dispatch-target"),e=r.querySelector(".dc-eta-target");var ch=d.cutoffHour!=null?+d.cutoffHour:14,cm=+d.cutoffMinute||0,ld=+d.leadDays||2,tz=+(d.tzOffset||0);function P(s){try{return JSON.parse(s)}catch(x){}}var wd=P(d.workingDays),bo=P(d.blackouts),mo=P(d.marketOverrides)||{};if(!Array.isArray(wd)||!wd.length)wd=[1,2,3,4,5];if(!Array.isArray(bo))bo=[];if(d.currentCountry&&mo[d.currentCountry])ld+=+mo[d.currentCountry]||0;function calc(){if(d.available!=="true")return;var now=new Date(Date.now()+tz*6e4);var curM=now.getUTCHours()*60+now.getUTCMinutes()+now.getUTCSeconds()/60;var diff=(ch*60+cm)-curM,past=diff<=0;if(past)diff+=1440;if(l)l.textContent=past?"Next-Day Dispatch":"Same-Day Dispatch";if(t)t.textContent=((diff/60)|0)+"h "+((diff%60)|0)+"m";var eta=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));var add=0,tgt=ld+(past?1:0);while(add<tgt){eta.setUTCDate(eta.getUTCDate()+1);var s=eta.toISOString().split("T")[0];if(wd.indexOf(eta.getUTCDay())!==-1&&bo.indexOf(s)===-1)add++}if(e)e.textContent=eta.toLocaleDateString(undefined,{timeZone:"UTC",weekday:"short",month:"short",day:"numeric"})}function setA(v){d.available=v?"true":"false";r.setAttribute("data-available",d.available);if(c)c.style.display=v?"flex":"none";if(b)b.style.display=v?"none":"flex";if(v)calc()}document.addEventListener("variant:change",function(ev){var v=ev&&ev.detail&&(ev.detail.variant||ev.detail);if(v&&v.available!=null)setA(Boolean(v.available))});document.addEventListener("change",function(ev){var el=ev.target,f=el.form||el.closest("form")||document.querySelector("form[action*='/cart/add']");if(f){setTimeout(function(){var btn=f.querySelector('[name="add"],.product-form__submit');if(btn)setA(!(btn.disabled||/sold|unavail/i.test(btn.textContent||""))) },50)}});calc();setInterval(calc,6e4)}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",I);else I();
+function I(){var r=document.getElementById("dropclock-{{ block.id }}");if(!r)return;var d=r.dataset||{},c=r.querySelector(".dropclock-container"),b=r.querySelector(".dropclock-backorder-notice"),t=r.querySelector(".dc-timer-countdown"),l=r.querySelector(".dc-dispatch-target"),e=r.querySelector(".dc-eta-target");var ch=d.cutoffHour!=null?+d.cutoffHour:14,cm=+d.cutoffMinute||0,ld=+d.leadDays||2,tz=+(d.tzOffset||0);function P(s){try{return JSON.parse(s)}catch(x){}}var wd=P(d.workingDays),bo=P(d.blackoutDates||d.blackouts),mo=P(d.marketOverrides)||{};if(!Array.isArray(wd)||!wd.length)wd=[1,2,3,4,5];if(!Array.isArray(bo))bo=[];if(d.currentCountry&&mo[d.currentCountry])ld+=+mo[d.currentCountry]||0;function calc(){if(d.available!=="true")return;var now=new Date(Date.now()+tz*6e4);var curM=now.getUTCHours()*60+now.getUTCMinutes()+now.getUTCSeconds()/60;var diff=(ch*60+cm)-curM,past=diff<=0;if(past)diff+=1440;if(l)l.textContent=past?"Next-Day Dispatch":"Same-Day Dispatch";if(t)t.textContent=((diff/60)|0)+"h "+((diff%60)|0)+"m";var eta=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));var add=0,tgt=ld+(past?1:0);while(add<tgt){eta.setUTCDate(eta.getUTCDate()+1);var s=eta.toISOString().split("T")[0];if(wd.indexOf(eta.getUTCDay())!==-1&&bo.indexOf(s)===-1)add++}if(e)e.textContent=eta.toLocaleDateString(undefined,{timeZone:"UTC",weekday:"short",month:"short",day:"numeric"})}function setA(v){d.available=v?"true":"false";r.setAttribute("data-available",d.available);if(c)c.style.display=v?"flex":"none";if(b)b.style.display=v?"none":"flex";if(v)calc()}document.addEventListener("variant:change",function(ev){var v=ev&&ev.detail&&(ev.detail.variant||ev.detail);if(v&&v.available!=null)setA(Boolean(v.available))});document.addEventListener("change",function(ev){var el=ev.target,f=el.form||el.closest("form")||document.querySelector("form[action*='/cart/add']");if(f){setTimeout(function(){var btn=f.querySelector('[name="add"],.product-form__submit');if(btn)setA(!(btn.disabled||/sold|unavail/i.test(btn.textContent||""))) },50)}});calc();setInterval(calc,6e4)}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",I);else I();
 })();
 </script>
 

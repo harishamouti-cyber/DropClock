@@ -10,6 +10,9 @@ export interface StudioSettings {
   cutoffMinute: number;
   leadDays: number;
   workingDays: string;
+  blackoutDates?: string;
+  tagRulesJson?: string;
+  marketOverrides?: string;
   presetStyle: string;
   primaryColor: string;
   bgColor: string;
@@ -119,6 +122,64 @@ const AlertTriangleIcon = () => (
     <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
     <line x1="12" y1="9" x2="12" y2="13" />
     <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+const TagIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
+    <path d="M7 7h.01" />
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <line x1="10" y1="11" x2="10" y2="17" />
+    <line x1="14" y1="11" x2="14" y2="17" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+const ChevronDownIcon = ({ open }: { open: boolean }) => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{
+      transform: open ? "rotate(180deg)" : "rotate(0deg)",
+      transition: "transform 0.2s ease",
+    }}
+  >
+    <polyline points="6 9 12 15 18 9" />
   </svg>
 );
 
@@ -247,9 +308,35 @@ export function DropClockStudio({
     }
   });
 
+  // Warehouse Holiday & Blackout Dates State
+  const [blackoutDates, setBlackoutDates] = useState<string[]>(() => {
+    try {
+      const parsed = JSON.parse(settings.blackoutDates || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+  const [newBlackoutDate, setNewBlackoutDate] = useState<string>("");
+  const [isBlackoutOpen, setIsBlackoutOpen] = useState(true);
+
+  // Product Tag Overrides State
+  const [tagRules, setTagRules] = useState<Array<{ tag: string; leadDays: number }>>(() => {
+    try {
+      const parsed = JSON.parse(settings.tagRulesJson || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isTagRulesOpen, setIsTagRulesOpen] = useState(true);
+
   // Mock Storefront Stock State & Dawn Variant Selector
   const [mockStockState, setMockStockState] = useState<"in_stock" | "backorder">("in_stock");
   const [selectedSize, setSelectedSize] = useState<"S" | "M" | "L" | "XL">("M");
+
+  // Simulated Tag in Preview Canvas
+  const [activeSimulatedTag, setActiveSimulatedTag] = useState<string>("none");
 
   // Device Viewport Toggle (Desktop Full vs Mobile 375px)
   const [viewportMode, setViewportMode] = useState<"desktop" | "mobile">("desktop");
@@ -273,9 +360,23 @@ export function DropClockStudio({
       primaryColor.toLowerCase() !== (baselineSettings.primaryColor || "").toLowerCase() ||
       bgColor.toLowerCase() !== (baselineSettings.bgColor || "").toLowerCase() ||
       textColor.toLowerCase() !== (baselineSettings.textColor || "").toLowerCase() ||
-      JSON.stringify(workingDays) !== baselineSettings.workingDays
+      JSON.stringify(workingDays) !== (baselineSettings.workingDays || "[1,2,3,4,5]") ||
+      JSON.stringify(blackoutDates) !== (baselineSettings.blackoutDates || "[]") ||
+      JSON.stringify(tagRules) !== (baselineSettings.tagRulesJson || "[]")
     );
-  }, [cutoffHour, cutoffMinute, leadDays, presetStyle, primaryColor, bgColor, textColor, workingDays, baselineSettings]);
+  }, [
+    cutoffHour,
+    cutoffMinute,
+    leadDays,
+    presetStyle,
+    primaryColor,
+    bgColor,
+    textColor,
+    workingDays,
+    blackoutDates,
+    tagRules,
+    baselineSettings,
+  ]);
 
   const handleDiscard = () => {
     setCutoffHour(baselineSettings.cutoffHour);
@@ -290,6 +391,16 @@ export function DropClockStudio({
       setWorkingDays(JSON.parse(baselineSettings.workingDays || "[1,2,3,4,5]"));
     } catch {
       setWorkingDays([1, 2, 3, 4, 5]);
+    }
+    try {
+      setBlackoutDates(JSON.parse(baselineSettings.blackoutDates || "[]"));
+    } catch {
+      setBlackoutDates([]);
+    }
+    try {
+      setTagRules(JSON.parse(baselineSettings.tagRulesJson || "[]"));
+    } catch {
+      setTagRules([]);
     }
     safeHideSaveBar();
   };
@@ -317,6 +428,8 @@ export function DropClockStudio({
           bgColor,
           textColor,
           workingDays: JSON.stringify(workingDays),
+          blackoutDates: JSON.stringify(blackoutDates),
+          tagRulesJson: JSON.stringify(tagRules),
         });
         setTimeout(() => setHasSaved(false), 2500);
       }, 600);
@@ -334,6 +447,9 @@ export function DropClockStudio({
     formData.append("bgColor", bgColor);
     formData.append("textColor", textColor);
     formData.append("workingDays", JSON.stringify(workingDays));
+    formData.append("blackoutDates", JSON.stringify(blackoutDates));
+    formData.append("tagRules", JSON.stringify(tagRules));
+    formData.append("tagRulesJson", JSON.stringify(tagRules));
     submit(formData, { method: "post" });
     safeHideSaveBar();
   };
@@ -342,6 +458,49 @@ export function DropClockStudio({
     setWorkingDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day).sort() : [...prev, day].sort()
     );
+  };
+
+  const addBlackoutDate = (dateStr: string) => {
+    if (!dateStr) return;
+    if (!blackoutDates.includes(dateStr)) {
+      setBlackoutDates((prev) => [...prev, dateStr].sort());
+    }
+    setNewBlackoutDate("");
+  };
+
+  const removeBlackoutDate = (dateStr: string) => {
+    setBlackoutDates((prev) => prev.filter((d) => d !== dateStr));
+  };
+
+  const formatBadgeDate = (isoStr: string) => {
+    try {
+      const [y, m, d] = isoStr.split("-").map(Number);
+      const date = new Date(Date.UTC(y, m - 1, d));
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
+      });
+    } catch {
+      return isoStr;
+    }
+  };
+
+  const addTagRule = () => {
+    setTagRules((prev) => [...prev, { tag: "", leadDays: 14 }]);
+  };
+
+  const updateTagRule = (index: number, updated: { tag: string; leadDays: number }) => {
+    setTagRules((prev) => {
+      const next = [...prev];
+      next[index] = updated;
+      return next;
+    });
+  };
+
+  const removeTagRule = (index: number) => {
+    setTagRules((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Real-Time Countdown Calculations with Warehouse Timezone
@@ -375,16 +534,38 @@ export function DropClockStudio({
     const totalDayMs = 24 * 60 * 60 * 1000;
     const progressPercent = Math.max(5, Math.min(100, Math.round((diffMs / totalDayMs) * 100)));
 
+    // Tag Rule Resolution for Simulation
+    let effectiveLeadDays = leadDays;
+    if (activeSimulatedTag !== "none") {
+      const matched = tagRules.find(
+        (r) => r.tag.trim().toLowerCase() === activeSimulatedTag.trim().toLowerCase()
+      );
+      if (matched) {
+        effectiveLeadDays = matched.leadDays;
+      }
+    }
+
+    // Helper to test if a candidate date is a blackout date (YYYY-MM-DD in warehouse time)
+    const isBlackout = (d: Date) => {
+      const y = d.getFullYear();
+      const m = (d.getMonth() + 1).toString().padStart(2, "0");
+      const day = d.getDate().toString().padStart(2, "0");
+      const isoStr = `${y}-${m}-${day}`;
+      return blackoutDates.includes(isoStr);
+    };
+
     // Calculate Delivery Arrival Date
     let delivery = new Date(warehouseNow);
     if (isPastCutoff) {
       delivery.setDate(delivery.getDate() + 1);
     }
-    let transitLeft = leadDays;
-    while (transitLeft > 0 || !workingDays.includes(delivery.getDay())) {
+    let transitLeft = effectiveLeadDays;
+    while (transitLeft > 0 || !workingDays.includes(delivery.getDay()) || isBlackout(delivery)) {
       delivery.setDate(delivery.getDate() + 1);
-      if (workingDays.includes(delivery.getDay())) {
-        transitLeft--;
+      if (workingDays.includes(delivery.getDay()) && !isBlackout(delivery)) {
+        if (transitLeft > 0) {
+          transitLeft--;
+        }
       }
     }
 
@@ -398,8 +579,19 @@ export function DropClockStudio({
       isPastCutoff,
       formattedArrival,
       progressPercent,
+      effectiveLeadDays,
     };
-  }, [now, cutoffHour, cutoffMinute, leadDays, workingDays, resolvedOffsetMinutes]);
+  }, [
+    now,
+    cutoffHour,
+    cutoffMinute,
+    leadDays,
+    workingDays,
+    blackoutDates,
+    tagRules,
+    activeSimulatedTag,
+    resolvedOffsetMinutes,
+  ]);
 
   return (
     <Page fullWidth>
@@ -986,7 +1178,347 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 5. Brand Alignment & Functional Color Swatches */}
+            {/* 5. Warehouse Holiday & Blackout Dates */}
+            <div
+              style={{
+                backgroundColor: "#121215",
+                border: "1px solid #1f1f23",
+                borderRadius: "12px",
+                padding: "18px",
+                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+              }}
+            >
+              <div
+                onClick={() => setIsBlackoutOpen((v) => !v)}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <CalendarIcon />
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                    Warehouse Holiday &amp; Blackout Dates
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span
+                    style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: "500",
+                      color: blackoutDates.length > 0 ? "#10b981" : "#71717a",
+                      backgroundColor: blackoutDates.length > 0 ? "rgba(16, 185, 129, 0.1)" : "#18181b",
+                      border: "1px solid",
+                      borderColor: blackoutDates.length > 0 ? "rgba(16, 185, 129, 0.25)" : "#27272a",
+                      padding: "2px 8px",
+                      borderRadius: "9999px",
+                    }}
+                  >
+                    {blackoutDates.length} {blackoutDates.length === 1 ? "Date" : "Dates"}
+                  </span>
+                  <span style={{ color: "#71717a" }}>
+                    <ChevronDownIcon open={isBlackoutOpen} />
+                  </span>
+                </div>
+              </div>
+
+              {isBlackoutOpen && (
+                <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#a1a1aa", lineHeight: "1.4" }}>
+                    Select dates when fulfillment is paused (e.g. Thanksgiving, Christmas, inventory audit days). Orders during blackout dates roll dispatch and arrival ETA to the next operational business day.
+                  </p>
+
+                  {/* Inline Date Picker & Add Button */}
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <input
+                      type="date"
+                      value={newBlackoutDate}
+                      onChange={(e) => setNewBlackoutDate(e.target.value)}
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#18181b",
+                        border: "1px solid #27272a",
+                        borderRadius: "8px",
+                        padding: "8px 10px",
+                        fontSize: "0.75rem",
+                        color: "#fafafa",
+                        outline: "none",
+                        colorScheme: "dark",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addBlackoutDate(newBlackoutDate)}
+                      disabled={!newBlackoutDate}
+                      style={{
+                        padding: "8px 12px",
+                        backgroundColor: newBlackoutDate ? "#27272a" : "#1c1c1f",
+                        color: newBlackoutDate ? "#fafafa" : "#52525b",
+                        border: "1px solid #27272a",
+                        borderRadius: "8px",
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        cursor: newBlackoutDate ? "pointer" : "not-allowed",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        transition: "all 0.15s ease",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <PlusIcon />
+                      <span>Add Blackout Date</span>
+                    </button>
+                  </div>
+
+                  {/* Selected Blackout Badges List */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", minHeight: "28px" }}>
+                    {blackoutDates.length === 0 ? (
+                      <span style={{ fontSize: "0.6875rem", color: "#52525b", fontStyle: "italic" }}>
+                        No blackout dates scheduled. Warehouse operates on all designated operating days.
+                      </span>
+                    ) : (
+                      blackoutDates.map((dateStr) => (
+                        <span
+                          key={dateStr}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            backgroundColor: "#18181b",
+                            border: "1px solid #27272a",
+                            padding: "4px 8px 4px 10px",
+                            borderRadius: "6px",
+                            fontSize: "0.75rem",
+                            fontWeight: "500",
+                            color: "#e4e4e7",
+                          }}
+                        >
+                          <span>{formatBadgeDate(dateStr)}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeBlackoutDate(dateStr)}
+                            title="Remove blackout date"
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "#71717a",
+                              cursor: "pointer",
+                              padding: "2px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "4px",
+                              transition: "color 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = "#71717a")}
+                          >
+                            <XIcon />
+                          </button>
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 6. Product Tag Overrides */}
+            <div
+              style={{
+                backgroundColor: "#121215",
+                border: "1px solid #1f1f23",
+                borderRadius: "12px",
+                padding: "18px",
+                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+              }}
+            >
+              <div
+                onClick={() => setIsTagRulesOpen((v) => !v)}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <TagIcon />
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                    Product Tag Overrides
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span
+                    style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: "500",
+                      color: tagRules.length > 0 ? "#10b981" : "#71717a",
+                      backgroundColor: tagRules.length > 0 ? "rgba(16, 185, 129, 0.1)" : "#18181b",
+                      border: "1px solid",
+                      borderColor: tagRules.length > 0 ? "rgba(16, 185, 129, 0.25)" : "#27272a",
+                      padding: "2px 8px",
+                      borderRadius: "9999px",
+                    }}
+                  >
+                    {tagRules.length} {tagRules.length === 1 ? "Rule" : "Rules"}
+                  </span>
+                  <span style={{ color: "#71717a" }}>
+                    <ChevronDownIcon open={isTagRulesOpen} />
+                  </span>
+                </div>
+              </div>
+
+              {isTagRulesOpen && (
+                <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#a1a1aa", lineHeight: "1.4" }}>
+                    Map Shopify product tags (e.g. <code>pre-order</code>, <code>custom-engraved</code>, <code>freight</code>) to custom transit lead times.
+                  </p>
+
+                  {/* Rules List Table */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {tagRules.length === 0 ? (
+                      <span style={{ fontSize: "0.6875rem", color: "#52525b", fontStyle: "italic" }}>
+                        No tag rules configured. Standard transit lead time applies to all products.
+                      </span>
+                    ) : (
+                      tagRules.map((rule, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            backgroundColor: "#18181b",
+                            border: "1px solid #27272a",
+                            borderRadius: "8px",
+                            padding: "6px 8px",
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <input
+                              type="text"
+                              placeholder="e.g. pre-order"
+                              value={rule.tag}
+                              onChange={(e) => updateTagRule(idx, { ...rule, tag: e.target.value })}
+                              style={{
+                                width: "100%",
+                                backgroundColor: "#27272a",
+                                border: "1px solid #3f3f46",
+                                borderRadius: "6px",
+                                padding: "6px 8px",
+                                fontSize: "0.75rem",
+                                color: "#fafafa",
+                                outline: "none",
+                                boxSizing: "border-box",
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ width: "115px", flexShrink: 0 }}>
+                            <select
+                              value={rule.leadDays}
+                              onChange={(e) => updateTagRule(idx, { ...rule, leadDays: parseInt(e.target.value, 10) || 1 })}
+                              style={{
+                                width: "100%",
+                                backgroundColor: "#27272a",
+                                border: "1px solid #3f3f46",
+                                borderRadius: "6px",
+                                padding: "6px 8px",
+                                fontSize: "0.75rem",
+                                color: "#fafafa",
+                                outline: "none",
+                                cursor: "pointer",
+                                boxSizing: "border-box",
+                              }}
+                            >
+                              <option value={1}>1 Day</option>
+                              <option value={2}>2 Days</option>
+                              <option value={3}>3 Days</option>
+                              <option value={5}>5 Days</option>
+                              <option value={7}>7 Days</option>
+                              <option value={10}>10 Days</option>
+                              <option value={14}>14 Days</option>
+                              <option value={21}>21 Days</option>
+                              <option value={30}>30 Days</option>
+                            </select>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => removeTagRule(idx)}
+                            title="Delete Rule"
+                            style={{
+                              width: "28px",
+                              height: "28px",
+                              borderRadius: "6px",
+                              border: "1px solid #27272a",
+                              backgroundColor: "transparent",
+                              color: "#71717a",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                              transition: "all 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = "#ef4444";
+                              e.currentTarget.style.borderColor = "#7f1d1d";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "#71717a";
+                              e.currentTarget.style.borderColor = "#27272a";
+                            }}
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Add Tag Rule Button */}
+                  <button
+                    type="button"
+                    onClick={addTagRule}
+                    style={{
+                      padding: "8px 12px",
+                      backgroundColor: "#18181b",
+                      border: "1px dashed #27272a",
+                      borderRadius: "8px",
+                      color: "#a1a1aa",
+                      fontSize: "0.75rem",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      transition: "all 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "#3f3f46";
+                      e.currentTarget.style.color = "#fafafa";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "#27272a";
+                      e.currentTarget.style.color = "#a1a1aa";
+                    }}
+                  >
+                    <PlusIcon />
+                    <span>+ Add Tag Rule</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 7. Brand Alignment & Functional Color Swatches */}
             <div
               style={{
                 backgroundColor: "#121215",
@@ -1548,6 +2080,110 @@ export function DropClockStudio({
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* Enterprise Tag Rule Simulator Chips */}
+                <div
+                  style={{
+                    backgroundColor: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "8px",
+                    padding: "8px 10px",
+                    marginBottom: "14px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "0.6875rem",
+                        fontWeight: "600",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
+                        color: "#64748b",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <TagIcon />
+                      <span>Tag Simulator:</span>
+                    </span>
+                    {activeSimulatedTag !== "none" && (
+                      <span
+                        style={{
+                          fontSize: "0.625rem",
+                          fontWeight: "600",
+                          color: "#059669",
+                          backgroundColor: "#ecfdf5",
+                          padding: "1px 6px",
+                          borderRadius: "4px",
+                          border: "1px solid #a7f3d0",
+                        }}
+                      >
+                        +{preview.effectiveLeadDays}d Lead Time
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSimulatedTag("none")}
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: "6px",
+                        border: activeSimulatedTag === "none" ? "1.5px solid #0f172a" : "1px solid #cbd5e1",
+                        backgroundColor: activeSimulatedTag === "none" ? "#0f172a" : "#ffffff",
+                        color: activeSimulatedTag === "none" ? "#ffffff" : "#475569",
+                        fontSize: "0.6875rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      Tag: none
+                    </button>
+
+                    {tagRules
+                      .filter((r) => r.tag && r.tag.trim().length > 0)
+                      .map((rule) => {
+                        const isSelected = activeSimulatedTag.toLowerCase() === rule.tag.trim().toLowerCase();
+                        return (
+                          <button
+                            key={rule.tag}
+                            type="button"
+                            onClick={() => setActiveSimulatedTag(rule.tag.trim())}
+                            style={{
+                              padding: "3px 8px",
+                              borderRadius: "6px",
+                              border: isSelected ? "1.5px solid #008060" : "1px solid #cbd5e1",
+                              backgroundColor: isSelected ? "#008060" : "#ffffff",
+                              color: isSelected ? "#ffffff" : "#334155",
+                              fontSize: "0.6875rem",
+                              fontWeight: "600",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "3px",
+                              transition: "all 0.15s ease",
+                              boxShadow: isSelected ? "0 1px 2px rgba(0,128,96,0.2)" : "none",
+                            }}
+                          >
+                            <span>Tag: {rule.tag.trim()}</span>
+                            <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
+                              (+{rule.leadDays}d)
+                            </span>
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
 

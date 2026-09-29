@@ -46,6 +46,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Automated Shopify Metastore Sync on Install
   if (isNewInstall && shopGid) {
+    const parsedBlackouts = (() => {
+      try {
+        const p = JSON.parse(settings.blackoutDates || "[]");
+        return Array.isArray(p) ? p : [];
+      } catch {
+        return [];
+      }
+    })();
+    const parsedTagRules = (() => {
+      try {
+        const p = JSON.parse(settings.tagRulesJson || "[]");
+        return Array.isArray(p) ? p : [];
+      } catch {
+        return [];
+      }
+    })();
+
     const metafieldPayload = {
       cutoffHour: settings.cutoffHour,
       cutoffMinute: settings.cutoffMinute,
@@ -53,8 +70,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       timezoneOffsetMinutes,
       ianaTimezone,
       workingDays: JSON.parse(settings.workingDays || "[1,2,3,4,5]"),
-      blackoutDates: JSON.parse(settings.blackoutDates || "[]"),
-      tagRulesJson: JSON.parse(settings.tagRulesJson || "[]"),
+      blackoutDates: parsedBlackouts,
+      tagRules: parsedTagRules,
+      tagRulesJson: parsedTagRules,
       marketOverrides: JSON.parse(settings.marketOverrides || "{}"),
       presetStyle: settings.presetStyle,
       primaryColor: settings.primaryColor,
@@ -120,6 +138,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const textColor = (formData.get("textColor") as string) || "#202223";
   const presetStyle = (formData.get("presetStyle") as string) || "capsule";
   const workingDaysRaw = (formData.get("workingDays") as string) || "[1,2,3,4,5]";
+  const blackoutDatesRaw = (formData.get("blackoutDates") as string) || "[]";
+  const tagRulesRaw = (formData.get("tagRules") as string) || (formData.get("tagRulesJson") as string) || "[]";
 
   const updated = await prisma.dropClockSettings.upsert({
     where: { shop: session.shop },
@@ -132,6 +152,8 @@ export async function action({ request }: ActionFunctionArgs) {
       textColor,
       presetStyle,
       workingDays: workingDaysRaw,
+      blackoutDates: blackoutDatesRaw,
+      tagRulesJson: tagRulesRaw,
     },
     create: {
       shop: session.shop,
@@ -143,6 +165,8 @@ export async function action({ request }: ActionFunctionArgs) {
       textColor,
       presetStyle,
       workingDays: workingDaysRaw,
+      blackoutDates: blackoutDatesRaw,
+      tagRulesJson: tagRulesRaw,
     },
   });
 
@@ -160,6 +184,23 @@ export async function action({ request }: ActionFunctionArgs) {
   const ianaTimezone = shopResult?.data?.shop?.ianaTimezone || "UTC";
   const timezoneOffsetMinutes = shopResult?.data?.shop?.timezoneOffsetMinutes ?? 0;
 
+  const parsedBlackouts = (() => {
+    try {
+      const p = JSON.parse(updated.blackoutDates || "[]");
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  })();
+  const parsedTagRules = (() => {
+    try {
+      const p = JSON.parse(updated.tagRulesJson || "[]");
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  })();
+
   const metafieldPayload = {
     cutoffHour: updated.cutoffHour,
     cutoffMinute: updated.cutoffMinute,
@@ -167,8 +208,9 @@ export async function action({ request }: ActionFunctionArgs) {
     timezoneOffsetMinutes,
     ianaTimezone,
     workingDays: JSON.parse(updated.workingDays || "[1,2,3,4,5]"),
-    blackoutDates: JSON.parse(updated.blackoutDates || "[]"),
-    tagRulesJson: JSON.parse(updated.tagRulesJson || "[]"),
+    blackoutDates: parsedBlackouts,
+    tagRules: parsedTagRules,
+    tagRulesJson: parsedTagRules,
     marketOverrides: JSON.parse(updated.marketOverrides || "{}"),
     presetStyle: updated.presetStyle,
     primaryColor: updated.primaryColor,
