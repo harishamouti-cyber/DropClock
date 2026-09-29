@@ -16,11 +16,23 @@ export interface StudioSettings {
   textColor: string;
 }
 
+declare global {
+  interface Window {
+    shopify?: {
+      saveBar?: {
+        show: (id: string) => void;
+        hide: (id: string) => void;
+      };
+    };
+  }
+}
+
 interface DropClockStudioProps {
   settings: StudioSettings;
   shop: string;
   ianaTimezone: string;
   timezoneOffsetMinutes: number;
+  isStandalone?: boolean;
 }
 
 // Crisp 15px Monochrome Lucide Icons with 1.75 stroke-width
@@ -90,9 +102,44 @@ const BRAND_PRESETS = [
   },
 ];
 
-export function DropClockStudio({ settings, shop, ianaTimezone, timezoneOffsetMinutes }: DropClockStudioProps) {
+export function DropClockStudio({
+  settings,
+  shop,
+  ianaTimezone,
+  timezoneOffsetMinutes,
+  isStandalone = false,
+}: DropClockStudioProps) {
   const submit = useSubmit();
   const navigation = useNavigation();
+
+  // Defensive App Bridge Environment Detection
+  const [isEmbedded, setIsEmbedded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && Boolean(window.shopify?.saveBar)) {
+      setIsEmbedded(true);
+    }
+  }, []);
+
+  const safeHideSaveBar = () => {
+    try {
+      if (typeof window !== "undefined" && window.shopify?.saveBar?.hide) {
+        window.shopify.saveBar.hide("dropclock-save-bar");
+      }
+    } catch (e) {
+      console.warn("App Bridge saveBar.hide caught:", e);
+    }
+  };
+
+  const safeShowSaveBar = () => {
+    try {
+      if (typeof window !== "undefined" && window.shopify?.saveBar?.show) {
+        window.shopify.saveBar.show("dropclock-save-bar");
+      }
+    } catch (e) {
+      console.warn("App Bridge saveBar.show caught:", e);
+    }
+  };
 
   // Form State
   const [cutoffHour, setCutoffHour] = useState(settings.cutoffHour);
@@ -137,6 +184,7 @@ export function DropClockStudio({ settings, shop, ianaTimezone, timezoneOffsetMi
     } catch {
       setWorkingDays([1, 2, 3, 4, 5]);
     }
+    safeHideSaveBar();
   };
 
   const handleSave = () => {
@@ -150,6 +198,7 @@ export function DropClockStudio({ settings, shop, ianaTimezone, timezoneOffsetMi
     formData.append("textColor", textColor);
     formData.append("workingDays", JSON.stringify(workingDays));
     submit(formData, { method: "post" });
+    safeHideSaveBar();
   };
 
   const toggleDay = (day: number) => {
@@ -218,19 +267,21 @@ export function DropClockStudio({ settings, shop, ianaTimezone, timezoneOffsetMi
 
   return (
     <Page fullWidth>
-      {/* App Bridge Native SaveBar */}
-      <SaveBar id="dropclock-save-bar" open={isDirty}>
-        <button
-          variant="primary"
-          onClick={handleSave}
-          disabled={navigation.state === "submitting"}
-        >
-          {navigation.state === "submitting" ? "Saving..." : "Save"}
-        </button>
-        <button onClick={handleDiscard} disabled={navigation.state === "submitting"}>
-          Discard
-        </button>
-      </SaveBar>
+      {/* App Bridge Native SaveBar (strictly guarded for embedded Shopify Admin iframe) */}
+      {!isStandalone && isEmbedded && (
+        <SaveBar id="dropclock-save-bar" open={isDirty}>
+          <button
+            variant="primary"
+            onClick={handleSave}
+            disabled={navigation.state === "submitting"}
+          >
+            {navigation.state === "submitting" ? "Saving..." : "Save"}
+          </button>
+          <button onClick={handleDiscard} disabled={navigation.state === "submitting"}>
+            Discard
+          </button>
+        </SaveBar>
+      )}
 
       <div
         style={{
@@ -272,9 +323,9 @@ export function DropClockStudio({ settings, shop, ianaTimezone, timezoneOffsetMi
                 style={{
                   fontSize: "0.6875rem",
                   fontWeight: "500",
-                  color: "#10b981",
-                  backgroundColor: "rgba(16, 185, 129, 0.1)",
-                  border: "1px solid rgba(16, 185, 129, 0.2)",
+                  color: isStandalone ? "#a1a1aa" : "#10b981",
+                  backgroundColor: isStandalone ? "rgba(161, 161, 170, 0.1)" : "rgba(16, 185, 129, 0.1)",
+                  border: isStandalone ? "1px solid rgba(161, 161, 170, 0.2)" : "1px solid rgba(16, 185, 129, 0.2)",
                   padding: "2px 8px",
                   borderRadius: "9999px",
                   display: "inline-flex",
@@ -287,39 +338,65 @@ export function DropClockStudio({ settings, shop, ianaTimezone, timezoneOffsetMi
                     width: "5px",
                     height: "5px",
                     borderRadius: "50%",
-                    backgroundColor: "#10b981",
+                    backgroundColor: isStandalone ? "#a1a1aa" : "#10b981",
                   }}
                 />
-                Shopify Edge CDN Active
+                {isStandalone ? "Sandbox Preview Mode" : "Shopify Edge CDN Active"}
               </span>
             </div>
             <p style={{ fontSize: "0.8125rem", color: "#71717a", margin: "4px 0 0 0" }}>
-              Live shipping cutoff arithmetic and real-time storefront capsule preview.
+              {isStandalone
+                ? "Interactive sandbox environment. Changes simulate live storefront countdown arithmetic."
+                : "Live shipping cutoff arithmetic and real-time storefront capsule preview."}
             </p>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <a
-              href={`https://${shop}/admin/themes/current/editor?context=apps&template=product&addAppBlockId=dropclock-extension/dropclock_pill`}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                backgroundColor: "#18181b",
-                color: "#fafafa",
-                border: "1px solid #27272a",
-                borderRadius: "8px",
-                padding: "8px 14px",
-                fontSize: "0.8125rem",
-                fontWeight: "500",
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05)",
-              }}
-            >
-              Theme Customizer ↗
-            </a>
+            {isStandalone && isDirty && (
+              <button
+                type="button"
+                onClick={handleDiscard}
+                style={{
+                  backgroundColor: "#27272a",
+                  color: "#fafafa",
+                  border: "1px solid #3f3f46",
+                  borderRadius: "8px",
+                  padding: "8px 14px",
+                  fontSize: "0.8125rem",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Reset Changes
+              </button>
+            )}
+            {!isStandalone && (
+              <a
+                href={`https://${shop}/admin/themes/current/editor?context=apps&template=product&addAppBlockId=dropclock-extension/dropclock_pill`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  backgroundColor: "#18181b",
+                  color: "#fafafa",
+                  border: "1px solid #27272a",
+                  borderRadius: "8px",
+                  padding: "8px 14px",
+                  fontSize: "0.8125rem",
+                  fontWeight: "500",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05)",
+                }}
+              >
+                Theme Customizer ↗
+              </a>
+            )}
           </div>
         </div>
 

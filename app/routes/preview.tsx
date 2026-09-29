@@ -41,6 +41,7 @@ export default function StandalonePreviewRoute() {
         shop="demo-store.myshopify.com"
         ianaTimezone="America/New_York"
         timezoneOffsetMinutes={-300}
+        isStandalone={true}
       />
     </AppProvider>
   );
