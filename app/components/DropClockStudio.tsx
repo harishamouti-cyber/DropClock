@@ -1193,7 +1193,7 @@ export function DropClockStudio({
                     fontFamily: "monospace",
                   }}
                 >
-                  yourstore.com/products/minimalist-heavyweight-tee
+                  yourstore.com/products/classic-boxy-crewneck
                 </span>
               </div>
 
@@ -1417,17 +1417,18 @@ export function DropClockStudio({
                   <span style={{ fontSize: "0.75rem", color: "#71717a" }}>SKU: DC-101</span>
                 </div>
 
-                <h3
+                <h2
+                  className="text-base font-semibold tracking-tight text-zinc-900"
                   style={{
-                    fontSize: "1.125rem",
-                    fontWeight: "700",
+                    fontSize: "1rem",
+                    fontWeight: "600",
                     margin: "0 0 6px 0",
-                    color: "#09090b",
-                    letterSpacing: "-0.02em",
+                    color: "#18181b",
+                    letterSpacing: "-0.025em",
                   }}
                 >
-                  Minimalist Heavyweight Tee
-                </h3>
+                  Classic Boxy Crewneck
+                </h2>
 
                 <div
                   style={{
