@@ -10,6 +10,8 @@
 {% assign working_days = config.workingDays | default: "[1,2,3,4,5]" %}
 {% assign blackout_dates = config.blackoutDates | default: "[]" %}
 {% assign market_overrides = config.marketOverrides | default: "{}" %}
+{% assign tz_offset = config.timezoneOffsetMinutes | default: 0 %}
+{% assign iana_tz = config.ianaTimezone | default: 'UTC' %}
 
 {% comment %} Evaluate Tag Overrides {% endcomment %}
 {% assign active_cutoff_hour = base_cutoff_hour %}
@@ -39,6 +41,8 @@
   data-working-days='{{ working_days }}'
   data-blackouts='{{ blackout_dates }}'
   data-market-overrides='{{ market_overrides }}'
+  data-tz-offset="{{ tz_offset }}"
+  data-iana-tz="{{ iana_tz }}"
   data-current-country="{{ current_country }}"
   data-available="{{ is_available }}"
   style="
@@ -48,45 +52,50 @@
     --dc-radius: {{ block.settings.corner_radius | default: 8 }}px;
   "
 >
-  {% if current_variant.available %}
-    <div class="dropclock-container {{ block.settings.style_preset | default: 'capsule' }}">
-      <div class="dropclock-pulse-icon">
-        <span class="dropclock-pulse-dot"></span>
-        <!-- Lucide Clock Icon -->
-        <svg class="dropclock-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-      </div>
-
-      <div class="dropclock-text-stack">
-        <div class="dropclock-line-timer">
-          Order within <strong class="dc-timer-countdown">--h --m</strong> for 
-          <span class="dc-dispatch-target">Same-Day Dispatch</span>
-        </div>
-        <div class="dropclock-line-eta">
-          <!-- Lucide Truck Icon -->
-          <svg class="dropclock-truck-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="1" y="3" width="15" height="13"></rect>
-            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-          </svg>
-          <span>Estimated Delivery: <strong class="dc-eta-target">Calculating...</strong></span>
-        </div>
-      </div>
-    </div>
-  {% else %}
-    <div class="dropclock-backorder-notice">
-      <!-- Lucide Alert Circle Icon -->
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  {% comment %} Both elements are rendered to enable seamless client-side toggling on variant selection {% endcomment %}
+  <div 
+    class="dropclock-container {{ block.settings.style_preset | default: 'capsule' }}" 
+    style="display: {% if is_available %}flex{% else %}none{% endif %};"
+  >
+    <div class="dropclock-pulse-icon">
+      <span class="dropclock-pulse-dot"></span>
+      <!-- Lucide Clock Icon -->
+      <svg class="dropclock-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        <polyline points="12 6 12 12 16 14"></polyline>
       </svg>
-      <span>Backorder Item: Ships as soon as restocked.</span>
     </div>
-  {% endif %}
+
+    <div class="dropclock-text-stack">
+      <div class="dropclock-line-timer">
+        Order within <strong class="dc-timer-countdown">--h --m</strong> for 
+        <span class="dc-dispatch-target">Same-Day Dispatch</span>
+      </div>
+      <div class="dropclock-line-eta">
+        <!-- Lucide Truck Icon -->
+        <svg class="dropclock-truck-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+        <span>Estimated Delivery: <strong class="dc-eta-target">Calculating...</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div 
+    class="dropclock-backorder-notice" 
+    style="display: {% if is_available %}none{% else %}flex{% endif %};"
+  >
+    <!-- Lucide Alert Circle Icon -->
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>Backorder Item: Ships as soon as restocked.</span>
+  </div>
 </div>
 
 <style>
@@ -97,7 +106,6 @@
     line-height: 1.4;
   }
   .dropclock-container {
-    display: flex;
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
@@ -106,6 +114,7 @@
     border-radius: var(--dc-radius);
     border: 1px solid rgba(0, 0, 0, 0.06);
     box-sizing: border-box;
+    transition: opacity 0.2s ease-in-out;
   }
   .dropclock-pulse-icon {
     position: relative;
@@ -152,7 +161,6 @@
     opacity: 0.75;
   }
   .dropclock-backorder-notice {
-    display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
@@ -161,6 +169,7 @@
     background: #fff8e5;
     color: #8a6100;
     border: 1px solid rgba(138, 97, 0, 0.15);
+    transition: opacity 0.2s ease-in-out;
   }
 </style>
 
@@ -170,12 +179,16 @@
       const root = document.getElementById('dropclock-{{ block.id }}');
       if (!root) return;
 
-      const isAvailable = root.getAttribute('data-available') === 'true';
-      if (!isAvailable) return;
+      const containerEl = root.querySelector('.dropclock-container');
+      const backorderEl = root.querySelector('.dropclock-backorder-notice');
+      const timerEl = root.querySelector('.dc-timer-countdown');
+      const labelEl = root.querySelector('.dc-dispatch-target');
+      const etaEl = root.querySelector('.dc-eta-target');
 
-      const cutoffHour = parseInt(root.getAttribute('data-cutoff-hour'), 10);
-      const cutoffMin = parseInt(root.getAttribute('data-cutoff-minute'), 10);
-      let leadDays = parseInt(root.getAttribute('data-lead-days'), 10);
+      const cutoffHour = parseInt(root.getAttribute('data-cutoff-hour'), 10) || 14;
+      const cutoffMin = parseInt(root.getAttribute('data-cutoff-minute'), 10) || 0;
+      let baseLeadDays = parseInt(root.getAttribute('data-lead-days'), 10) || 2;
+      const tzOffsetMinutes = parseInt(root.getAttribute('data-tz-offset') || '0', 10);
       
       let workingDays = [1, 2, 3, 4, 5];
       try { workingDays = JSON.parse(root.getAttribute('data-working-days')); } catch(e) {}
@@ -188,41 +201,53 @@
       
       const currentCountry = root.getAttribute('data-current-country');
       if (marketOverrides && marketOverrides[currentCountry]) {
-        leadDays += parseInt(marketOverrides[currentCountry], 10);
+        baseLeadDays += parseInt(marketOverrides[currentCountry], 10);
       }
 
-      const timerEl = root.querySelector('.dc-timer-countdown');
-      const labelEl = root.querySelector('.dc-dispatch-target');
-      const etaEl = root.querySelector('.dc-eta-target');
-
       function calculate() {
-        const now = new Date();
-        const cutoff = new Date();
-        cutoff.setHours(cutoffHour, cutoffMin, 0, 0);
+        const isAvailable = root.getAttribute('data-available') === 'true';
+        if (!isAvailable) return;
 
-        let diff = cutoff - now;
-        let pastCutoff = diff <= 0;
+        // 1. Timezone Synchronization: evaluate warehouse time from UTC timestamp
+        const nowUtc = Date.now();
+        const warehouseTimestamp = nowUtc + (tzOffsetMinutes * 60 * 1000);
+        const warehouseDate = new Date(warehouseTimestamp);
+
+        const currentHour = warehouseDate.getUTCHours();
+        const currentMinute = warehouseDate.getUTCMinutes();
+        const currentSecond = warehouseDate.getUTCSeconds();
+
+        // Warehouse cutoff in total minutes from midnight
+        const cutoffTotalMinutes = (cutoffHour * 60) + cutoffMin;
+        const currentTotalMinutes = (currentHour * 60) + currentMinute + (currentSecond / 60);
+
+        let diffMinutes = cutoffTotalMinutes - currentTotalMinutes;
+        let pastCutoff = diffMinutes <= 0;
 
         if (pastCutoff) {
-          cutoff.setDate(cutoff.getDate() + 1);
-          diff = cutoff - now;
+          diffMinutes += (24 * 60);
           if (labelEl) labelEl.textContent = 'Next-Day Dispatch';
         } else {
           if (labelEl) labelEl.textContent = 'Same-Day Dispatch';
         }
 
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        if (timerEl) timerEl.textContent = `${hours}h ${minutes}m`;
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = Math.floor(diffMinutes % 60);
+        if (timerEl) timerEl.textContent = hours + 'h ' + minutes + 'm';
 
-        // Calculate delivery arrival date skipping non-working & blackout dates
-        let eta = new Date();
+        // Calculate delivery arrival date from warehouse calendar
+        let eta = new Date(Date.UTC(
+          warehouseDate.getUTCFullYear(),
+          warehouseDate.getUTCMonth(),
+          warehouseDate.getUTCDate()
+        ));
+
         let addedDays = 0;
-        let totalLead = leadDays + (pastCutoff ? 1 : 0);
+        let totalLead = baseLeadDays + (pastCutoff ? 1 : 0);
 
         while (addedDays < totalLead) {
-          eta.setDate(eta.getDate() + 1);
-          const dayOfWeek = eta.getDay();
+          eta.setUTCDate(eta.getUTCDate() + 1);
+          const dayOfWeek = eta.getUTCDay();
           const isoString = eta.toISOString().split('T')[0];
 
           if (workingDays.includes(dayOfWeek) && !blackouts.includes(isoString)) {
@@ -232,6 +257,7 @@
 
         if (etaEl) {
           etaEl.textContent = eta.toLocaleDateString(undefined, {
+            timeZone: 'UTC',
             weekday: 'short',
             month: 'short',
             day: 'numeric'
@@ -239,6 +265,47 @@
         }
       }
 
+      // 2. Dynamic Variant Change Listener
+      function setVariantAvailability(available) {
+        root.setAttribute('data-available', available ? 'true' : 'false');
+        if (containerEl) containerEl.style.display = available ? 'flex' : 'none';
+        if (backorderEl) backorderEl.style.display = available ? 'none' : 'flex';
+        if (available) {
+          calculate();
+        }
+      }
+
+      // Shopify custom theme event: variant:change
+      document.addEventListener('variant:change', function(evt) {
+        if (evt && evt.detail) {
+          const variant = evt.detail.variant || evt.detail;
+          if (variant && typeof variant.available !== 'undefined') {
+            setVariantAvailability(Boolean(variant.available));
+          }
+        }
+      });
+
+      // Product Form change listener for select/radio variant inputs
+      document.addEventListener('change', function(evt) {
+        const target = evt.target;
+        if (!target) return;
+
+        if (target.name === 'id' || target.classList.contains('single-option-selector') || target.closest('form[action*="/cart/add"]')) {
+          // Allow theme JS microtask to update form state
+          setTimeout(function() {
+            const form = target.closest('form[action*="/cart/add"]') || document.querySelector('form[action*="/cart/add"]');
+            if (form) {
+              const submitBtn = form.querySelector('[type="submit"][name="add"], button[name="add"], .product-form__submit');
+              if (submitBtn) {
+                const isSoldOut = submitBtn.disabled || /sold\s*out|unavailable/i.test(submitBtn.textContent || '');
+                setVariantAvailability(!isSoldOut);
+              }
+            }
+          }, 50);
+        }
+      });
+
+      // Initial execution
       calculate();
       setInterval(calculate, 60000);
     }
