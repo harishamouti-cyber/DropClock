@@ -1339,34 +1339,66 @@ export function DropClockStudio({
                   </div>
                 </div>
 
-                {/* 1. ISOLATED PRODUCT FLAT-LAY CONTAINER */}
+                {/* PRODUCT IMAGE CONTAINER - NO EXTERNAL URLS ALLOWED */}
                 <div
+                  className="relative w-full aspect-[4/3] bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80 flex items-center justify-center p-6 select-none"
                   style={{
                     position: "relative",
                     width: "100%",
                     aspectRatio: "4 / 3",
                     backgroundColor: "#f4f4f5",
-                    borderRadius: "8px",
+                    borderRadius: "12px",
                     overflow: "hidden",
                     border: "1px solid rgba(228, 228, 231, 0.8)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    padding: "24px",
+                    userSelect: "none",
                     marginBottom: "16px",
                   }}
                 >
-                  <img
-                    src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80"
-                    alt="Classic Studio Tee"
-                    loading="lazy"
+                  <svg 
+                    viewBox="0 0 120 120" 
+                    className="w-32 h-32 text-zinc-800 drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                      padding: "16px",
-                      display: "block",
+                      width: "128px",
+                      height: "128px",
+                      color: "#27272a",
+                      filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08))",
+                      transition: "transform 300ms ease",
                     }}
-                  />
+                  >
+                    {/* Clean Streetwear Boxy T-Shirt Vector */}
+                    <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
+                    {/* Subtle Neck Collar Highlight */}
+                    <path d="M 40 16 C 46 25 74 25 80 16 C 74 21 46 21 40 16 Z" fill="rgba(255,255,255,0.25)" />
+                  </svg>
+                  
+                  <span
+                    className="absolute bottom-2.5 right-2.5 text-[10px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded border border-zinc-200 shadow-xs"
+                    style={{
+                      position: "absolute",
+                      bottom: "10px",
+                      right: "10px",
+                      fontSize: "10px",
+                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                      color: "#71717a",
+                      backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      backdropFilter: "blur(4px)",
+                      WebkitBackdropFilter: "blur(4px)",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      border: "1px solid #e4e4e7",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    Heavyweight 280 GSM
+                  </span>
                 </div>
 
                 {/* Stock Status & Title */}
