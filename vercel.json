@@ -1,5 +1,3 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "remix",
-  "buildCommand": "npx prisma generate && remix vite:build"
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }
