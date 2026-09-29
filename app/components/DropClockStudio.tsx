@@ -33,6 +33,7 @@ interface DropClockStudioProps {
   ianaTimezone: string;
   timezoneOffsetMinutes: number;
   isStandalone?: boolean;
+  extensionId?: string;
 }
 
 // Crisp Monochrome Lucide-style SVG Icons
@@ -154,9 +155,18 @@ export function DropClockStudio({
   ianaTimezone,
   timezoneOffsetMinutes,
   isStandalone = false,
+  extensionId: propExtensionId,
 }: DropClockStudioProps) {
   const submit = useSubmit();
   const navigation = useNavigation();
+
+  // Shopify Deep-Link Theme Customizer Protocol
+  // Format: https://{shop}/admin/themes/current/editor?template=product&addAppBlockId={extension_id}/{block_handle}&target=mainProduct
+  const shopDomain = shop || "my-store.myshopify.com";
+  // Block handle from extensions/dropclock-extension/blocks/dropclock_pill.liquid
+  const themeEditorDeepLink = `https://${shopDomain}/admin/themes/current/editor?template=product&activateAppId=${
+    propExtensionId || (typeof process !== "undefined" && process?.env?.SHOPIFY_DROPCLOCK_EXTENSION_ID) || "dropclock-pill"
+  }`;
 
   // Defensive App Bridge Environment Detection
   const [isEmbedded, setIsEmbedded] = useState(false);
@@ -456,7 +466,7 @@ export function DropClockStudio({
             )}
 
             <a
-              href={`https://${shop}/admin/themes/current/editor?template=product`}
+              href={themeEditorDeepLink}
               target="_blank"
               rel="noreferrer"
               style={{

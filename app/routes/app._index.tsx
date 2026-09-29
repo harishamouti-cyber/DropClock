@@ -17,6 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }),
   });
 
+  let isNewInstall = false;
   let settings = await prisma.dropClockSettings.findUnique({
     where: { shop: session.shop },
   });
@@ -25,6 +26,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     settings = await prisma.dropClockSettings.create({
       data: { shop: session.shop },
     });
+    isNewInstall = true;
   }
 
   const shopQuery = await admin.graphql(`
@@ -38,14 +40,60 @@ export async function loader({ request }: LoaderFunctionArgs) {
   `);
   const shopResult = await shopQuery.json();
   const shopData = shopResult?.data?.shop || {};
+  const shopGid = shopData.id;
   const ianaTimezone = shopData.ianaTimezone || "UTC";
   const timezoneOffsetMinutes = shopData.timezoneOffsetMinutes ?? 0;
+
+  // Automated Shopify Metastore Sync on Install
+  if (isNewInstall && shopGid) {
+    const metafieldPayload = {
+      cutoffHour: settings.cutoffHour,
+      cutoffMinute: settings.cutoffMinute,
+      leadDays: settings.leadDays,
+      timezoneOffsetMinutes,
+      ianaTimezone,
+      workingDays: JSON.parse(settings.workingDays || "[1,2,3,4,5]"),
+      blackoutDates: JSON.parse(settings.blackoutDates || "[]"),
+      tagRulesJson: JSON.parse(settings.tagRulesJson || "[]"),
+      marketOverrides: JSON.parse(settings.marketOverrides || "{}"),
+      presetStyle: settings.presetStyle,
+      primaryColor: settings.primaryColor,
+      bgColor: settings.bgColor,
+      textColor: settings.textColor,
+    };
+
+    await admin.graphql(
+      `#graphql
+      mutation SetDropClockMetafield($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          userErrors {
+            field
+            message
+          }
+        }
+      }`,
+      {
+        variables: {
+          metafields: [
+            {
+              ownerId: shopGid,
+              namespace: "dropclock",
+              key: "settings",
+              type: "json",
+              value: JSON.stringify(metafieldPayload),
+            },
+          ],
+        },
+      }
+    );
+  }
 
   return json({
     settings,
     shop: session.shop,
     ianaTimezone,
     timezoneOffsetMinutes,
+    extensionId: process.env.SHOPIFY_DROPCLOCK_EXTENSION_ID || "dropclock-pill",
   });
 }
 
@@ -162,7 +210,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AppIndex() {
-  const { settings, shop, ianaTimezone, timezoneOffsetMinutes } = useLoaderData<typeof loader>();
+  const { settings, shop, ianaTimezone, timezoneOffsetMinutes, extensionId } = useLoaderData<typeof loader>();
 
   return (
     <DropClockStudio
@@ -170,6 +218,7 @@ export default function AppIndex() {
       shop={shop}
       ianaTimezone={ianaTimezone}
       timezoneOffsetMinutes={timezoneOffsetMinutes}
+      extensionId={extensionId}
     />
   );
 }
