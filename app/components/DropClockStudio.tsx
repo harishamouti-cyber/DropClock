@@ -44,7 +44,7 @@ const ClockIcon = () => (
 );
 
 const TruckIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <rect x="1" y="3" width="15" height="13" />
     <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
     <circle cx="5.5" cy="18.5" r="2.5" />
@@ -243,8 +243,12 @@ export function DropClockStudio({
     }
   });
 
-  // Mock Storefront Stock State Switcher for Real-Time Simulation
+  // Mock Storefront Stock State & Dawn Variant Selector
   const [mockStockState, setMockStockState] = useState<"in_stock" | "backorder">("in_stock");
+  const [selectedSize, setSelectedSize] = useState<"S" | "M" | "L" | "XL">("M");
+
+  // Device Viewport Toggle (Desktop Full vs Mobile 375px)
+  const [previewViewport, setPreviewViewport] = useState<"desktop" | "mobile">("desktop");
 
   // Calculate Form Dirty State for App Bridge SaveBar
   const isDirty = useMemo(() => {
@@ -341,7 +345,7 @@ export function DropClockStudio({
       }
     }
 
-    const options: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" };
+    const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "short", day: "numeric" };
     const formattedArrival = delivery.toLocaleDateString("en-US", options);
 
     return {
@@ -457,7 +461,7 @@ export function DropClockStudio({
             </div>
             <p style={{ fontSize: "0.8125rem", color: "#71717a", margin: "4px 0 0 0" }}>
               {isStandalone
-                ? "Interactive sandbox environment. Live countdown arithmetic and theme simulation."
+                ? "Interactive sandbox environment. Changes simulate live storefront countdown arithmetic."
                 : "Live shipping cutoff arithmetic and real-time storefront capsule preview."}
             </p>
           </div>
@@ -669,7 +673,7 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 2. NEW CONTROL: DISPLAY PRESET SELECTOR (PILL VS. MINIMAL VS. URGENCY BAR) */}
+            {/* 2. WIDGET DISPLAY PRESET SELECTOR (PILL VS. MINIMAL VS. URGENCY BAR) */}
             <div
               style={{
                 backgroundColor: "#121215",
@@ -1100,6 +1104,85 @@ export function DropClockStudio({
                 ))}
               </div>
             </div>
+
+            {/* 4. STICKY DOCKED ACTION / SAVE BAR FOR LEFT CONTROL COLUMN */}
+            <div
+              style={{
+                position: "sticky",
+                bottom: "20px",
+                zIndex: 10,
+                backgroundColor: "#121215",
+                border: isDirty ? "1px solid #10b981" : "1px solid #1f1f23",
+                borderRadius: "12px",
+                padding: "14px 18px",
+                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                backdropFilter: "blur(12px)",
+                transition: "border-color 0.2s ease",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ fontSize: "0.8125rem", fontWeight: "600", color: "#fafafa" }}>
+                  {isDirty ? "Unsaved Customizations" : "Settings Synced"}
+                </span>
+                <span style={{ fontSize: "0.6875rem", color: isDirty ? "#34d399" : "#71717a" }}>
+                  {isDirty ? "Live store metafield pending sync" : "Active on Shopify Edge CDN"}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {isDirty && (
+                  <button
+                    type="button"
+                    onClick={handleDiscard}
+                    disabled={navigation.state === "submitting"}
+                    style={{
+                      backgroundColor: "transparent",
+                      color: "#a1a1aa",
+                      border: "1px solid #27272a",
+                      borderRadius: "6px",
+                      padding: "6px 12px",
+                      fontSize: "0.75rem",
+                      fontWeight: "500",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Discard
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={!isDirty || navigation.state === "submitting"}
+                  style={{
+                    backgroundColor: isDirty ? "#10b981" : "#27272a",
+                    color: isDirty ? "#09090b" : "#71717a",
+                    border: "none",
+                    borderRadius: "6px",
+                    padding: "7px 16px",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    cursor: isDirty && navigation.state !== "submitting" ? "pointer" : "not-allowed",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {navigation.state === "submitting" ? (
+                    "Saving..."
+                  ) : (
+                    <>
+                      <CheckIcon />
+                      <span>Save Settings</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* RIGHT PANE: Realistic DTC Storefront Canvas */}
@@ -1114,7 +1197,7 @@ export function DropClockStudio({
               boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5)",
             }}
           >
-            {/* Top Window Chrome */}
+            {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
             <div
               style={{
                 backgroundColor: "#18181b",
@@ -1123,6 +1206,8 @@ export function DropClockStudio({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                flexWrap: "wrap",
+                gap: "10px",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1140,6 +1225,53 @@ export function DropClockStudio({
                   yourstore.com/products/minimalist-heavyweight-tee
                 </span>
               </div>
+
+              {/* Device Viewport Toggle */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "2px",
+                  backgroundColor: "#27272a",
+                  padding: "2px",
+                  borderRadius: "6px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setPreviewViewport("desktop")}
+                  style={{
+                    padding: "3px 8px",
+                    borderRadius: "4px",
+                    border: "none",
+                    fontSize: "0.6875rem",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                    backgroundColor: previewViewport === "desktop" ? "#3f3f46" : "transparent",
+                    color: previewViewport === "desktop" ? "#fafafa" : "#a1a1aa",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  Desktop
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewViewport("mobile")}
+                  style={{
+                    padding: "3px 8px",
+                    borderRadius: "4px",
+                    border: "none",
+                    fontSize: "0.6875rem",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                    backgroundColor: previewViewport === "mobile" ? "#3f3f46" : "transparent",
+                    color: previewViewport === "mobile" ? "#fafafa" : "#a1a1aa",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  Mobile (375px)
+                </button>
+              </div>
             </div>
 
             {/* Canvas Surface with Refined Dot Grid */}
@@ -1154,10 +1286,10 @@ export function DropClockStudio({
                 alignItems: "center",
               }}
             >
-              {/* Authentic DTC Product Card */}
+              {/* Authentic Shopify Dawn Product Card Mock */}
               <div
                 style={{
-                  maxWidth: "420px",
+                  maxWidth: previewViewport === "mobile" ? "375px" : "440px",
                   width: "100%",
                   backgroundColor: "#ffffff",
                   color: "#18181b",
@@ -1165,9 +1297,10 @@ export function DropClockStudio({
                   padding: "24px",
                   boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
                   border: "1px solid rgba(255,255,255,0.1)",
+                  transition: "max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >
-                {/* 3. INTERACTIVE STOCK-STATE SWITCHER */}
+                {/* Stock State Quick Switcher */}
                 <div
                   style={{
                     display: "flex",
@@ -1192,7 +1325,10 @@ export function DropClockStudio({
                   >
                     <button
                       type="button"
-                      onClick={() => setMockStockState("in_stock")}
+                      onClick={() => {
+                        setMockStockState("in_stock");
+                        if (selectedSize === "L") setSelectedSize("M");
+                      }}
                       style={{
                         padding: "4px 10px",
                         borderRadius: "6px",
@@ -1210,7 +1346,10 @@ export function DropClockStudio({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setMockStockState("backorder")}
+                      onClick={() => {
+                        setMockStockState("backorder");
+                        setSelectedSize("L");
+                      }}
                       style={{
                         padding: "4px 10px",
                         borderRadius: "6px",
@@ -1229,72 +1368,30 @@ export function DropClockStudio({
                   </div>
                 </div>
 
-                {/* REALISTIC MOCK PRODUCT VISUAL (Washed-Black Minimal Heavyweight Tee) */}
+                {/* 1. HIGH-RESOLUTION STUDIO PRODUCT PHOTOGRAPH */}
                 <div
                   style={{
                     width: "100%",
-                    height: "200px",
-                    backgroundColor: "#f8fafc",
-                    borderRadius: "12px",
-                    border: "1px solid #e2e8f0",
+                    height: previewViewport === "mobile" ? "220px" : "260px",
+                    backgroundColor: "#f4f4f5",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(228, 228, 231, 0.6)",
                     marginBottom: "16px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "relative",
                     overflow: "hidden",
+                    position: "relative",
                   }}
                 >
-                  <span
+                  <img
+                    src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80"
+                    alt="Minimal Heavyweight Studio Tee"
+                    loading="lazy"
                     style={{
-                      position: "absolute",
-                      top: "10px",
-                      left: "10px",
-                      fontSize: "0.625rem",
-                      fontWeight: "700",
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                      color: "#64748b",
-                      backgroundColor: "#ffffff",
-                      padding: "2px 7px",
-                      borderRadius: "4px",
-                      border: "1px solid #e2e8f0",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
                     }}
-                  >
-                    DTC Heavyweight 280GSM
-                  </span>
-
-                  {/* High-Fidelity Vector Apparel Mockup */}
-                  <svg width="170" height="170" viewBox="0 0 200 200" fill="none">
-                    <defs>
-                      <linearGradient id="teeGrad" x1="50" y1="20" x2="150" y2="180" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#27272a" />
-                        <stop offset="60%" stopColor="#18181b" />
-                        <stop offset="100%" stopColor="#09090b" />
-                      </linearGradient>
-                      <filter id="softShadow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
-                        <feDropShadow dx="0" dy="6" stdDeviation="10" floodColor="#0f172a" floodOpacity="0.14" />
-                      </filter>
-                    </defs>
-                    <g filter="url(#softShadow)">
-                      <path
-                        d="M62 48 L40 76 L16 66 L26 40 L60 30 C72 37 88 40 100 40 C112 40 128 37 140 30 L174 40 L184 66 L160 76 L138 48 L142 165 C142 168 139 170 136 170 L64 170 C61 170 58 168 58 165 Z"
-                        fill="url(#teeGrad)"
-                      />
-                      <path
-                        d="M74 34 C82 42 92 44 100 44 C108 44 118 42 126 34 C120 32 110 30 100 30 C90 30 80 32 74 34 Z"
-                        fill="#3f3f46"
-                        stroke="#52525b"
-                        strokeWidth="1.5"
-                      />
-                      <path d="M62 48 L74 34" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
-                      <path d="M138 48 L126 34" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
-                      <path d="M60 162 L140 162" stroke="rgba(255,255,255,0.05)" strokeWidth="1.5" />
-                      <path d="M22 62 L36 68" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
-                      <path d="M178 62 L164 68" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
-                    </g>
-                  </svg>
+                  />
                 </div>
 
                 {/* Stock Status & Title */}
@@ -1330,13 +1427,65 @@ export function DropClockStudio({
                     fontSize: "1.125rem",
                     fontWeight: "700",
                     color: "#09090b",
-                    marginBottom: "16px",
+                    marginBottom: "14px",
                   }}
                 >
                   $42.00
                 </div>
 
-                {/* THE LIVE DYNAMIC DROPCLOCK WIDGET (SWAPS ACCORDING TO PRESET STYLE & STOCK STATE) */}
+                {/* 3. SHOPIFY DAWN VARIANT SELECTOR */}
+                <div style={{ marginBottom: "16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#3f3f46", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                      Size: <span style={{ color: "#09090b" }}>{selectedSize}</span>
+                    </span>
+                    <span style={{ fontSize: "0.6875rem", color: "#71717a", textDecoration: "underline", cursor: "pointer" }}>
+                      Size Guide
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    {(["S", "M", "L", "XL"] as const).map((size) => {
+                      const isSoldOut = size === "L";
+                      const isSelected = selectedSize === size;
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => {
+                            setSelectedSize(size);
+                            if (isSoldOut) {
+                              setMockStockState("backorder");
+                            } else {
+                              setMockStockState("in_stock");
+                            }
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: "8px 4px",
+                            borderRadius: "6px",
+                            border: isSelected ? "1.5px solid #09090b" : "1px solid #e4e4e7",
+                            backgroundColor: isSelected ? "#09090b" : "#ffffff",
+                            color: isSelected ? "#ffffff" : isSoldOut ? "#a1a1aa" : "#18181b",
+                            fontSize: "0.75rem",
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            position: "relative",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          {size}
+                          {isSoldOut && (
+                            <span style={{ fontSize: "0.625rem", display: "block", fontWeight: "400", opacity: 0.8 }}>
+                              Sold Out
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. THE LIVE DYNAMIC DROPCLOCK WIDGET (SEAMLESS INLINE TYPOGRAPHY) */}
                 {mockStockState === "backorder" ? (
                   /* Gentle Backorder Notice Pill */
                   <div
@@ -1377,14 +1526,15 @@ export function DropClockStudio({
                           boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                         }}
                       >
+                        {/* Unified Inline Sentence */}
                         <div
                           style={{
+                            fontSize: "0.8125rem",
+                            lineHeight: "1.4",
+                            color: textColor,
                             display: "flex",
                             alignItems: "center",
                             gap: "6px",
-                            fontSize: "0.8125rem",
-                            fontWeight: "600",
-                            lineHeight: "1.3",
                           }}
                         >
                           <span
@@ -1394,36 +1544,42 @@ export function DropClockStudio({
                               borderRadius: "50%",
                               backgroundColor: primaryColor,
                               display: "inline-block",
+                              flexShrink: 0,
                             }}
                           />
-                          <span>Order in next</span>
-                          <span
-                            style={{
-                              color: primaryColor,
-                              fontFamily: "monospace",
-                              fontWeight: "700",
-                            }}
-                          >
-                            {preview.hours}h {preview.minutes}m {preview.seconds}s
+                          <span>
+                            Order within{" "}
+                            <strong
+                              style={{
+                                color: primaryColor,
+                                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                                fontWeight: "600",
+                                letterSpacing: "-0.01em",
+                              }}
+                            >
+                              {preview.hours}h {preview.minutes}m {preview.seconds}s
+                            </strong>{" "}
+                            for {preview.isPastCutoff ? "tomorrow's" : "same-day"} dispatch
                           </span>
-                          <span>for {preview.isPastCutoff ? "tomorrow's" : "today's"} dispatch</span>
                         </div>
 
+                        {/* Estimated Delivery with Clean Alignment */}
                         <div
                           style={{
                             display: "flex",
                             alignItems: "center",
                             gap: "6px",
                             fontSize: "0.75rem",
-                            opacity: 0.85,
-                            whiteSpace: "nowrap",
+                            color: textColor,
+                            opacity: 0.88,
+                            paddingLeft: "12px",
                           }}
                         >
-                          <span style={{ color: primaryColor, display: "inline-flex" }}>
+                          <span style={{ color: primaryColor, display: "inline-flex", flexShrink: 0 }}>
                             <TruckIcon />
                           </span>
                           <span>
-                            Estimated Delivery: <strong style={{ color: textColor }}>{preview.formattedArrival}</strong>
+                            Estimated Delivery: <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
                           </span>
                         </div>
                       </div>
@@ -1442,17 +1598,29 @@ export function DropClockStudio({
                           borderBottom: "1px solid #f1f5f9",
                           color: textColor,
                           fontSize: "0.8125rem",
+                          gap: "8px",
+                          flexWrap: previewViewport === "mobile" ? "wrap" : "nowrap",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                           <span style={{ color: primaryColor, display: "inline-flex" }}>
                             <ClockIcon />
                           </span>
                           <span>
-                            Order in <strong style={{ color: primaryColor, fontFamily: "monospace" }}>{preview.hours}h {preview.minutes}m {preview.seconds}s</strong> for {preview.isPastCutoff ? "tomorrow's" : "today's"} dispatch
+                            Order within{" "}
+                            <strong
+                              style={{
+                                color: primaryColor,
+                                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                                fontWeight: "600",
+                              }}
+                            >
+                              {preview.hours}h {preview.minutes}m {preview.seconds}s
+                            </strong>{" "}
+                            for {preview.isPastCutoff ? "tomorrow's" : "same-day"} dispatch
                           </span>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.75rem", color: "#64748b" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.75rem", color: "#64748b", flexShrink: 0 }}>
                           <TruckIcon />
                           <span>Est. {preview.formattedArrival}</span>
                         </div>
@@ -1481,7 +1649,6 @@ export function DropClockStudio({
                             alignItems: "center",
                             justifyContent: "space-between",
                             fontSize: "0.8125rem",
-                            fontWeight: "600",
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1494,15 +1661,17 @@ export function DropClockStudio({
                                 display: "inline-block",
                               }}
                             />
-                            <span>Order in next</span>
-                            <span
-                              style={{
-                                color: primaryColor,
-                                fontFamily: "monospace",
-                                fontWeight: "700",
-                              }}
-                            >
-                              {preview.hours}h {preview.minutes}m {preview.seconds}s
+                            <span>
+                              Order within{" "}
+                              <strong
+                                style={{
+                                  color: primaryColor,
+                                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {preview.hours}h {preview.minutes}m {preview.seconds}s
+                              </strong>
                             </span>
                           </div>
                           <span
@@ -1515,7 +1684,7 @@ export function DropClockStudio({
                               borderRadius: "4px",
                             }}
                           >
-                            {preview.isPastCutoff ? "Tomorrow" : "Today's Dispatch"}
+                            {preview.isPastCutoff ? "Tomorrow" : "Same-Day Dispatch"}
                           </span>
                         </div>
 
@@ -1546,7 +1715,7 @@ export function DropClockStudio({
                             alignItems: "center",
                             justifyContent: "space-between",
                             fontSize: "0.75rem",
-                            opacity: 0.85,
+                            opacity: 0.88,
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
@@ -1554,11 +1723,11 @@ export function DropClockStudio({
                               <TruckIcon />
                             </span>
                             <span>
-                              Estimated Delivery: <strong style={{ color: textColor }}>{preview.formattedArrival}</strong>
+                              Estimated Delivery: <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
                             </span>
                           </div>
                           <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>
-                            {preview.progressPercent}% window remaining
+                            {preview.progressPercent}% window left
                           </span>
                         </div>
                       </div>
@@ -1566,7 +1735,7 @@ export function DropClockStudio({
                   </>
                 )}
 
-                {/* Mock Add to Cart Button */}
+                {/* Add to Cart Button */}
                 <button
                   type="button"
                   disabled
@@ -1583,8 +1752,61 @@ export function DropClockStudio({
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  {mockStockState === "in_stock" ? "Add to Cart" : "Join Waitlist"}
+                  {mockStockState === "in_stock" ? "Add to Cart" : "Sold Out"}
                 </button>
+
+                {/* 3. SHOP PAY DIRECT CHECKOUT BUTTON */}
+                <button
+                  type="button"
+                  disabled
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#5a31f4",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "11px",
+                    fontSize: "0.875rem",
+                    fontWeight: "600",
+                    cursor: "not-allowed",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    marginTop: "8px",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  <span>Buy with</span>
+                  <span
+                    style={{
+                      backgroundColor: "#ffffff",
+                      color: "#5a31f4",
+                      fontSize: "0.75rem",
+                      fontWeight: "800",
+                      padding: "1px 6px",
+                      borderRadius: "4px",
+                      letterSpacing: "-0.02em",
+                      display: "inline-flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    Shop Pay
+                  </span>
+                </button>
+
+                <div
+                  style={{
+                    textAlign: "center",
+                    marginTop: "8px",
+                    fontSize: "0.6875rem",
+                    color: "#71717a",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                  }}
+                >
+                  More payment options
+                </div>
               </div>
             </div>
 
