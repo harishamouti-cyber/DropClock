@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
+import { useState } from "react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -11,15 +12,100 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return null;
 }
 
+const ClockIcon = () => (
+  <svg
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.75"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+const TruckIcon = () => (
+  <svg
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.75"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="1" y="3" width="15" height="13" />
+    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+    <circle cx="5.5" cy="18.5" r="2.5" />
+    <circle cx="18.5" cy="18.5" r="2.5" />
+  </svg>
+);
+
+const ShieldCheckIcon = () => (
+  <svg
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.75"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <polyline points="9 12 11 14 15 10" />
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.75"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
+const ArrowRightIcon = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.75"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
 export default function Index() {
+  const [shopDomain, setShopDomain] = useState("");
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#090d16",
-        color: "#f8fafc",
+        backgroundColor: "#09090b",
+        color: "#fafafa",
         fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+          'Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -27,47 +113,58 @@ export default function Index() {
         boxSizing: "border-box",
       }}
     >
-      {/* Header */}
+      {/* Top Navigation */}
       <header
         style={{
-          maxWidth: "1100px",
+          maxWidth: "1040px",
           width: "100%",
           margin: "0 auto",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingBottom: "2rem",
+          paddingBottom: "1.5rem",
+          borderBottom: "1px solid #18181b",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
           <div
             style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "10px",
-              backgroundColor: "#10b981",
+              width: "28px",
+              height: "28px",
+              borderRadius: "6px",
+              backgroundColor: "#18181b",
+              border: "1px solid #27272a",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 0 20px rgba(16, 185, 129, 0.4)",
+              color: "#fafafa",
             }}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#090d16"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
+            <ClockIcon />
           </div>
-          <span style={{ fontSize: "1.25rem", fontWeight: "700", letterSpacing: "-0.02em" }}>
+          <span
+            style={{
+              fontSize: "0.9375rem",
+              fontWeight: "600",
+              letterSpacing: "-0.02em",
+              color: "#fafafa",
+            }}
+          >
             DropClock
+          </span>
+          <span
+            style={{
+              fontSize: "0.6875rem",
+              fontWeight: "500",
+              color: "#71717a",
+              backgroundColor: "#18181b",
+              padding: "0.15rem 0.45rem",
+              borderRadius: "4px",
+              border: "1px solid #27272a",
+              marginLeft: "0.25rem",
+            }}
+          >
+            v1.0.0
           </span>
         </div>
 
@@ -75,56 +172,56 @@ export default function Index() {
           <Link
             to="/preview"
             style={{
-              color: "#94a3b8",
+              color: "#a1a1aa",
               textDecoration: "none",
-              fontSize: "0.9rem",
+              fontSize: "0.8125rem",
               fontWeight: "500",
-              transition: "color 0.2s",
+              transition: "color 0.15s ease",
             }}
           >
-            Live Preview
+            Interactive Studio
           </Link>
-          <Link
-            to="/auth/login"
+          <a
+            href="https://shopify.dev/docs/apps/online-store/theme-app-extensions"
+            target="_blank"
+            rel="noreferrer"
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.08)",
-              color: "#f8fafc",
-              padding: "0.5rem 1rem",
-              borderRadius: "8px",
+              color: "#71717a",
               textDecoration: "none",
-              fontSize: "0.9rem",
-              fontWeight: "500",
-              border: "1px solid rgba(255, 255, 255, 0.12)",
+              fontSize: "0.8125rem",
+              fontWeight: "400",
             }}
           >
-            Merchant Login
-          </Link>
+            Documentation
+          </a>
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero & Authentication Gateway */}
       <main
         style={{
-          maxWidth: "900px",
+          maxWidth: "760px",
           width: "100%",
           margin: "0 auto",
           textAlign: "center",
-          padding: "3rem 1rem",
+          padding: "4rem 1rem",
         }}
       >
+        {/* Subtle Status Pill */}
         <div
           style={{
             display: "inline-flex",
             alignItems: "center",
             gap: "0.5rem",
-            backgroundColor: "rgba(16, 185, 129, 0.12)",
-            border: "1px solid rgba(16, 185, 129, 0.3)",
-            color: "#34d399",
-            padding: "0.35rem 0.85rem",
+            backgroundColor: "#18181b",
+            border: "1px solid #27272a",
+            padding: "0.3rem 0.75rem",
             borderRadius: "9999px",
-            fontSize: "0.85rem",
-            fontWeight: "600",
-            marginBottom: "1.5rem",
+            fontSize: "0.75rem",
+            fontWeight: "500",
+            color: "#a1a1aa",
+            marginBottom: "2rem",
+            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05)",
           }}
         >
           <span
@@ -133,185 +230,246 @@ export default function Index() {
               height: "6px",
               borderRadius: "50%",
               backgroundColor: "#10b981",
-              boxShadow: "0 0 8px #10b981",
             }}
           />
-          0ms Storefront Drag • Built for Shopify
+          Edge CDN Architecture • Zero Storefront TBT Drag
         </div>
 
         <h1
           style={{
-            fontSize: "clamp(2.5rem, 5vw, 4rem)",
-            fontWeight: "800",
-            lineHeight: "1.1",
+            fontSize: "clamp(2.25rem, 4.5vw, 3.25rem)",
+            fontWeight: "600",
+            lineHeight: "1.15",
             letterSpacing: "-0.03em",
-            margin: "0 0 1.25rem 0",
-            background: "linear-gradient(180deg, #ffffff 0%, #94a3b8 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            margin: "0 0 1rem 0",
+            color: "#fafafa",
           }}
         >
-          Order Cutoff Countdown & Estimated Delivery ETA
+          Precision Shipping Cutoffs &amp; Delivery ETA
         </h1>
 
         <p
           style={{
-            fontSize: "1.15rem",
-            color: "#94a3b8",
-            maxWidth: "680px",
+            fontSize: "1rem",
+            color: "#71717a",
+            maxWidth: "540px",
             margin: "0 auto 2.5rem auto",
             lineHeight: "1.6",
+            letterSpacing: "-0.01em",
           }}
         >
-          Engineered for high-converting Shopify merchants. Zero external network calls, 100% Theme App Extension architecture, dynamic inventory awareness, and warehouse timezone sync.
+          Engineered for high-volume Shopify storefronts. Zero external network calls, 100% Theme App Extension delivery, and multi-market transit awareness.
         </p>
 
-        {/* Action Buttons */}
+        {/* 1-Click Store Domain Input (OAuth Handshake) */}
         <div
           style={{
-            display: "flex",
-            gap: "1rem",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            marginBottom: "4rem",
+            maxWidth: "460px",
+            margin: "0 auto 3.5rem auto",
           }}
         >
-          <Link
-            to="/preview"
+          <Form
+            method="post"
+            action="/auth/login"
             style={{
-              backgroundColor: "#10b981",
-              color: "#090d16",
-              padding: "0.85rem 1.75rem",
-              borderRadius: "10px",
-              textDecoration: "none",
-              fontWeight: "700",
-              fontSize: "1rem",
-              boxShadow: "0 10px 25px -5px rgba(16, 185, 129, 0.4)",
-              display: "inline-flex",
-              alignItems: "center",
+              display: "flex",
               gap: "0.5rem",
+              backgroundColor: "#18181b",
+              padding: "0.35rem",
+              borderRadius: "10px",
+              border: "1px solid #27272a",
+              boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.4)",
             }}
           >
-            Launch Interactive Preview
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            <input
+              type="text"
+              name="shop"
+              placeholder="my-store.myshopify.com"
+              value={shopDomain}
+              onChange={(e) => setShopDomain(e.target.value)}
+              required
+              style={{
+                flex: "1",
+                backgroundColor: "transparent",
+                border: "none",
+                outline: "none",
+                color: "#fafafa",
+                padding: "0.6rem 0.85rem",
+                fontSize: "0.875rem",
+                fontFamily: "inherit",
+              }}
+            />
+            <button
+              type="submit"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                backgroundColor: "#fafafa",
+                color: "#09090b",
+                border: "none",
+                borderRadius: "7px",
+                padding: "0.55rem 0.95rem",
+                fontSize: "0.8125rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "opacity 0.15s ease",
+              }}
             >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </Link>
+              Sign In
+              <ArrowRightIcon />
+            </button>
+          </Form>
 
-          <Link
-            to="/auth/login"
+          <div
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.06)",
-              color: "#f8fafc",
-              padding: "0.85rem 1.75rem",
-              borderRadius: "10px",
-              textDecoration: "none",
-              fontWeight: "600",
-              fontSize: "1rem",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              display: "inline-flex",
+              marginTop: "0.75rem",
+              display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
-              gap: "0.5rem",
+              fontSize: "0.75rem",
+              color: "#71717a",
+              padding: "0 0.25rem",
             }}
           >
-            Install on Shopify Store
-          </Link>
+            <span>Enter your `.myshopify.com` domain to manage settings</span>
+            <Link
+              to="/preview"
+              style={{
+                color: "#a1a1aa",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.25rem",
+              }}
+            >
+              Open Studio Demo <ArrowRightIcon />
+            </Link>
+          </div>
         </div>
 
-        {/* Feature Highlights Grid */}
+        {/* Minimal Monochromatic Grid */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "1.25rem",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "1rem",
             textAlign: "left",
           }}
         >
           <div
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.07)",
-              borderRadius: "14px",
-              padding: "1.5rem",
+              backgroundColor: "#121215",
+              border: "1px solid #1f1f23",
+              borderRadius: "10px",
+              padding: "1.25rem",
+              boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
             }}
           >
-            <div style={{ color: "#10b981", marginBottom: "0.75rem", fontWeight: "700" }}>
-              ⚡ 0ms Network Latency
+            <div
+              style={{
+                color: "#a1a1aa",
+                marginBottom: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                fontSize: "0.8125rem",
+                fontWeight: "600",
+              }}
+            >
+              <ClockIcon /> 0ms Edge Binding
             </div>
-            <div style={{ fontSize: "0.9rem", color: "#94a3b8", lineHeight: "1.5" }}>
-              Reads directly from Shopify CDN shop metafields. Zero external scripts or slow third-party API dependencies.
+            <div style={{ fontSize: "0.8125rem", color: "#71717a", lineHeight: "1.5" }}>
+              Reads directly from Shopify Global Edge CDN shop metafields. Zero external scripts injected.
             </div>
           </div>
 
           <div
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.07)",
-              borderRadius: "14px",
-              padding: "1.5rem",
+              backgroundColor: "#121215",
+              border: "1px solid #1f1f23",
+              borderRadius: "10px",
+              padding: "1.25rem",
+              boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
             }}
           >
-            <div style={{ color: "#38bdf8", marginBottom: "0.75rem", fontWeight: "700" }}>
-              📦 Out-of-Stock Suppress
+            <div
+              style={{
+                color: "#a1a1aa",
+                marginBottom: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                fontSize: "0.8125rem",
+                fontWeight: "600",
+              }}
+            >
+              <GlobeIcon /> Multi-Market Aware
             </div>
-            <div style={{ fontSize: "0.9rem", color: "#94a3b8", lineHeight: "1.5" }}>
-              Automatically hides the timer or switches to a gentle backorder arrival notice when items sell out.
+            <div style={{ fontSize: "0.8125rem", color: "#71717a", lineHeight: "1.5" }}>
+              Applies country-level handling and transit lead times with zero client-side geolocation latency.
             </div>
           </div>
 
           <div
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.07)",
-              borderRadius: "14px",
-              padding: "1.5rem",
+              backgroundColor: "#121215",
+              border: "1px solid #1f1f23",
+              borderRadius: "10px",
+              padding: "1.25rem",
+              boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
             }}
           >
-            <div style={{ color: "#a855f7", marginBottom: "0.75rem", fontWeight: "700" }}>
-              🌍 Multi-Market Offsets
+            <div
+              style={{
+                color: "#a1a1aa",
+                marginBottom: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                fontSize: "0.8125rem",
+                fontWeight: "600",
+              }}
+            >
+              <ShieldCheckIcon /> Stock Auto-Suppress
             </div>
-            <div style={{ fontSize: "0.9rem", color: "#94a3b8", lineHeight: "1.5" }}>
-              Native Shopify country code localization applies transit leads per region without IP geolocation lag.
+            <div style={{ fontSize: "0.8125rem", color: "#71717a", lineHeight: "1.5" }}>
+              Instantly transitions out-of-stock and backordered variants without flashing or layout shift.
             </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Refined Minimal Footer */}
       <footer
         style={{
-          maxWidth: "1100px",
+          maxWidth: "1040px",
           width: "100%",
           margin: "0 auto",
-          paddingTop: "2rem",
-          borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+          paddingTop: "1.5rem",
+          borderTop: "1px solid #18181b",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          fontSize: "0.85rem",
-          color: "#64748b",
+          fontSize: "0.75rem",
+          color: "#52525b",
           flexWrap: "wrap",
           gap: "1rem",
         }}
       >
-        <div>DropClock © 2026. Built for Shopify App Store.</div>
-        <div style={{ display: "flex", gap: "1.5rem" }}>
-          <Link to="/preview" style={{ color: "#64748b", textDecoration: "none" }}>
-            Demo Preview
+        <div>DropClock • Production Theme App Extension Infrastructure</div>
+        <div style={{ display: "flex", gap: "1.25rem" }}>
+          <Link to="/preview" style={{ color: "#71717a", textDecoration: "none" }}>
+            Studio Demo
           </Link>
-          <Link to="/auth/login" style={{ color: "#64748b", textDecoration: "none" }}>
-            Login
-          </Link>
+          <a
+            href="https://partners.shopify.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "#71717a", textDecoration: "none" }}
+          >
+            Shopify Partners
+          </a>
         </div>
       </footer>
     </div>
