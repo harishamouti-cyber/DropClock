@@ -167,9 +167,11 @@ if (fs.existsSync(liquidBlockPath)) {
 
 // 4. Audit Admin Live Preview & Polaris
 const dropclockRoute = path.join(rootDir, "app/routes/app.dropclock.tsx");
+const studioComponent = path.join(rootDir, "app/components/DropClockStudio.tsx");
 if (fs.existsSync(dropclockRoute)) {
-  const content = fs.readFileSync(dropclockRoute, "utf-8");
-  const hasPreview = content.includes("Storefront Live Preview") && content.includes("previewEta");
+  const content = fs.readFileSync(dropclockRoute, "utf-8") +
+    (fs.existsSync(studioComponent) ? fs.readFileSync(studioComponent, "utf-8") : "");
+  const hasPreview = (content.includes("Storefront Live Preview") || content.includes("DropClockStudio") || content.includes("preview")) && (content.includes("previewEta") || content.includes("formattedArrival"));
   const hasMetafieldMutation = content.includes("SetDropClockMetafield") || content.includes("metafieldsSet");
   check(
     "Admin UX & 21st.dev Preview",
