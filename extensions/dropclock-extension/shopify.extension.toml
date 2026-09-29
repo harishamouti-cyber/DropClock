@@ -1,5 +1,6 @@
 name = "DropClock Extension"
 type = "theme"
+uid = "6ccfac9a-9e01-8c6b-a21e-2c7474d1188e729b0378"
 
 [[blocks]]
 name = "DropClock Cutoff & ETA"

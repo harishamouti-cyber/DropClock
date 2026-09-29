@@ -2,7 +2,7 @@
 
 client_id = "88689745373b37439f8a9885c878251c"
 name = "DropClock"
-handle = "dropclock"
+handle = "dropclock-app"
 application_url = "https://drop-clock-zeta.vercel.app"
 embedded = true
 

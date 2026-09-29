@@ -165,7 +165,7 @@ export function DropClockStudio({
   const shopDomain = shop || "my-store.myshopify.com";
   // Block handle from extensions/dropclock-extension/blocks/dropclock_pill.liquid
   const themeEditorDeepLink = `https://${shopDomain}/admin/themes/current/editor?template=product&activateAppId=${
-    propExtensionId || (typeof process !== "undefined" && process?.env?.SHOPIFY_DROPCLOCK_EXTENSION_ID) || "dropclock-pill"
+    propExtensionId || (typeof process !== "undefined" && process?.env?.SHOPIFY_DROPCLOCK_EXTENSION_ID) || "6ccfac9a-9e01-8c6b-a21e-2c7474d1188e729b0378"
   }`;
 
   // Defensive App Bridge Environment Detection

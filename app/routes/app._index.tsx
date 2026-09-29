@@ -93,7 +93,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     shop: session.shop,
     ianaTimezone,
     timezoneOffsetMinutes,
-    extensionId: process.env.SHOPIFY_DROPCLOCK_EXTENSION_ID || "dropclock-pill",
+    extensionId: process.env.SHOPIFY_DROPCLOCK_EXTENSION_ID || "6ccfac9a-9e01-8c6b-a21e-2c7474d1188e729b0378",
   });
 }
 
