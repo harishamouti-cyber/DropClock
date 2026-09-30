@@ -7,7 +7,7 @@ embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
-dev_store_url = "dropclock-dev.myshopify.com"
+dev_store_url = "rankpilot-xk8wrvgu.myshopify.com"
 
 [access_scopes]
 # Minimal Scope Strategy: strictly necessary scopes, zero Protected Customer Data (PCD)
