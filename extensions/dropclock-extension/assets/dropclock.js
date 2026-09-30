@@ -1,8 +1,3 @@
-/**
- * DropClock - Storefront Client-Side Hydration Engine
- * Zero-dependency, zero-CLS countdown calculation and variant event listener.
- * Compliant with "Built for Shopify" performance standards.
- */
 (function () {
   "use strict";
 
@@ -12,127 +7,122 @@
 
     roots.forEach(function (root) {
       var ds = root.dataset || {};
+      var timerEl = root.querySelector("[data-dc-timer], .dc-timer-val, .dc-tc");
+      var etaEl = root.querySelector("[data-dc-eta], .dc-eta-date, .dc-et");
+      var subtextEl = root.querySelector("[data-dc-subtext], .dc-subtext, .dc-dt");
       var pillCard = root.querySelector(".dc-pill-card, .dc-c");
       var backorderEl = root.querySelector(".dc-backorder-notice, .dc-b");
-      var timerValEl = root.querySelector("[data-dc-timer], .dc-timer-val, .dc-tc");
-      var subtextEl = root.querySelector("[data-dc-subtext], .dc-subtext, .dc-dt");
-      var etaDateEl = root.querySelector("[data-dc-eta], .dc-eta-date, .dc-et");
-      var barFillEl = root.querySelector("[data-dc-bar-fill], .dc-bar-fill, .dc-bf");
 
-      var cutoffHour = ds.cutoffHour != null ? parseInt(ds.cutoffHour, 10) : 14;
-      var cutoffMinute = ds.cutoffMin != null ? parseInt(ds.cutoffMin, 10) : (ds.cutoffMinute != null ? parseInt(ds.cutoffMinute, 10) : 0);
-      var leadDays = parseInt(ds.leadDays, 10) || 2;
-      var tzOffset = parseInt(ds.timezoneOffset != null ? ds.timezoneOffset : (ds.tzOffset || 0), 10);
+      var cutoffHour = parseInt(ds.cutoffHour || "14", 10);
+      var cutoffMin = parseInt(ds.cutoffMin != null ? ds.cutoffMin : (ds.cutoffMinute || "0"), 10);
+      var leadDays = parseInt(ds.leadDays || "2", 10);
       var sameDayText = ds.samedayText || "for same-day dispatch";
       var nextDayText = ds.nextdayText || "for tomorrow's dispatch";
 
-      function safeJsonParse(val, fallback) {
+      function safeParse(str, fallback) {
         try {
-          var parsed = JSON.parse(val);
+          var parsed = JSON.parse(str);
           return parsed != null ? parsed : fallback;
         } catch (e) {
           return fallback;
         }
       }
 
-      var workingDays = safeJsonParse(ds.workingDays, [1, 2, 3, 4, 5]);
-      var blackoutDates = safeJsonParse(ds.blackoutDates || ds.blackouts, []);
-      var marketOverrides = safeJsonParse(ds.marketOverrides, {});
+      var workingDays = safeParse(ds.workingDays, [1, 2, 3, 4, 5]);
+      var blackoutDates = safeParse(ds.blackoutDates || ds.blackouts, []);
 
       if (!Array.isArray(workingDays) || !workingDays.length) workingDays = [1, 2, 3, 4, 5];
       if (!Array.isArray(blackoutDates)) blackoutDates = [];
 
-      if (ds.currentCountry && marketOverrides[ds.currentCountry]) {
-        leadDays += parseInt(marketOverrides[ds.currentCountry], 10) || 0;
+      function isBlackoutDate(date) {
+        var iso = date.toISOString().split("T")[0];
+        return blackoutDates.indexOf(iso) !== -1;
+      }
+
+      function calculateETA(now) {
+        var dispatch = new Date(now);
+
+        var passedCutoff =
+          now.getHours() > cutoffHour ||
+          (now.getHours() === cutoffHour && now.getMinutes() >= cutoffMin);
+
+        if (passedCutoff) {
+          dispatch.setDate(dispatch.getDate() + 1);
+        }
+
+        while (!workingDays.includes(dispatch.getDay()) || isBlackoutDate(dispatch)) {
+          dispatch.setDate(dispatch.getDate() + 1);
+        }
+
+        var arrival = new Date(dispatch);
+        var daysAdded = 0;
+        while (daysAdded < leadDays) {
+          arrival.setDate(arrival.getDate() + 1);
+          if (workingDays.includes(arrival.getDay()) && !isBlackoutDate(arrival)) {
+            daysAdded++;
+          }
+        }
+
+        var options = { weekday: "short", month: "short", day: "numeric" };
+        return {
+          formattedDate: arrival.toLocaleDateString(undefined, options),
+          passedCutoff: passedCutoff,
+        };
       }
 
       function updateCountdown() {
         if (root.getAttribute("data-available") === "false") return;
 
-        var storeNow = new Date(Date.now() + tzOffset * 60000);
-        var currentSecs = storeNow.getUTCHours() * 3600 + storeNow.getUTCMinutes() * 60 + storeNow.getUTCSeconds();
-        var cutoffSecs = cutoffHour * 3600 + cutoffMinute * 60;
-        var diffSecs = cutoffSecs - currentSecs;
-        var isPastCutoff = diffSecs <= 0;
+        var now = new Date();
+        var target = new Date();
+        target.setHours(cutoffHour, cutoffMin, 0, 0);
 
-        if (isPastCutoff) {
-          diffSecs += 86400;
+        var isPast = now > target;
+        if (isPast) {
+          target.setDate(target.getDate() + 1);
         }
 
-        var h = Math.floor(diffSecs / 3600);
-        var m = Math.floor((diffSecs % 3600) / 60);
-        var s = Math.floor(diffSecs % 60);
+        var diff = target.getTime() - now.getTime();
+        var hours = Math.floor(diff / (1000 * 60 * 60));
+        var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-        if (timerValEl) {
-          timerValEl.textContent = h + "h " + (m < 10 ? "0" + m : m) + "m " + (s < 10 ? "0" + s : s) + "s";
-        }
+        var h = String(hours).padStart(2, "0");
+        var m = String(minutes).padStart(2, "0");
+        var s = String(seconds).padStart(2, "0");
 
-        if (subtextEl) {
-          subtextEl.textContent = isPastCutoff ? nextDayText : sameDayText;
-        }
+        if (timerEl) timerEl.textContent = h + "h " + m + "m " + s + "s";
+        if (subtextEl) subtextEl.textContent = isPast ? nextDayText : sameDayText;
 
-        if (barFillEl) {
-          var startSecs = 8 * 3600;
-          var windowSecs = cutoffSecs > startSecs ? cutoffSecs - startSecs : 14400;
-          var pct = isPastCutoff ? 0 : Math.max(5, Math.min(100, Math.round((diffSecs / windowSecs) * 100)));
-          barFillEl.style.width = pct + "%";
-        }
-
-        root.classList.toggle("dc-urgent", !isPastCutoff && diffSecs <= 3600);
-
-        var etaDate = new Date(Date.UTC(storeNow.getUTCFullYear(), storeNow.getUTCMonth(), storeNow.getUTCDate()));
-        var daysAdded = 0;
-        var targetDays = leadDays + (isPastCutoff ? 1 : 0);
-
-        while (daysAdded < targetDays) {
-          etaDate.setUTCDate(etaDate.getUTCDate() + 1);
-          var dow = etaDate.getUTCDay();
-          var isoStr = etaDate.toISOString().split("T")[0];
-          if (workingDays.indexOf(dow) !== -1 && blackoutDates.indexOf(isoStr) === -1) {
-            daysAdded++;
-          }
-        }
-
-        if (etaDateEl) {
-          etaDateEl.textContent = etaDate.toLocaleDateString(undefined, {
-            timeZone: "UTC",
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-          });
-        }
+        var etaResult = calculateETA(now);
+        if (etaEl) etaEl.textContent = etaResult.formattedDate;
       }
 
-      function setAvailability(available) {
-        root.setAttribute("data-available", available ? "true" : "false");
-        if (pillCard) pillCard.style.display = available ? "flex" : "none";
-        if (backorderEl) backorderEl.style.display = available ? "none" : "flex";
-        if (available) updateCountdown();
+      function setStockState(isAvailable) {
+        root.setAttribute("data-available", isAvailable ? "true" : "false");
+        if (pillCard) pillCard.style.display = isAvailable ? "flex" : "none";
+        if (backorderEl) backorderEl.style.display = isAvailable ? "none" : "flex";
+        if (isAvailable) updateCountdown();
       }
 
+      // Handle Shopify Variant Switches (events & form changes)
       document.addEventListener("variant:change", function (e) {
         var variant = e && e.detail && (e.detail.variant || e.detail);
         if (variant && variant.available != null) {
-          setAvailability(Boolean(variant.available));
+          setStockState(Boolean(variant.available));
         }
       });
 
-      document.addEventListener("theme:variant:change", function (e) {
-        var variant = e && e.detail && (e.detail.variant || e.detail);
-        if (variant && variant.available != null) {
-          setAvailability(Boolean(variant.available));
-        }
-      });
+      document.addEventListener("change", function (event) {
+        var target = event.target;
+        if (target && (target.name === "id" || target.closest('[data-section-type="product"], form[action*="/cart/add"]'))) {
+          var form = target.closest("form") || document.querySelector('form[action*="/cart/add"]');
+          if (!form) return;
 
-      document.addEventListener("change", function (e) {
-        var form = e.target.form || e.target.closest("form") || document.querySelector("form[action*='/cart/add']");
-        if (form) {
           setTimeout(function () {
-            var submitBtn = form.querySelector('[name="add"], .product-form__submit');
-            if (submitBtn) {
-              var isSoldOut = submitBtn.disabled || /sold|unavail/i.test(submitBtn.textContent || "");
-              setAvailability(!isSoldOut);
-            }
+            var submitBtn = form.querySelector('[type="submit"], [name="add"], .product-form__submit');
+            var isSoldOut = submitBtn && (submitBtn.disabled || /sold|unavail/i.test(submitBtn.textContent || ""));
+            setStockState(!isSoldOut);
           }, 50);
         }
       });
