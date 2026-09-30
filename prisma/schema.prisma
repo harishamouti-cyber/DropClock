@@ -27,18 +27,23 @@ model DropClockSettings {
   cutoffMinute    Int      @default(0)
   leadDays        Int      @default(2)
   workingDays     String   @default("[1,2,3,4,5]") @db.Text
-  blackoutDates   String   @default("[]")          @db.Text
-  enableTagRules  Boolean  @default(true)
-  tagRulesJson    String   @default("[]")          @db.Text
-  marketOverrides String   @default("{}")          @db.Text
-  presetStyle     String   @default("capsule")     // "capsule" | "urgency" | "minimal"
-  primaryColor    String   @default("#008060")
-  bgColor         String   @default("#f4f6f8")
+  widgetStyle     String   @default("capsule")     // "capsule" | "urgency" | "minimal"
+  accentColor     String   @default("#008060")
+  cardBg          String   @default("#F4F6F8")
   textColor       String   @default("#202223")
-  leadText        String   @default("Order within")
-  sameDayText     String   @default("for same-day dispatch")
-  nextDayText     String   @default("for tomorrow's dispatch")
-  etaText         String   @default("Estimated Delivery:")
+  blackoutDates   String   @default("[]")          @db.Text
+  tagRules        String   @default("[]")          @db.Text
+  translations    String   @default("{}")          @db.Text
+  presetStyle     String?  @default("capsule")
+  primaryColor    String?  @default("#008060")
+  bgColor         String?  @default("#F4F6F8")
+  tagRulesJson    String?  @default("[]")          @db.Text
+  leadText        String?  @default("Order within")
+  sameDayText     String?  @default("for same-day dispatch")
+  nextDayText     String?  @default("for tomorrow's dispatch")
+  etaText         String?  @default("Estimated Delivery:")
+  enableTagRules  Boolean  @default(true)
+  marketOverrides String   @default("{}")          @db.Text
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

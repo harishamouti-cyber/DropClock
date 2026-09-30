@@ -13,11 +13,15 @@ export async function loader() {
       leadDays: 2,
       workingDays: "[1,2,3,4,5]",
       blackoutDates: "[\"2026-11-26\", \"2026-12-25\"]",
+      tagRules: "[{\"tag\":\"pre-order\",\"leadDays\":14},{\"tag\":\"custom\",\"leadDays\":5}]",
       tagRulesJson: "[{\"tag\":\"pre-order\",\"leadDays\":14},{\"tag\":\"custom\",\"leadDays\":5}]",
+      widgetStyle: "capsule",
+      presetStyle: "capsule",
+      accentColor: "#008060",
       primaryColor: "#008060",
+      cardBg: "#F4F6F8",
       bgColor: "#F4F6F8",
       textColor: "#202223",
-      presetStyle: "capsule",
       leadText: "Order within",
       sameDayText: "for same-day dispatch",
       nextDayText: "for tomorrow's dispatch",
@@ -31,11 +35,15 @@ export async function loader() {
 
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
-  return json({
-    success: true,
-    message: "Preview settings updated successfully",
-    data: Object.fromEntries(formData),
-  });
+  return json(
+    {
+      success: true,
+      sandbox: true,
+      message: "Preview settings updated successfully",
+      data: Object.fromEntries(formData),
+    },
+    { status: 200 }
+  );
 }
 
 export default function StandalonePreviewRoute() {
@@ -49,11 +57,15 @@ export default function StandalonePreviewRoute() {
           leadDays: 2,
           workingDays: "[1,2,3,4,5]",
           blackoutDates: "[\"2026-11-26\", \"2026-12-25\"]",
+          tagRules: "[{\"tag\":\"pre-order\",\"leadDays\":14},{\"tag\":\"custom\",\"leadDays\":5}]",
           tagRulesJson: "[{\"tag\":\"pre-order\",\"leadDays\":14},{\"tag\":\"custom\",\"leadDays\":5}]",
+          widgetStyle: "capsule",
+          presetStyle: "capsule",
+          accentColor: "#008060",
           primaryColor: "#008060",
+          cardBg: "#F4F6F8",
           bgColor: "#F4F6F8",
           textColor: "#202223",
-          presetStyle: "capsule",
           leadText: "Order within",
           sameDayText: "for same-day dispatch",
           nextDayText: "for tomorrow's dispatch",

@@ -44,44 +44,62 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const ianaTimezone = shopData.ianaTimezone || "UTC";
   const timezoneOffsetMinutes = shopData.timezoneOffsetMinutes ?? 0;
 
+  const parsedBlackouts = (() => {
+    try {
+      const p = JSON.parse(settings.blackoutDates || "[]");
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  })();
+  const parsedTagRules = (() => {
+    try {
+      const p = JSON.parse(settings.tagRules || settings.tagRulesJson || "[]");
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  const activeWidgetStyle = settings.widgetStyle || settings.presetStyle || "capsule";
+  const activeAccentColor = settings.accentColor || settings.primaryColor || "#008060";
+  const activeCardBg = settings.cardBg || settings.bgColor || "#F4F6F8";
+  const activeLeadText = settings.leadText || "Order within";
+  const activeSameDayText = settings.sameDayText || "for same-day dispatch";
+  const activeNextDayText = settings.nextDayText || "for tomorrow's dispatch";
+  const activeEtaText = settings.etaText || "Estimated Delivery:";
+
   // Automated Shopify Metastore Sync on Install
   if (isNewInstall && shopGid) {
-    const parsedBlackouts = (() => {
-      try {
-        const p = JSON.parse(settings.blackoutDates || "[]");
-        return Array.isArray(p) ? p : [];
-      } catch {
-        return [];
-      }
-    })();
-    const parsedTagRules = (() => {
-      try {
-        const p = JSON.parse(settings.tagRulesJson || "[]");
-        return Array.isArray(p) ? p : [];
-      } catch {
-        return [];
-      }
-    })();
-
     const metafieldPayload = {
       cutoffHour: settings.cutoffHour,
       cutoffMinute: settings.cutoffMinute,
       leadDays: settings.leadDays,
-      timezoneOffsetMinutes,
-      ianaTimezone,
       workingDays: JSON.parse(settings.workingDays || "[1,2,3,4,5]"),
+      widgetStyle: activeWidgetStyle,
+      accentColor: activeAccentColor,
+      cardBg: activeCardBg,
+      textColor: settings.textColor,
       blackoutDates: parsedBlackouts,
       tagRules: parsedTagRules,
+      translations: {
+        cutoffPrefix: activeLeadText,
+        sameDaySuffix: activeSameDayText,
+        nextDaySuffix: activeNextDayText,
+        deliveryPrefix: activeEtaText,
+      },
+      ianaTimezone,
+      timezoneOffsetMinutes,
+      // Backward compatibility aliases
+      presetStyle: activeWidgetStyle,
+      primaryColor: activeAccentColor,
+      bgColor: activeCardBg,
       tagRulesJson: parsedTagRules,
       marketOverrides: JSON.parse(settings.marketOverrides || "{}"),
-      presetStyle: settings.presetStyle,
-      primaryColor: settings.primaryColor,
-      bgColor: settings.bgColor,
-      textColor: settings.textColor,
-      leadText: settings.leadText || "Order within",
-      sameDayText: settings.sameDayText || "for same-day dispatch",
-      nextDayText: settings.nextDayText || "for tomorrow's dispatch",
-      etaText: settings.etaText || "Estimated Delivery:",
+      leadText: activeLeadText,
+      sameDayText: activeSameDayText,
+      nextDayText: activeNextDayText,
+      etaText: activeEtaText,
     };
 
     await admin.graphql(
@@ -113,10 +131,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     settings: {
       ...settings,
-      leadText: settings.leadText || "Order within",
-      sameDayText: settings.sameDayText || "for same-day dispatch",
-      nextDayText: settings.nextDayText || "for tomorrow's dispatch",
-      etaText: settings.etaText || "Estimated Delivery:",
+      widgetStyle: activeWidgetStyle,
+      accentColor: activeAccentColor,
+      cardBg: activeCardBg,
+      presetStyle: activeWidgetStyle,
+      primaryColor: activeAccentColor,
+      bgColor: activeCardBg,
+      leadText: activeLeadText,
+      sameDayText: activeSameDayText,
+      nextDayText: activeNextDayText,
+      etaText: activeEtaText,
     },
     shop: session.shop,
     ianaTimezone,
@@ -143,17 +167,23 @@ export async function action({ request }: ActionFunctionArgs) {
   const cutoffHour = parseInt(formData.get("cutoffHour") as string, 10) || 14;
   const cutoffMinute = parseInt(formData.get("cutoffMinute") as string, 10) || 0;
   const leadDays = parseInt(formData.get("leadDays") as string, 10) || 2;
-  const primaryColor = (formData.get("primaryColor") as string) || "#008060";
-  const bgColor = (formData.get("bgColor") as string) || "#F4F6F8";
+  const widgetStyle = (formData.get("widgetStyle") as string) || (formData.get("presetStyle") as string) || "capsule";
+  const accentColor = (formData.get("accentColor") as string) || (formData.get("primaryColor") as string) || "#008060";
+  const cardBg = (formData.get("cardBg") as string) || (formData.get("bgColor") as string) || "#F4F6F8";
   const textColor = (formData.get("textColor") as string) || "#202223";
-  const presetStyle = (formData.get("presetStyle") as string) || "capsule";
-  const leadText = (formData.get("leadText") as string) || "Order within";
-  const sameDayText = (formData.get("sameDayText") as string) || "for same-day dispatch";
-  const nextDayText = (formData.get("nextDayText") as string) || "for tomorrow's dispatch";
-  const etaText = (formData.get("etaText") as string) || "Estimated Delivery:";
+  const leadText = (formData.get("leadText") as string) || (formData.get("cutoffPrefix") as string) || "Order within";
+  const sameDayText = (formData.get("sameDayText") as string) || (formData.get("sameDaySuffix") as string) || "for same-day dispatch";
+  const nextDayText = (formData.get("nextDayText") as string) || (formData.get("nextDaySuffix") as string) || "for tomorrow's dispatch";
+  const etaText = (formData.get("etaText") as string) || (formData.get("deliveryPrefix") as string) || "Estimated Delivery:";
   const workingDaysRaw = (formData.get("workingDays") as string) || "[1,2,3,4,5]";
   const blackoutDatesRaw = (formData.get("blackoutDates") as string) || "[]";
   const tagRulesRaw = (formData.get("tagRules") as string) || (formData.get("tagRulesJson") as string) || "[]";
+  const translationsRaw = (formData.get("translations") as string) || JSON.stringify({
+    cutoffPrefix: leadText,
+    sameDaySuffix: sameDayText,
+    nextDaySuffix: nextDayText,
+    deliveryPrefix: etaText,
+  });
 
   const updated = await prisma.dropClockSettings.upsert({
     where: { shop: session.shop },
@@ -161,34 +191,44 @@ export async function action({ request }: ActionFunctionArgs) {
       cutoffHour,
       cutoffMinute,
       leadDays,
-      primaryColor,
-      bgColor,
+      widgetStyle,
+      accentColor,
+      cardBg,
       textColor,
-      presetStyle,
+      blackoutDates: blackoutDatesRaw,
+      tagRules: tagRulesRaw,
+      translations: translationsRaw,
+      presetStyle: widgetStyle,
+      primaryColor: accentColor,
+      bgColor: cardBg,
+      tagRulesJson: tagRulesRaw,
       leadText,
       sameDayText,
       nextDayText,
       etaText,
       workingDays: workingDaysRaw,
-      blackoutDates: blackoutDatesRaw,
-      tagRulesJson: tagRulesRaw,
     },
     create: {
       shop: session.shop,
       cutoffHour,
       cutoffMinute,
       leadDays,
-      primaryColor,
-      bgColor,
+      widgetStyle,
+      accentColor,
+      cardBg,
       textColor,
-      presetStyle,
+      blackoutDates: blackoutDatesRaw,
+      tagRules: tagRulesRaw,
+      translations: translationsRaw,
+      presetStyle: widgetStyle,
+      primaryColor: accentColor,
+      bgColor: cardBg,
+      tagRulesJson: tagRulesRaw,
       leadText,
       sameDayText,
       nextDayText,
       etaText,
       workingDays: workingDaysRaw,
-      blackoutDates: blackoutDatesRaw,
-      tagRulesJson: tagRulesRaw,
     },
   });
 
@@ -216,7 +256,7 @@ export async function action({ request }: ActionFunctionArgs) {
   })();
   const parsedTagRules = (() => {
     try {
-      const p = JSON.parse(updated.tagRulesJson || "[]");
+      const p = JSON.parse(updated.tagRules || updated.tagRulesJson || "[]");
       return Array.isArray(p) ? p : [];
     } catch {
       return [];
@@ -227,17 +267,27 @@ export async function action({ request }: ActionFunctionArgs) {
     cutoffHour: updated.cutoffHour,
     cutoffMinute: updated.cutoffMinute,
     leadDays: updated.leadDays,
-    timezoneOffsetMinutes,
-    ianaTimezone,
     workingDays: JSON.parse(updated.workingDays || "[1,2,3,4,5]"),
+    widgetStyle: updated.widgetStyle || updated.presetStyle || "capsule",
+    accentColor: updated.accentColor || updated.primaryColor || "#008060",
+    cardBg: updated.cardBg || updated.bgColor || "#F4F6F8",
+    textColor: updated.textColor,
     blackoutDates: parsedBlackouts,
     tagRules: parsedTagRules,
+    translations: {
+      cutoffPrefix: updated.leadText || leadText,
+      sameDaySuffix: updated.sameDayText || sameDayText,
+      nextDaySuffix: updated.nextDayText || nextDayText,
+      deliveryPrefix: updated.etaText || etaText,
+    },
+    ianaTimezone,
+    timezoneOffsetMinutes,
+    // Backward compatibility
+    presetStyle: updated.widgetStyle || updated.presetStyle || "capsule",
+    primaryColor: updated.accentColor || updated.primaryColor || "#008060",
+    bgColor: updated.cardBg || updated.bgColor || "#F4F6F8",
     tagRulesJson: parsedTagRules,
     marketOverrides: JSON.parse(updated.marketOverrides || "{}"),
-    presetStyle: updated.presetStyle,
-    primaryColor: updated.primaryColor,
-    bgColor: updated.bgColor,
-    textColor: updated.textColor,
     leadText: updated.leadText || leadText,
     sameDayText: updated.sameDayText || sameDayText,
     nextDayText: updated.nextDayText || nextDayText,

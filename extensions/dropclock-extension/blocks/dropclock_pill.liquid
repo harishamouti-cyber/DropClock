@@ -13,11 +13,12 @@
 {% assign market_overrides = config.marketOverrides | default: "{}" %}
 {% assign tz_offset = config.timezoneOffsetMinutes | default: 0 %}
 {% assign iana_tz = config.ianaTimezone | default: 'UTC' %}
-{% assign lead_text = config.leadText | default: 'Order within' %}
-{% assign sameday_text = config.sameDayText | default: 'for same-day dispatch' %}
-{% assign nextday_text = config.nextDayText | default: "for tomorrow's dispatch" %}
-{% assign eta_text = config.etaText | default: 'Estimated Delivery:' %}
-{% assign active_style = block.settings.style_preset | default: config.presetStyle | default: 'capsule' %}
+{% assign trans = config.translations %}
+{% assign lead_text = trans.cutoffPrefix | default: config.leadText | default: 'Order within' %}
+{% assign sameday_text = trans.sameDaySuffix | default: config.sameDayText | default: 'for same-day dispatch' %}
+{% assign nextday_text = trans.nextDaySuffix | default: config.nextDayText | default: "for tomorrow's dispatch" %}
+{% assign eta_text = trans.deliveryPrefix | default: config.etaText | default: 'Estimated Delivery:' %}
+{% assign active_style = block.settings.style_preset | default: config.widgetStyle | default: config.presetStyle | default: 'capsule' %}
 {% if active_style == 'bar' %}{% assign active_style = 'urgency' %}{% endif %}
 
 {% comment %} Defensive Evaluation of Tag Overrides {% endcomment %}
@@ -37,31 +38,33 @@
 {% endif %}
 
 {% assign current_country = localization.country.iso_code %}
-{% assign current_variant = product.selected_or_first_available_variant %}
 {% assign is_available = product.selected_or_first_available_variant.available %}
 
 <div 
   class="dropclock-wrapper dc-w"
   id="dropclock-{{ block.id }}"
   data-cutoff-hour="{{ active_cutoff_hour }}"
+  data-cutoff-min="{{ active_cutoff_minute }}"
   data-cutoff-minute="{{ active_cutoff_minute }}"
   data-lead-days="{{ effective_lead_days }}"
   data-working-days='{{ working_days }}'
   data-blackout-dates="{{ config.blackoutDates | json | escape }}"
   data-blackouts='{{ blackout_dates }}'
   data-market-overrides='{{ market_overrides }}'
+  data-timezone-offset="{{ tz_offset }}"
   data-tz-offset="{{ tz_offset }}"
   data-iana-tz="{{ iana_tz }}"
   data-current-country="{{ current_country }}"
   data-available="{{ is_available }}"
   data-widget-style="{{ active_style }}"
+  data-translations='{{ trans | json | escape }}'
   data-lead-text="{{ lead_text | escape }}"
   data-sameday-text="{{ sameday_text | escape }}"
   data-nextday-text="{{ nextday_text | escape }}"
   data-eta-text="{{ eta_text | escape }}"
   style="
-    --dc-primary: {{ block.settings.primary_color | default: config.primaryColor | default: '#008060' }};
-    --dc-bg: {{ block.settings.bg_color | default: config.bgColor | default: '#f4f6f8' }};
+    --dc-primary: {{ block.settings.primary_color | default: config.accentColor | default: config.primaryColor | default: '#008060' }};
+    --dc-bg: {{ block.settings.bg_color | default: config.cardBg | default: config.bgColor | default: '#f4f6f8' }};
     --dc-text: {{ block.settings.text_color | default: config.textColor | default: '#202223' }};
     --dc-radius: {{ block.settings.corner_radius | default: 8 }}px;
   "
@@ -123,13 +126,13 @@
 
 <script>
 (function() {
-function y(){var a=document.getElementById("dropclock-{{ block.id }}");if(!a)return;var e=a.dataset||{},m=function(t){return a.querySelector(t)},h=m(".dc-c"),g=m(".dc-b"),v=m(".dc-tc"),C=m(".dc-dt"),b=m(".dc-et"),k=m(".dc-bf"),d=e.cutoffHour!=null?+e.cutoffHour:14,l=+e.cutoffMinute||0,T=+e.leadDays||2,p=+(e.tzOffset||0),w=e.samedayText||"for same-day dispatch",U=e.nextdayText||"for tomorrow's dispatch";function u(t){try{return JSON.parse(t)}catch{}}var c=u(e.workingDays),f=u(e.blackoutDates||e.blackouts),S=u(e.marketOverrides)||{};(!Array.isArray(c)||!c.length)&&(c=[1,2,3,4,5]),Array.isArray(f)||(f=[]),e.currentCountry&&S[e.currentCountry]&&(T+=+S[e.currentCountry]||0);function s(){if(e.available==="true"){var t=new Date(Date.now()+p*6e4),n=t.getUTCHours()*60+t.getUTCMinutes()+t.getUTCSeconds()/60,r=d*60+l-n,o=r<=0;if(o&&(r+=1440),C&&(C.textContent=o?U:w),v&&(v.textContent=(r/60|0)+"h "+(r%60|0)+"m"),k){var x=d*60+l>480?d*60+l-480:480;k.style.width=(o?0:Math.max(5,Math.min(100,Math.round(r/x*100))))+"%"}a.classList.toggle("dc-urgent",!o&&r<=60);for(var i=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate())),D=0,q=T+(o?1:0);D<q;)i.setUTCDate(i.getUTCDate()+1),~c.indexOf(i.getUTCDay())&&!~f.indexOf(i.toISOString().split("T")[0])&&D++;b&&(b.textContent=i.toLocaleDateString(void 0,{timeZone:"UTC",weekday:"short",month:"short",day:"numeric"}))}}function j(t){e.available=t?"true":"false",a.setAttribute("data-available",e.available),h&&(h.style.display=t?"flex":"none"),g&&(g.style.display=t?"none":"flex"),t&&s()}function I(t,n){document.addEventListener(t,n)}I("variant:change",function(t){var n=t&&t.detail&&(t.detail.variant||t.detail);n&&n.available!=null&&j(Boolean(n.available))}),I("change",function(t){var n=t.target.form||t.target.closest("form")||document.querySelector("form[action*='/cart/add']");n&&setTimeout(function(){var r=n.querySelector('[name="add"],.product-form__submit');r&&j(!(r.disabled||/sold|unavail/i.test(r.textContent||"")))},50)}),s(),setInterval(s,6e4)}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",y):y()
+function y(){var a=document.getElementById("dropclock-{{ block.id }}");if(!a)return;var e=a.dataset||{},m=function(t){return a.querySelector(t)},h=m(".dc-c"),g=m(".dc-b"),v=m(".dc-tc"),C=m(".dc-dt"),b=m(".dc-et"),k=m(".dc-bf"),d=e.cutoffHour!=null?+e.cutoffHour:14,l=+(e.cutoffMin||e.cutoffMinute||0),T=+e.leadDays||2,p=+(e.timezoneOffset||e.tzOffset||0),w=e.samedayText||"for same-day dispatch",U=e.nextdayText||"for tomorrow's dispatch";function u(t){try{return JSON.parse(t)}catch{}}var c=u(e.workingDays),f=u(e.blackoutDates||e.blackouts),S=u(e.marketOverrides)||{};(!Array.isArray(c)||!c.length)&&(c=[1,2,3,4,5]),Array.isArray(f)||(f=[]),e.currentCountry&&S[e.currentCountry]&&(T+=+S[e.currentCountry]||0);function s(){if(e.available==="true"){var t=new Date(Date.now()+p*6e4),n=t.getUTCHours()*60+t.getUTCMinutes()+t.getUTCSeconds()/60,r=d*60+l-n,o=r<=0;if(o&&(r+=1440),C&&(C.textContent=o?U:w),v&&(v.textContent=(r/60|0)+"h "+(r%60|0)+"m"),k){var x=d*60+l>480?d*60+l-480:480;k.style.width=(o?0:Math.max(5,Math.min(100,Math.round(r/x*100))))+"%"}a.classList.toggle("dc-urgent",!o&&r<=60);for(var i=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate())),D=0,q=T+(o?1:0);D<q;)i.setUTCDate(i.getUTCDate()+1),~c.indexOf(i.getUTCDay())&&!~f.indexOf(i.toISOString().split("T")[0])&&D++;b&&(b.textContent=i.toLocaleDateString(void 0,{timeZone:"UTC",weekday:"short",month:"short",day:"numeric"}))}}function j(t){e.available=t?"true":"false",a.setAttribute("data-available",e.available),h&&(h.style.display=t?"flex":"none"),g&&(g.style.display=t?"none":"flex"),t&&s()}function I(t,n){document.addEventListener(t,n)}I("variant:change",function(t){var n=t&&t.detail&&(t.detail.variant||t.detail);n&&n.available!=null&&j(Boolean(n.available))}),I("change",function(t){var n=t.target.form||t.target.closest("form")||document.querySelector("form[action*='/cart/add']");n&&setTimeout(function(){var r=n.querySelector('[name="add"],.product-form__submit');r&&j(!(r.disabled||/sold|unavail/i.test(r.textContent||"")))},50)}),s(),setInterval(s,6e4)}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",y):y()
 })();
 </script>
 
 {% schema %}
 {
-  "name": "DropClock Cutoff & ETA",
+  "name": "DropClock Delivery ETA",
   "target": "section",
   "settings": [
     {
@@ -170,6 +173,26 @@ function y(){var a=document.getElementById("dropclock-{{ block.id }}");if(!a)ret
       "unit": "px",
       "label": "Border Radius",
       "default": 8
+    },
+    {
+      "type": "range",
+      "id": "font_scale",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Font Size",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "margin_y",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Vertical Spacing",
+      "default": 14
     }
   ]
 }

@@ -1,26 +1,31 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSubmit, useNavigation } from "@remix-run/react";
 import { Page } from "@shopify/polaris";
-import { SaveBar } from "@shopify/app-bridge-react";
+import { SaveBar, TitleBar } from "@shopify/app-bridge-react";
 
 export interface StudioSettings {
-  id?: string;
+  id?: string | null;
   shop: string;
   cutoffHour: number;
   cutoffMinute: number;
   leadDays: number;
   workingDays: string;
-  blackoutDates?: string;
-  tagRulesJson?: string;
-  marketOverrides?: string;
-  presetStyle: string;
-  primaryColor: string;
-  bgColor: string;
-  textColor: string;
-  leadText?: string;
-  sameDayText?: string;
-  nextDayText?: string;
-  etaText?: string;
+  blackoutDates?: string | null;
+  tagRules?: string | null;
+  tagRulesJson?: string | null;
+  marketOverrides?: string | null;
+  widgetStyle?: string | null;
+  presetStyle?: string | null;
+  accentColor?: string | null;
+  primaryColor?: string | null;
+  cardBg?: string | null;
+  bgColor?: string | null;
+  textColor?: string | null;
+  leadText?: string | null;
+  sameDayText?: string | null;
+  nextDayText?: string | null;
+  etaText?: string | null;
+  translations?: string | null;
 }
 
 declare global {
@@ -308,9 +313,9 @@ export function DropClockStudio({
   const [cutoffMinute, setCutoffMinute] = useState(settings.cutoffMinute);
   const [leadDays, setLeadDays] = useState(settings.leadDays);
   const [isCustomLeadDays, setIsCustomLeadDays] = useState(settings.leadDays > 2);
-  const [presetStyle, setPresetStyle] = useState(settings.presetStyle || "capsule");
-  const [primaryColor, setPrimaryColor] = useState(settings.primaryColor || "#008060");
-  const [bgColor, setBgColor] = useState(settings.bgColor || "#F4F6F8");
+  const [presetStyle, setPresetStyle] = useState(settings.widgetStyle || settings.presetStyle || "capsule");
+  const [primaryColor, setPrimaryColor] = useState(settings.accentColor || settings.primaryColor || "#008060");
+  const [bgColor, setBgColor] = useState(settings.cardBg || settings.bgColor || "#F4F6F8");
   const [textColor, setTextColor] = useState(settings.textColor || "#202223");
   const [workingDays, setWorkingDays] = useState<number[]>(() => {
     try {
@@ -335,7 +340,7 @@ export function DropClockStudio({
   // Product Tag Overrides State
   const [tagRules, setTagRules] = useState<Array<{ tag: string; leadDays: number }>>(() => {
     try {
-      const parsed = JSON.parse(settings.tagRulesJson || "[]");
+      const parsed = JSON.parse(settings.tagRules || settings.tagRulesJson || "[]");
       return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
@@ -477,8 +482,11 @@ export function DropClockStudio({
     formData.append("cutoffHour", cutoffHour.toString());
     formData.append("cutoffMinute", cutoffMinute.toString());
     formData.append("leadDays", leadDays.toString());
+    formData.append("widgetStyle", presetStyle);
     formData.append("presetStyle", presetStyle);
+    formData.append("accentColor", primaryColor);
     formData.append("primaryColor", primaryColor);
+    formData.append("cardBg", bgColor);
     formData.append("bgColor", bgColor);
     formData.append("textColor", textColor);
     formData.append("workingDays", JSON.stringify(workingDays));
@@ -489,6 +497,15 @@ export function DropClockStudio({
     formData.append("sameDayText", sameDayText);
     formData.append("nextDayText", nextDayText);
     formData.append("etaText", etaText);
+    formData.append(
+      "translations",
+      JSON.stringify({
+        cutoffPrefix: leadText,
+        sameDaySuffix: sameDayText,
+        nextDaySuffix: nextDayText,
+        deliveryPrefix: etaText,
+      })
+    );
     submit(formData, { method: "post" });
     safeHideSaveBar();
   };
@@ -643,21 +660,47 @@ export function DropClockStudio({
 
   return (
     <Page fullWidth>
-      {/* App Bridge Native SaveBar (strictly guarded for embedded Shopify Admin iframe) */}
+      {/* App Bridge Contextual TitleBar & Native SaveBar */}
       {!isStandalone && isEmbedded && (
-        <SaveBar id="dropclock-save-bar" open={isDirty}>
-          <button
-            variant="primary"
-            onClick={handleSave}
-            disabled={navigation.state === "submitting"}
-          >
-            {navigation.state === "submitting" ? "Saving..." : "Save"}
-          </button>
-          <button onClick={handleDiscard} disabled={navigation.state === "submitting"}>
-            Discard
-          </button>
-        </SaveBar>
+        <>
+          <TitleBar title="DropClock Studio">
+            <button
+              variant="primary"
+              onClick={() => window.open(themeEditorDeepLink, "_blank")}
+            >
+              Add to Theme Editor
+            </button>
+            <button
+              onClick={() =>
+                window.open("https://github.com/harishamouti-cyber/DropClock#readme", "_blank")
+              }
+            >
+              Documentation
+            </button>
+          </TitleBar>
+
+          <SaveBar id="dropclock-save-bar" open={isDirty}>
+            <button
+              variant="primary"
+              onClick={handleSave}
+              disabled={navigation.state === "submitting"}
+            >
+              {navigation.state === "submitting" ? "Saving..." : "Save"}
+            </button>
+            <button onClick={handleDiscard} disabled={navigation.state === "submitting"}>
+              Discard
+            </button>
+          </SaveBar>
+        </>
       )}
+
+      <style>{`
+        @media (max-width: 1023px) {
+          .dropclock-studio-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
 
       <div
         style={{
@@ -719,7 +762,7 @@ export function DropClockStudio({
                   backgroundColor: "#10b981",
                 }}
               />
-              Dawn 15.0 (Active)
+              Dawn 15.0 (Active Theme)
             </span>
           </div>
 
@@ -770,8 +813,9 @@ export function DropClockStudio({
           </div>
         </div>
 
-        {/* 21st.dev Split-Pane Studio Layout */}
+        {/* 21st.dev Split-Pane Studio Layout (Collapsing cleanly to single-column under 1024px) */}
         <div
+          className="dropclock-studio-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "minmax(340px, 440px) 1fr",
@@ -779,16 +823,17 @@ export function DropClockStudio({
             alignItems: "start",
           }}
         >
-          {/* 3. LEFT PANE: Scrollable Configuration Column with pb-8 */}
+          {/* 3. LEFT PANE: Modular Parameter Controls (Scrollable Container) */}
           <div
+            className="overflow-y-auto max-h-[calc(100vh-80px)] pr-2 pb-16"
             style={{
               display: "flex",
               flexDirection: "column",
               gap: "18px",
-              maxHeight: "calc(100vh - 120px)",
+              maxHeight: "calc(100vh - 80px)",
               overflowY: "auto",
               paddingRight: "8px",
-              paddingBottom: "32px",
+              paddingBottom: "64px",
             }}
           >
             {/* 1. Cutoff Time Controller */}
@@ -1917,67 +1962,91 @@ export function DropClockStudio({
             >
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: "0.8125rem", fontWeight: "600", color: "#fafafa" }}>
-                  {isDirty ? "Unsaved Changes" : "Settings Synced"}
+                  {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
                 </span>
                 <span style={{ fontSize: "0.6875rem", color: hasSaved ? "#34d399" : isDirty ? "#34d399" : "#71717a" }}>
-                  {hasSaved ? "Settings saved successfully" : isDirty ? "Ready to publish to store" : "Active on Shopify Edge CDN"}
+                  {hasSaved
+                    ? "Settings saved successfully"
+                    : isDirty
+                    ? isStandalone
+                      ? "Ready to test in sandbox"
+                      : "Staged in Shopify Admin SaveBar"
+                    : "Active on Shopify Edge CDN"}
                 </span>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {isDirty && (
+              {isStandalone ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  {isDirty && (
+                    <button
+                      type="button"
+                      onClick={handleDiscard}
+                      disabled={isSaving}
+                      style={{
+                        backgroundColor: "transparent",
+                        color: "#a1a1aa",
+                        border: "1px solid #27272a",
+                        borderRadius: "6px",
+                        padding: "7px 12px",
+                        fontSize: "0.75rem",
+                        fontWeight: "500",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Discard
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={handleDiscard}
-                    disabled={navigation.state === "submitting" || isSaving}
+                    onClick={handleSave}
+                    disabled={(!isDirty && !hasSaved) || isSaving}
                     style={{
-                      backgroundColor: "transparent",
-                      color: "#a1a1aa",
-                      border: "1px solid #27272a",
+                      backgroundColor: hasSaved ? "#059669" : isDirty ? "#10b981" : "#27272a",
+                      color: isDirty || hasSaved ? "#09090b" : "#71717a",
+                      border: "none",
                       borderRadius: "6px",
-                      padding: "7px 12px",
+                      padding: "7px 16px",
                       fontSize: "0.75rem",
-                      fontWeight: "500",
-                      cursor: "pointer",
+                      fontWeight: "600",
+                      cursor: (isDirty || hasSaved) && !isSaving ? "pointer" : "not-allowed",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      transition: "all 0.15s ease",
                     }}
                   >
-                    Discard
+                    {isSaving ? (
+                      "Saving..."
+                    ) : hasSaved ? (
+                      <>
+                        <CheckIcon />
+                        <span>Settings Saved</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckIcon />
+                        <span>Save Settings</span>
+                      </>
+                    )}
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={(!isDirty && !hasSaved) || navigation.state === "submitting" || isSaving}
-                  style={{
-                    backgroundColor: hasSaved ? "#059669" : isDirty ? "#10b981" : "#27272a",
-                    color: isDirty || hasSaved ? "#09090b" : "#71717a",
-                    border: "none",
-                    borderRadius: "6px",
-                    padding: "7px 16px",
-                    fontSize: "0.75rem",
-                    fontWeight: "600",
-                    cursor: (isDirty || hasSaved) && navigation.state !== "submitting" && !isSaving ? "pointer" : "not-allowed",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {navigation.state === "submitting" || isSaving ? (
-                    "Saving..."
-                  ) : hasSaved ? (
-                    <>
-                      <CheckIcon />
-                      <span>Settings Saved</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckIcon />
-                      <span>Save Settings</span>
-                    </>
-                  )}
-                </button>
-              </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span
+                    style={{
+                      fontSize: "0.6875rem",
+                      color: isDirty ? "#10b981" : "#71717a",
+                      backgroundColor: isDirty ? "rgba(16, 185, 129, 0.1)" : "#18181b",
+                      border: `1px solid ${isDirty ? "rgba(16, 185, 129, 0.25)" : "#27272a"}`,
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      fontWeight: "500",
+                    }}
+                  >
+                    {isDirty ? "● SaveBar Active Above" : "✓ Edge Metastore Synchronized"}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
