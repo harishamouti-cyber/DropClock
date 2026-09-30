@@ -245,6 +245,9 @@ export function DropClockStudio({
     // Graceful fallback when outside App Bridge context
   }
 
+  const shopDomain = shop || "my-store.myshopify.com";
+  const themeEditorDeepLink = `https://${shopDomain}/admin/themes/current/editor?template=product`;
+
   const handleAddToTheme = () => {
     const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
     const currentShop = params.get("shop") || shop || (typeof window !== "undefined" ? window.location.hostname : "my-store.myshopify.com");
@@ -841,15 +844,14 @@ export function DropClockStudio({
               </button>
             )}
 
-            <a
-              href={themeEditorDeepLink}
-              target="_blank"
-              rel="noreferrer"
-              className="bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-900 rounded-md px-3.5 py-1.5 text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-xs"
+            <button
+              type="button"
+              onClick={handleAddToTheme}
+              className="bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-900 rounded-md px-3.5 py-1.5 text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-xs cursor-pointer"
             >
               <span>Add to Theme Editor</span>
               <ExternalLinkIcon />
-            </a>
+            </button>
           </div>
         </div>
       )}
