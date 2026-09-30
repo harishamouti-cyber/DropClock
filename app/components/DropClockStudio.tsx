@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSubmit, useNavigation } from "@remix-run/react";
-import { SaveBar, TitleBar } from "@shopify/app-bridge-react";
+import { SaveBar, TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 
 export interface StudioSettings {
   id?: string | null;
@@ -30,6 +30,7 @@ export interface StudioSettings {
 declare global {
   interface Window {
     shopify?: {
+      open?: (url: string, target?: string) => void;
       saveBar?: {
         show: (id: string) => void;
         hide: (id: string) => void;
@@ -237,13 +238,26 @@ export function DropClockStudio({
   const submit = useSubmit();
   const navigation = useNavigation();
 
-  // Shopify Deep-Link Theme Customizer Protocol
-  // Format: https://{shop}/admin/themes/current/editor?template=product&addAppBlockId={extension_id}/{block_handle}&target=mainProduct
-  const shopDomain = shop || "my-store.myshopify.com";
-  // Block handle from extensions/dropclock-extension/blocks/dropclock_pill.liquid
-  const themeEditorDeepLink = `https://${shopDomain}/admin/themes/current/editor?template=product&activateAppId=${
-    propExtensionId || (typeof process !== "undefined" && process?.env?.SHOPIFY_DROPCLOCK_EXTENSION_ID) || "6ccfac9a-9e01-8c6b-a21e-2c7474d1188e729b0378"
-  }`;
+  let appBridge: any = null;
+  try {
+    appBridge = useAppBridge();
+  } catch {
+    // Graceful fallback when outside App Bridge context
+  }
+
+  const handleAddToTheme = () => {
+    const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+    const currentShop = params.get("shop") || shop || (typeof window !== "undefined" ? window.location.hostname : "my-store.myshopify.com");
+    const themeEditorUrl = `https://${currentShop}/admin/themes/current/editor?template=product`;
+
+    if (appBridge && typeof appBridge.open === "function") {
+      appBridge.open(themeEditorUrl, "_blank");
+    } else if (typeof window !== "undefined" && window.shopify && typeof window.shopify.open === "function") {
+      window.shopify.open(themeEditorUrl, "_blank");
+    } else {
+      window.open(themeEditorUrl, "_blank", "noopener,noreferrer");
+    }
+  };
 
   // Defensive App Bridge Environment Detection
   const [isEmbedded, setIsEmbedded] = useState(false);
@@ -711,7 +725,7 @@ export function DropClockStudio({
           <TitleBar title="DropClock Studio">
             <button
               variant="primary"
-              onClick={() => window.open(themeEditorDeepLink, "_blank")}
+              onClick={handleAddToTheme}
             >
               Add to Theme Editor
             </button>
