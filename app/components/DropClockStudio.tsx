@@ -329,7 +329,14 @@ export function DropClockStudio({
   const [textColor, setTextColor] = useState(settings.textColor || "#202223");
   const [workingDays, setWorkingDays] = useState<number[]>(() => {
     try {
-      return JSON.parse(settings.workingDays || "[1,2,3,4,5]");
+      const parsed = JSON.parse(settings.workingDays || "[1,2,3,4,5]");
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        if (parsed.length === 1 && (parsed[0] === 0 || parsed[0] === 6)) {
+          return [1, 2, 3, 4, 5];
+        }
+        return parsed;
+      }
+      return [1, 2, 3, 4, 5];
     } catch {
       return [1, 2, 3, 4, 5];
     }
@@ -384,6 +391,21 @@ export function DropClockStudio({
     setBaselineSettings(settings);
   }, [settings]);
 
+  const baselineWorkingDaysStr = useMemo(() => {
+    try {
+      const parsed = JSON.parse(baselineSettings.workingDays || "[1,2,3,4,5]");
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        if (parsed.length === 1 && (parsed[0] === 0 || parsed[0] === 6)) {
+          return "[1,2,3,4,5]";
+        }
+        return JSON.stringify(parsed);
+      }
+      return "[1,2,3,4,5]";
+    } catch {
+      return "[1,2,3,4,5]";
+    }
+  }, [baselineSettings.workingDays]);
+
   // Calculate Form Dirty State for App Bridge SaveBar
   const isDirty = useMemo(() => {
     return (
@@ -391,10 +413,10 @@ export function DropClockStudio({
       cutoffMinute !== baselineSettings.cutoffMinute ||
       leadDays !== baselineSettings.leadDays ||
       presetStyle !== (baselineSettings.presetStyle || "capsule") ||
-      primaryColor.toLowerCase() !== (baselineSettings.primaryColor || "").toLowerCase() ||
-      bgColor.toLowerCase() !== (baselineSettings.bgColor || "").toLowerCase() ||
-      textColor.toLowerCase() !== (baselineSettings.textColor || "").toLowerCase() ||
-      JSON.stringify(workingDays) !== (baselineSettings.workingDays || "[1,2,3,4,5]") ||
+      primaryColor.toLowerCase() !== (baselineSettings.primaryColor || "#008060").toLowerCase() ||
+      bgColor.toLowerCase() !== (baselineSettings.bgColor || "#f4f6f8").toLowerCase() ||
+      textColor.toLowerCase() !== (baselineSettings.textColor || "#202223").toLowerCase() ||
+      JSON.stringify(workingDays) !== baselineWorkingDaysStr ||
       JSON.stringify(blackoutDates) !== (baselineSettings.blackoutDates || "[]") ||
       JSON.stringify(tagRules) !== (baselineSettings.tagRulesJson || "[]") ||
       leadText !== (baselineSettings.leadText || "Order within") ||
@@ -411,6 +433,7 @@ export function DropClockStudio({
     bgColor,
     textColor,
     workingDays,
+    baselineWorkingDaysStr,
     blackoutDates,
     tagRules,
     leadText,
@@ -436,7 +459,12 @@ export function DropClockStudio({
     setNextDayText(baselineSettings.nextDayText || "for tomorrow's dispatch");
     setEtaText(baselineSettings.etaText || "Estimated Delivery:");
     try {
-      setWorkingDays(JSON.parse(baselineSettings.workingDays || "[1,2,3,4,5]"));
+      const parsed = JSON.parse(baselineSettings.workingDays || "[1,2,3,4,5]");
+      if (Array.isArray(parsed) && parsed.length > 0 && !(parsed.length === 1 && (parsed[0] === 0 || parsed[0] === 6))) {
+        setWorkingDays(parsed);
+      } else {
+        setWorkingDays([1, 2, 3, 4, 5]);
+      }
     } catch {
       setWorkingDays([1, 2, 3, 4, 5]);
     }
@@ -450,6 +478,7 @@ export function DropClockStudio({
     } catch {
       setTagRules([]);
     }
+    setActiveSimulatedTag("none");
     safeHideSaveBar();
   };
 
@@ -814,7 +843,7 @@ export function DropClockStudio({
       {/* Studio Grid */}
       <div className="grid grid-cols-12 flex-1 min-h-0">
         {/* Left Sidebar Container */}
-        <div className="col-span-12 lg:col-span-4 h-full overflow-y-auto overscroll-contain p-4 space-y-4 border-r border-zinc-200/90 bg-[#f1f2f4] pr-3 pb-24 text-zinc-900">
+        <div className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-4 space-y-4 border-r border-zinc-200 dark:border-zinc-800 bg-[#f1f2f4] pr-3 pb-24 text-zinc-900">
           {/* 1. Cutoff Time Controller */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
               <div
@@ -2019,8 +2048,8 @@ export function DropClockStudio({
           </div>
 
           {/* RIGHT PANE: Realistic DTC Storefront Canvas */}
-          <div className="col-span-12 lg:col-span-8 h-full overflow-y-auto flex flex-col items-center p-6 py-10 bg-[#f7f8fa]">
-            <div className="m-auto py-6 w-full max-w-xl flex flex-col items-center mb-12">
+          <div className="col-span-12 lg:col-span-7 xl:col-span-8 h-full overflow-y-auto overscroll-contain flex flex-col items-center p-6 py-10 bg-[#f7f8fa]">
+            <div className="m-auto py-6 w-full max-w-xl flex flex-col items-center mb-16">
               {/* Browser Window Chrome Wrapper */}
               <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">
                 {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
@@ -2073,7 +2102,7 @@ export function DropClockStudio({
                   <div
                     className={`transition-all duration-300 ease-in-out mx-auto ${
                       viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
-                    } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-6 mb-12`}
+                    } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-6 mb-16`}
                   >
                     {/* Stock State Quick Switcher */}
                     <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
