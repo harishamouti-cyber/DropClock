@@ -675,7 +675,7 @@ export function DropClockStudio({
   ]);
 
   return (
-    <div className="h-[calc(100vh-56px)] flex flex-col overflow-hidden bg-zinc-950 text-zinc-100 font-sans">
+    <div className="h-[calc(100vh-56px)] flex flex-col overflow-hidden bg-[#f1f2f4] text-zinc-900 font-sans">
       {/* App Bridge Contextual TitleBar & Native SaveBar */}
       {!isStandalone && isEmbedded && (
         <>
@@ -720,28 +720,28 @@ export function DropClockStudio({
 
       {/* Header Bar */}
       {isEmbedded ? (
-        <div className="flex items-center justify-between px-6 py-2.5 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur shrink-0">
+        <div className="flex items-center justify-between px-6 py-2.5 border-b border-zinc-200/90 bg-white shrink-0">
           <div className="flex items-center gap-2.5">
-            <span className="text-[11px] font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
+            <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Dawn 15.0 (Active)
             </span>
 
             {/* Sync Status Badge in Header */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px]">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 text-[11px]">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   hasSaved
-                    ? "bg-emerald-400 animate-pulse"
+                    ? "bg-emerald-500 animate-pulse"
                     : isDirty
-                    ? "bg-amber-400"
+                    ? "bg-amber-500"
                     : "bg-emerald-500"
                 }`}
               />
-              <span className="font-semibold text-zinc-200">
+              <span className="font-semibold text-zinc-800">
                 {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
               </span>
-              <span className="text-[10px] text-zinc-400 hidden sm:inline">
+              <span className="text-[10px] text-zinc-500 hidden sm:inline">
                 • {hasSaved
                   ? "Saved to store"
                   : isDirty
@@ -752,32 +752,32 @@ export function DropClockStudio({
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0 flex-wrap gap-3">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-200 bg-white shrink-0 flex-wrap gap-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-base font-semibold tracking-tight text-zinc-100 m-0">
+            <h1 className="text-base font-semibold tracking-tight text-zinc-900 m-0">
               DropClock Studio
             </h1>
 
-            <span className="text-[11px] font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
+            <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Dawn 15.0 (Active)
             </span>
 
             {/* Sync Status Badge in Header */}
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-xs">
               <span
                 className={`w-2 h-2 rounded-full ${
                   hasSaved
-                    ? "bg-emerald-400 animate-pulse"
+                    ? "bg-emerald-500 animate-pulse"
                     : isDirty
-                    ? "bg-amber-400"
+                    ? "bg-amber-500"
                     : "bg-emerald-500"
                 }`}
               />
-              <span className="font-semibold text-zinc-200">
+              <span className="font-semibold text-zinc-800">
                 {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
               </span>
-              <span className="text-[11px] text-zinc-400 hidden sm:inline">
+              <span className="text-[11px] text-zinc-500 hidden sm:inline">
                 • {hasSaved
                   ? "Saved to store"
                   : isDirty
@@ -792,7 +792,7 @@ export function DropClockStudio({
               <button
                 type="button"
                 onClick={handleDiscard}
-                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-md px-3 py-1.5 text-xs font-medium transition cursor-pointer"
+                className="bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-300 rounded-md px-3 py-1.5 text-xs font-medium transition cursor-pointer"
               >
                 Reset Changes
               </button>
@@ -802,7 +802,7 @@ export function DropClockStudio({
               href={themeEditorDeepLink}
               target="_blank"
               rel="noreferrer"
-              className="bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 rounded-md px-3.5 py-1.5 text-xs font-medium inline-flex items-center gap-1.5 transition shadow-sm"
+              className="bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-900 rounded-md px-3.5 py-1.5 text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-xs"
             >
               <span>Add to Theme Editor</span>
               <ExternalLinkIcon />
@@ -814,9 +814,9 @@ export function DropClockStudio({
       {/* Studio Grid */}
       <div className="grid grid-cols-12 flex-1 min-h-0">
         {/* Left Sidebar Container */}
-        <div className="col-span-12 lg:col-span-4 h-full overflow-y-auto overscroll-contain p-4 space-y-4 border-r border-zinc-800/80 pr-3 pb-24">
+        <div className="col-span-12 lg:col-span-4 h-full overflow-y-auto overscroll-contain p-4 space-y-4 border-r border-zinc-200/90 bg-[#f1f2f4] pr-3 pb-24 text-zinc-900">
           {/* 1. Cutoff Time Controller */}
-          <div className="bg-[#121215] border border-zinc-800/80 rounded-xl p-4 shadow-sm space-y-3">
+          <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
               <div
                 style={{
                   display: "flex",
@@ -827,16 +827,16 @@ export function DropClockStudio({
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <ClockIcon />
-                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
                     Fulfillment Cutoff
                   </span>
                 </div>
                 <span
                   style={{
                     fontSize: "0.6875rem",
-                    color: "#a1a1aa",
-                    backgroundColor: "#18181b",
-                    border: "1px solid #27272a",
+                    color: "#475569",
+                    backgroundColor: "#f1f5f9",
+                    border: "1px solid #cbd5e1",
                     padding: "2px 8px",
                     borderRadius: "9999px",
                   }}
@@ -852,8 +852,8 @@ export function DropClockStudio({
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "12px",
-                  backgroundColor: "#18181b",
-                  border: "1px solid #27272a",
+                  backgroundColor: "#f8fafc",
+                  border: "1px solid #e2e8f0",
                   borderRadius: "10px",
                   padding: "12px",
                   marginBottom: "14px",
@@ -866,9 +866,9 @@ export function DropClockStudio({
                     width: "32px",
                     height: "32px",
                     borderRadius: "6px",
-                    border: "1px solid #3f3f46",
-                    backgroundColor: "#27272a",
-                    color: "#fafafa",
+                    border: "1px solid #cbd5e1",
+                    backgroundColor: "#ffffff",
+                    color: "#0f172a",
                     fontWeight: "700",
                     fontSize: "1.125rem",
                     cursor: "pointer",
@@ -913,13 +913,13 @@ export function DropClockStudio({
                     style={{
                       width: "56px",
                       textAlign: "center",
-                      backgroundColor: "#121215",
-                      border: "1px solid #3f3f46",
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #cbd5e1",
                       borderRadius: "6px",
                       padding: "4px 0",
                       fontSize: "1.75rem",
                       fontWeight: "700",
-                      color: "#fafafa",
+                      color: "#0f172a",
                       fontFamily: "monospace",
                       outline: "none",
                       boxSizing: "border-box",
@@ -951,13 +951,13 @@ export function DropClockStudio({
                     style={{
                       width: "56px",
                       textAlign: "center",
-                      backgroundColor: "#121215",
-                      border: "1px solid #3f3f46",
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #cbd5e1",
                       borderRadius: "6px",
                       padding: "4px 0",
                       fontSize: "1.75rem",
                       fontWeight: "700",
-                      color: "#fafafa",
+                      color: "#0f172a",
                       fontFamily: "monospace",
                       outline: "none",
                       boxSizing: "border-box",
@@ -972,9 +972,9 @@ export function DropClockStudio({
                     width: "32px",
                     height: "32px",
                     borderRadius: "6px",
-                    border: "1px solid #3f3f46",
-                    backgroundColor: "#27272a",
-                    color: "#fafafa",
+                    border: "1px solid #cbd5e1",
+                    backgroundColor: "#ffffff",
+                    color: "#0f172a",
                     fontWeight: "700",
                     fontSize: "1.125rem",
                     cursor: "pointer",
@@ -1009,11 +1009,11 @@ export function DropClockStudio({
                       style={{
                         padding: "6px 4px",
                         borderRadius: "6px",
-                        border: active ? "1px solid #10b981" : "1px solid #27272a",
-                        backgroundColor: active ? "rgba(16, 185, 129, 0.12)" : "#18181b",
-                        color: active ? "#34d399" : "#a1a1aa",
+                        border: active ? "1px solid #10b981" : "1px solid #e2e8f0",
+                        backgroundColor: active ? "rgba(16, 185, 129, 0.12)" : "#ffffff",
+                        color: active ? "#047857" : "#475569",
                         fontSize: "0.75rem",
-                        fontWeight: "500",
+                        fontWeight: "600",
                         cursor: "pointer",
                         transition: "all 0.15s ease",
                       }}
@@ -1028,16 +1028,16 @@ export function DropClockStudio({
             {/* 2. Display Preset Selector */}
             <div
               style={{
-                backgroundColor: "#121215",
-                border: "1px solid #1f1f23",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "16px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                 <LayoutIcon />
-                <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
                   Widget Display Style
                 </span>
               </div>
@@ -1072,9 +1072,9 @@ export function DropClockStudio({
                       style={{
                         padding: "12px 10px",
                         borderRadius: "8px",
-                        border: active ? "1px solid #10b981" : "1px solid #27272a",
-                        backgroundColor: active ? "rgba(16, 185, 129, 0.08)" : "#18181b",
-                        color: active ? "#fafafa" : "#a1a1aa",
+                        border: active ? "2px solid #10b981" : "1px solid #cbd5e1",
+                        backgroundColor: active ? "rgba(16, 185, 129, 0.08)" : "#ffffff",
+                        color: active ? "#0f172a" : "#475569",
                         textAlign: "left",
                         cursor: "pointer",
                         display: "flex",
@@ -1084,17 +1084,17 @@ export function DropClockStudio({
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ color: active ? "#10b981" : "#71717a" }}>{preset.icon}</span>
+                        <span style={{ color: active ? "#10b981" : "#64748b" }}>{preset.icon}</span>
                         {active && (
                           <span style={{ color: "#10b981" }}>
                             <CheckIcon />
                           </span>
                         )}
                       </div>
-                      <span style={{ fontSize: "0.8125rem", fontWeight: "600", color: active ? "#fafafa" : "#e4e4e7" }}>
+                      <span style={{ fontSize: "0.8125rem", fontWeight: "600", color: active ? "#0f172a" : "#334155" }}>
                         {preset.name}
                       </span>
-                      <span style={{ fontSize: "0.6875rem", color: "#71717a", lineHeight: "1.3" }}>
+                      <span style={{ fontSize: "0.6875rem", color: "#64748b", lineHeight: "1.3" }}>
                         {preset.desc}
                       </span>
                     </button>
@@ -1106,16 +1106,16 @@ export function DropClockStudio({
             {/* 3. Lead Time Selector with Expandable Stepper */}
             <div
               style={{
-                backgroundColor: "#121215",
-                border: "1px solid #1f1f23",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "16px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                 <TruckIcon />
-                <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
                   Transit Lead Time
                 </span>
               </div>
@@ -1125,10 +1125,10 @@ export function DropClockStudio({
                   display: "grid",
                   gridTemplateColumns: "repeat(4, 1fr)",
                   gap: "6px",
-                  backgroundColor: "#18181b",
+                  backgroundColor: "#f8fafc",
                   padding: "4px",
                   borderRadius: "8px",
-                  border: "1px solid #27272a",
+                  border: "1px solid #e2e8f0",
                 }}
               >
                 {[
@@ -1156,8 +1156,8 @@ export function DropClockStudio({
                         padding: "7px 4px",
                         borderRadius: "6px",
                         border: "none",
-                        backgroundColor: active ? "#27272a" : "transparent",
-                        color: active ? "#fafafa" : "#71717a",
+                        backgroundColor: active ? "#0f172a" : "transparent",
+                        color: active ? "#ffffff" : "#475569",
                         fontSize: "0.75rem",
                         fontWeight: "600",
                         cursor: "pointer",
@@ -1179,7 +1179,7 @@ export function DropClockStudio({
                     gap: "12px",
                     marginTop: "12px",
                     paddingTop: "12px",
-                    borderTop: "1px solid #1f1f23",
+                    borderTop: "1px solid #e2e8f0",
                   }}
                 >
                   <div
@@ -1187,10 +1187,10 @@ export function DropClockStudio({
                       display: "flex",
                       alignItems: "center",
                       gap: "6px",
-                      backgroundColor: "#18181b",
+                      backgroundColor: "#f8fafc",
                       padding: "4px 8px",
                       borderRadius: "8px",
-                      border: "1px solid #27272a",
+                      border: "1px solid #cbd5e1",
                     }}
                   >
                     <button
@@ -1200,9 +1200,9 @@ export function DropClockStudio({
                         width: "26px",
                         height: "26px",
                         borderRadius: "6px",
-                        border: "1px solid #27272a",
-                        backgroundColor: "#27272a",
-                        color: "#fafafa",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "#ffffff",
+                        color: "#0f172a",
                         fontWeight: "700",
                         cursor: "pointer",
                         display: "flex",
@@ -1219,7 +1219,7 @@ export function DropClockStudio({
                         fontWeight: "600",
                         fontSize: "0.8125rem",
                         fontFamily: "monospace",
-                        color: "#fafafa",
+                        color: "#0f172a",
                       }}
                     >
                       {leadDays} {leadDays === 1 ? "Day" : "Days"}
@@ -1231,9 +1231,9 @@ export function DropClockStudio({
                         width: "26px",
                         height: "26px",
                         borderRadius: "6px",
-                        border: "1px solid #27272a",
-                        backgroundColor: "#27272a",
-                        color: "#fafafa",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "#ffffff",
+                        color: "#0f172a",
                         fontWeight: "700",
                         cursor: "pointer",
                         display: "flex",
@@ -1244,7 +1244,7 @@ export function DropClockStudio({
                       +
                     </button>
                   </div>
-                  <span style={{ fontSize: "0.8125rem", color: "#71717a" }}>
+                  <span style={{ fontSize: "0.8125rem", color: "#64748b" }}>
                     Transit fulfillment window (1–30 days)
                   </span>
                 </div>
@@ -1254,11 +1254,11 @@ export function DropClockStudio({
             {/* 4. Operating Days */}
             <div
               style={{
-                backgroundColor: "#121215",
-                border: "1px solid #1f1f23",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "16px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
               }}
             >
               <div
@@ -1271,11 +1271,11 @@ export function DropClockStudio({
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <ShieldCheckIcon />
-                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
                     Operating Days
                   </span>
                 </div>
-                <span style={{ fontSize: "0.75rem", color: "#71717a" }}>
+                <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
                   {workingDays.length} Active Days
                 </span>
               </div>
@@ -1300,9 +1300,9 @@ export function DropClockStudio({
                         flex: 1,
                         aspectRatio: "1",
                         borderRadius: "8px",
-                        border: active ? "1px solid rgba(16, 185, 129, 0.5)" : "1px solid #27272a",
-                        backgroundColor: active ? "rgba(16, 185, 129, 0.12)" : "#18181b",
-                        color: active ? "#34d399" : "#52525b",
+                        border: active ? "1px solid #10b981" : "1px solid #e2e8f0",
+                        backgroundColor: active ? "#10b981" : "#ffffff",
+                        color: active ? "#ffffff" : "#64748b",
                         fontSize: "0.8125rem",
                         fontWeight: "600",
                         cursor: "pointer",
@@ -1318,11 +1318,11 @@ export function DropClockStudio({
             {/* 5. Warehouse Holiday & Blackout Dates */}
             <div
               style={{
-                backgroundColor: "#121215",
-                border: "1px solid #1f1f23",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "16px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
               }}
             >
               <div
@@ -1337,7 +1337,7 @@ export function DropClockStudio({
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <CalendarIcon />
-                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
                     Warehouse Holiday &amp; Blackout Dates
                   </span>
                 </div>
@@ -1345,18 +1345,18 @@ export function DropClockStudio({
                   <span
                     style={{
                       fontSize: "0.6875rem",
-                      fontWeight: "500",
-                      color: blackoutDates.length > 0 ? "#10b981" : "#71717a",
-                      backgroundColor: blackoutDates.length > 0 ? "rgba(16, 185, 129, 0.1)" : "#18181b",
+                      fontWeight: "600",
+                      color: blackoutDates.length > 0 ? "#047857" : "#64748b",
+                      backgroundColor: blackoutDates.length > 0 ? "#ecfdf5" : "#f1f5f9",
                       border: "1px solid",
-                      borderColor: blackoutDates.length > 0 ? "rgba(16, 185, 129, 0.25)" : "#27272a",
+                      borderColor: blackoutDates.length > 0 ? "#a7f3d0" : "#e2e8f0",
                       padding: "2px 8px",
                       borderRadius: "9999px",
                     }}
                   >
                     {blackoutDates.length} {blackoutDates.length === 1 ? "Date" : "Dates"}
                   </span>
-                  <span style={{ color: "#71717a" }}>
+                  <span style={{ color: "#64748b" }}>
                     <ChevronDownIcon open={isBlackoutOpen} />
                   </span>
                 </div>
@@ -1364,7 +1364,7 @@ export function DropClockStudio({
 
               {isBlackoutOpen && (
                 <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#a1a1aa", lineHeight: "1.4" }}>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b", lineHeight: "1.4" }}>
                     Select dates when fulfillment is paused (e.g. Thanksgiving, Christmas, inventory audit days). Orders during blackout dates roll dispatch and arrival ETA to the next operational business day.
                   </p>
 
@@ -1376,14 +1376,14 @@ export function DropClockStudio({
                       onChange={(e) => setNewBlackoutDate(e.target.value)}
                       style={{
                         flex: 1,
-                        backgroundColor: "#18181b",
-                        border: "1px solid #27272a",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #cbd5e1",
                         borderRadius: "8px",
                         padding: "8px 10px",
                         fontSize: "0.75rem",
-                        color: "#fafafa",
+                        color: "#0f172a",
                         outline: "none",
-                        colorScheme: "dark",
+                        colorScheme: "light",
                       }}
                     />
                     <button
@@ -1392,9 +1392,9 @@ export function DropClockStudio({
                       disabled={!newBlackoutDate}
                       style={{
                         padding: "8px 12px",
-                        backgroundColor: newBlackoutDate ? "#27272a" : "#1c1c1f",
-                        color: newBlackoutDate ? "#fafafa" : "#52525b",
-                        border: "1px solid #27272a",
+                        backgroundColor: newBlackoutDate ? "#0f172a" : "#f1f5f9",
+                        color: newBlackoutDate ? "#ffffff" : "#94a3b8",
+                        border: "1px solid #cbd5e1",
                         borderRadius: "8px",
                         fontSize: "0.75rem",
                         fontWeight: "600",
@@ -1414,7 +1414,7 @@ export function DropClockStudio({
                   {/* Selected Blackout Badges List */}
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", minHeight: "28px" }}>
                     {blackoutDates.length === 0 ? (
-                      <span style={{ fontSize: "0.6875rem", color: "#52525b", fontStyle: "italic" }}>
+                      <span style={{ fontSize: "0.6875rem", color: "#94a3b8", fontStyle: "italic" }}>
                         No blackout dates scheduled. Warehouse operates on all designated operating days.
                       </span>
                     ) : (
@@ -1425,13 +1425,13 @@ export function DropClockStudio({
                             display: "inline-flex",
                             alignItems: "center",
                             gap: "6px",
-                            backgroundColor: "#18181b",
-                            border: "1px solid #27272a",
+                            backgroundColor: "#f1f5f9",
+                            border: "1px solid #cbd5e1",
                             padding: "4px 8px 4px 10px",
                             borderRadius: "6px",
                             fontSize: "0.75rem",
-                            fontWeight: "500",
-                            color: "#e4e4e7",
+                            fontWeight: "600",
+                            color: "#0f172a",
                           }}
                         >
                           <span>{formatBadgeDate(dateStr)}</span>
@@ -1442,7 +1442,7 @@ export function DropClockStudio({
                             style={{
                               background: "none",
                               border: "none",
-                              color: "#71717a",
+                              color: "#64748b",
                               cursor: "pointer",
                               padding: "2px",
                               display: "inline-flex",
@@ -1452,7 +1452,7 @@ export function DropClockStudio({
                               transition: "color 0.15s ease",
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-                            onMouseLeave={(e) => (e.currentTarget.style.color = "#71717a")}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = "#64748b")}
                           >
                             <XIcon />
                           </button>
@@ -1467,11 +1467,11 @@ export function DropClockStudio({
             {/* 6. Product Tag Overrides */}
             <div
               style={{
-                backgroundColor: "#121215",
-                border: "1px solid #1f1f23",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "16px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
               }}
             >
               <div
@@ -1486,7 +1486,7 @@ export function DropClockStudio({
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <TagIcon />
-                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
                     Product Tag Overrides
                   </span>
                 </div>
@@ -1494,18 +1494,18 @@ export function DropClockStudio({
                   <span
                     style={{
                       fontSize: "0.6875rem",
-                      fontWeight: "500",
-                      color: tagRules.length > 0 ? "#10b981" : "#71717a",
-                      backgroundColor: tagRules.length > 0 ? "rgba(16, 185, 129, 0.1)" : "#18181b",
+                      fontWeight: "600",
+                      color: tagRules.length > 0 ? "#047857" : "#64748b",
+                      backgroundColor: tagRules.length > 0 ? "#ecfdf5" : "#f1f5f9",
                       border: "1px solid",
-                      borderColor: tagRules.length > 0 ? "rgba(16, 185, 129, 0.25)" : "#27272a",
+                      borderColor: tagRules.length > 0 ? "#a7f3d0" : "#e2e8f0",
                       padding: "2px 8px",
                       borderRadius: "9999px",
                     }}
                   >
                     {tagRules.length} {tagRules.length === 1 ? "Rule" : "Rules"}
                   </span>
-                  <span style={{ color: "#71717a" }}>
+                  <span style={{ color: "#64748b" }}>
                     <ChevronDownIcon open={isTagRulesOpen} />
                   </span>
                 </div>
@@ -1513,14 +1513,14 @@ export function DropClockStudio({
 
               {isTagRulesOpen && (
                 <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#a1a1aa", lineHeight: "1.4" }}>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b", lineHeight: "1.4" }}>
                     Map Shopify product tags (e.g. <code>pre-order</code>, <code>custom-engraved</code>, <code>freight</code>) to custom transit lead times.
                   </p>
 
                   {/* Rules List Table */}
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {tagRules.length === 0 ? (
-                      <span style={{ fontSize: "0.6875rem", color: "#52525b", fontStyle: "italic" }}>
+                      <span style={{ fontSize: "0.6875rem", color: "#94a3b8", fontStyle: "italic" }}>
                         No tag rules configured. Standard transit lead time applies to all products.
                       </span>
                     ) : (
@@ -1531,8 +1531,8 @@ export function DropClockStudio({
                             display: "flex",
                             alignItems: "center",
                             gap: "8px",
-                            backgroundColor: "#18181b",
-                            border: "1px solid #27272a",
+                            backgroundColor: "#f8fafc",
+                            border: "1px solid #e2e8f0",
                             borderRadius: "8px",
                             padding: "6px 8px",
                           }}
@@ -1545,12 +1545,12 @@ export function DropClockStudio({
                               onChange={(e) => updateTagRule(idx, { ...rule, tag: e.target.value })}
                               style={{
                                 width: "100%",
-                                backgroundColor: "#27272a",
-                                border: "1px solid #3f3f46",
+                                backgroundColor: "#ffffff",
+                                border: "1px solid #cbd5e1",
                                 borderRadius: "6px",
                                 padding: "6px 8px",
                                 fontSize: "0.75rem",
-                                color: "#fafafa",
+                                color: "#0f172a",
                                 outline: "none",
                                 boxSizing: "border-box",
                               }}
@@ -1563,12 +1563,12 @@ export function DropClockStudio({
                               onChange={(e) => updateTagRule(idx, { ...rule, leadDays: parseInt(e.target.value, 10) || 1 })}
                               style={{
                                 width: "100%",
-                                backgroundColor: "#27272a",
-                                border: "1px solid #3f3f46",
+                                backgroundColor: "#ffffff",
+                                border: "1px solid #cbd5e1",
                                 borderRadius: "6px",
                                 padding: "6px 8px",
                                 fontSize: "0.75rem",
-                                color: "#fafafa",
+                                color: "#0f172a",
                                 outline: "none",
                                 cursor: "pointer",
                                 boxSizing: "border-box",
@@ -1594,9 +1594,9 @@ export function DropClockStudio({
                               width: "28px",
                               height: "28px",
                               borderRadius: "6px",
-                              border: "1px solid #27272a",
-                              backgroundColor: "transparent",
-                              color: "#71717a",
+                              border: "1px solid #e2e8f0",
+                              backgroundColor: "#ffffff",
+                              color: "#64748b",
                               cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
@@ -1606,11 +1606,11 @@ export function DropClockStudio({
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.color = "#ef4444";
-                              e.currentTarget.style.borderColor = "#7f1d1d";
+                              e.currentTarget.style.borderColor = "#fca5a5";
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.color = "#71717a";
-                              e.currentTarget.style.borderColor = "#27272a";
+                              e.currentTarget.style.color = "#64748b";
+                              e.currentTarget.style.borderColor = "#e2e8f0";
                             }}
                           >
                             <TrashIcon />
@@ -1626,10 +1626,10 @@ export function DropClockStudio({
                     onClick={addTagRule}
                     style={{
                       padding: "8px 12px",
-                      backgroundColor: "#18181b",
-                      border: "1px dashed #27272a",
+                      backgroundColor: "#f8fafc",
+                      border: "1px dashed #cbd5e1",
                       borderRadius: "8px",
-                      color: "#a1a1aa",
+                      color: "#475569",
                       fontSize: "0.75rem",
                       fontWeight: "600",
                       cursor: "pointer",
@@ -1640,12 +1640,12 @@ export function DropClockStudio({
                       transition: "all 0.15s ease",
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = "#3f3f46";
-                      e.currentTarget.style.color = "#fafafa";
+                      e.currentTarget.style.borderColor = "#94a3b8";
+                      e.currentTarget.style.color = "#0f172a";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "#27272a";
-                      e.currentTarget.style.color = "#a1a1aa";
+                      e.currentTarget.style.borderColor = "#cbd5e1";
+                      e.currentTarget.style.color = "#475569";
                     }}
                   >
                     <PlusIcon />
@@ -1655,14 +1655,14 @@ export function DropClockStudio({
               )}
             </div>
 
-            {/* 6. Storefront Text & Translations Accordion Card */}
+            {/* 7. Storefront Text & Translations Accordion Card */}
             <div
               style={{
-                backgroundColor: "#121215",
-                border: "1px solid #1f1f23",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "16px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
               }}
             >
               <div
@@ -1677,7 +1677,7 @@ export function DropClockStudio({
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <GlobeIcon />
-                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
                     Storefront Text &amp; Translations
                   </span>
                 </div>
@@ -1685,17 +1685,17 @@ export function DropClockStudio({
                   <span
                     style={{
                       fontSize: "0.6875rem",
-                      fontWeight: "500",
-                      color: "#10b981",
-                      backgroundColor: "rgba(16, 185, 129, 0.1)",
-                      border: "1px solid rgba(16, 185, 129, 0.25)",
+                      fontWeight: "600",
+                      color: "#047857",
+                      backgroundColor: "#ecfdf5",
+                      border: "1px solid #a7f3d0",
                       padding: "2px 8px",
                       borderRadius: "9999px",
                     }}
                   >
                     4 Tokens
                   </span>
-                  <span style={{ color: "#71717a" }}>
+                  <span style={{ color: "#64748b" }}>
                     <ChevronDownIcon open={isTranslationsOpen} />
                   </span>
                 </div>
@@ -1703,7 +1703,7 @@ export function DropClockStudio({
 
               {isTranslationsOpen && (
                 <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "14px" }}>
-                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#a1a1aa", lineHeight: "1.4" }}>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b", lineHeight: "1.4" }}>
                     Customize storefront labels and translation strings for international customers. Updates reflect instantly in live preview and Liquid server paint.
                   </p>
 
@@ -1711,10 +1711,10 @@ export function DropClockStudio({
                     {/* Token 1: Cutoff Lead Text */}
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                        <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "#fafafa" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: "600", color: "#0f172a" }}>
                           Cutoff Lead Text
                         </label>
-                        <span style={{ fontSize: "0.6875rem", color: "#71717a" }}>Default: "Order within"</span>
+                        <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>Default: "Order within"</span>
                       </div>
                       <input
                         type="text"
@@ -1723,12 +1723,12 @@ export function DropClockStudio({
                         placeholder="Order within"
                         style={{
                           width: "100%",
-                          backgroundColor: "#18181b",
-                          border: "1px solid #27272a",
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #cbd5e1",
                           borderRadius: "8px",
                           padding: "8px 12px",
                           fontSize: "0.8125rem",
-                          color: "#fafafa",
+                          color: "#0f172a",
                           outline: "none",
                           boxSizing: "border-box",
                         }}
@@ -1738,10 +1738,10 @@ export function DropClockStudio({
                     {/* Token 2: Same-Day Dispatch Label */}
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                        <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "#fafafa" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: "600", color: "#0f172a" }}>
                           Same-Day Dispatch Label
                         </label>
-                        <span style={{ fontSize: "0.6875rem", color: "#71717a" }}>Default: "for same-day dispatch"</span>
+                        <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>Default: "for same-day dispatch"</span>
                       </div>
                       <input
                         type="text"
@@ -1750,12 +1750,12 @@ export function DropClockStudio({
                         placeholder="for same-day dispatch"
                         style={{
                           width: "100%",
-                          backgroundColor: "#18181b",
-                          border: "1px solid #27272a",
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #cbd5e1",
                           borderRadius: "8px",
                           padding: "8px 12px",
                           fontSize: "0.8125rem",
-                          color: "#fafafa",
+                          color: "#0f172a",
                           outline: "none",
                           boxSizing: "border-box",
                         }}
@@ -1765,10 +1765,10 @@ export function DropClockStudio({
                     {/* Token 3: Next-Day Dispatch Label */}
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                        <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "#fafafa" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: "600", color: "#0f172a" }}>
                           Next-Day Dispatch Label
                         </label>
-                        <span style={{ fontSize: "0.6875rem", color: "#71717a" }}>Default: "for tomorrow's dispatch"</span>
+                        <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>Default: "for tomorrow's dispatch"</span>
                       </div>
                       <input
                         type="text"
@@ -1777,12 +1777,12 @@ export function DropClockStudio({
                         placeholder="for tomorrow's dispatch"
                         style={{
                           width: "100%",
-                          backgroundColor: "#18181b",
-                          border: "1px solid #27272a",
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #cbd5e1",
                           borderRadius: "8px",
                           padding: "8px 12px",
                           fontSize: "0.8125rem",
-                          color: "#fafafa",
+                          color: "#0f172a",
                           outline: "none",
                           boxSizing: "border-box",
                         }}
@@ -1792,10 +1792,10 @@ export function DropClockStudio({
                     {/* Token 4: Delivery ETA Label */}
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                        <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "#fafafa" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: "600", color: "#0f172a" }}>
                           Delivery ETA Label
                         </label>
-                        <span style={{ fontSize: "0.6875rem", color: "#71717a" }}>Default: "Estimated Delivery:"</span>
+                        <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>Default: "Estimated Delivery:"</span>
                       </div>
                       <input
                         type="text"
@@ -1804,12 +1804,12 @@ export function DropClockStudio({
                         placeholder="Estimated Delivery:"
                         style={{
                           width: "100%",
-                          backgroundColor: "#18181b",
-                          border: "1px solid #27272a",
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #cbd5e1",
                           borderRadius: "8px",
                           padding: "8px 12px",
                           fontSize: "0.8125rem",
-                          color: "#fafafa",
+                          color: "#0f172a",
                           outline: "none",
                           boxSizing: "border-box",
                         }}
@@ -1829,14 +1829,14 @@ export function DropClockStudio({
                         style={{
                           backgroundColor: "transparent",
                           border: "none",
-                          color: "#71717a",
+                          color: "#64748b",
                           fontSize: "0.6875rem",
                           cursor: "pointer",
                           textDecoration: "underline",
                           padding: "2px 4px",
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "#fafafa")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "#71717a")}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "#0f172a")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "#64748b")}
                       >
                         Reset to English Defaults
                       </button>
@@ -1846,19 +1846,19 @@ export function DropClockStudio({
               )}
             </div>
 
-            {/* 7. Brand Alignment & Functional Color Swatches */}
+            {/* 8. Brand Alignment & Functional Color Swatches */}
             <div
               style={{
-                backgroundColor: "#121215",
-                border: "1px solid #1f1f23",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "16px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                 <SparklesIcon />
-                <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
                   Brand Alignment &amp; Color Tokens
                 </span>
               </div>
@@ -1888,9 +1888,9 @@ export function DropClockStudio({
                       style={{
                         padding: "8px 10px",
                         borderRadius: "8px",
-                        border: active ? "1px solid #10b981" : "1px solid #27272a",
-                        backgroundColor: active ? "rgba(16, 185, 129, 0.08)" : "#18181b",
-                        color: active ? "#fafafa" : "#a1a1aa",
+                        border: active ? "1px solid #10b981" : "1px solid #e2e8f0",
+                        backgroundColor: active ? "rgba(16, 185, 129, 0.08)" : "#ffffff",
+                        color: active ? "#0f172a" : "#475569",
                         fontSize: "0.75rem",
                         fontWeight: "500",
                         display: "flex",
@@ -1905,7 +1905,7 @@ export function DropClockStudio({
                           height: "12px",
                           borderRadius: "50%",
                           backgroundColor: bp.primaryColor,
-                          border: "1px solid rgba(255,255,255,0.2)",
+                          border: "1px solid rgba(0,0,0,0.15)",
                         }}
                       />
                       <span>{bp.name}</span>
@@ -1927,13 +1927,13 @@ export function DropClockStudio({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      backgroundColor: "#18181b",
-                      border: "1px solid #27272a",
+                      backgroundColor: "#f8fafc",
+                      border: "1px solid #e2e8f0",
                       borderRadius: "8px",
                       padding: "6px 12px",
                     }}
                   >
-                    <span style={{ fontSize: "0.8125rem", color: "#a1a1aa" }}>{label}</span>
+                    <span style={{ fontSize: "0.8125rem", color: "#475569" }}>{label}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <input
                         type="text"
@@ -1941,13 +1941,13 @@ export function DropClockStudio({
                         onChange={(e) => setVal(e.target.value)}
                         style={{
                           width: "78px",
-                          backgroundColor: "#27272a",
-                          border: "1px solid #3f3f46",
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #cbd5e1",
                           borderRadius: "6px",
                           padding: "4px 8px",
                           fontSize: "0.75rem",
                           fontFamily: "monospace",
-                          color: "#fafafa",
+                          color: "#0f172a",
                           textTransform: "uppercase",
                         }}
                       />
@@ -1957,12 +1957,12 @@ export function DropClockStudio({
                           height: "20px",
                           borderRadius: "50%",
                           backgroundColor: val,
-                          border: "2px solid #52525b",
+                          border: "2px solid #cbd5e1",
                           cursor: "pointer",
                           display: "inline-block",
                           position: "relative",
                           overflow: "hidden",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                           flexShrink: 0,
                         }}
                         title={`Pick ${label}`}
@@ -1990,8 +1990,8 @@ export function DropClockStudio({
 
             {/* Relative-flow footer in standalone mode (no absolute/sticky overlap) */}
             {isStandalone && (
-              <div className="pt-3 border-t border-zinc-800/80 mt-2 flex items-center justify-between">
-                <div className="text-xs text-zinc-400">
+              <div className="pt-3 border-t border-zinc-200 mt-2 flex items-center justify-between">
+                <div className="text-xs text-zinc-500">
                   {hasSaved ? "Saved" : isDirty ? "Sandbox mode" : "Synced"}
                 </div>
                 <div className="flex items-center gap-2">
@@ -2000,7 +2000,7 @@ export function DropClockStudio({
                       type="button"
                       onClick={handleDiscard}
                       disabled={isSaving}
-                      className="px-3 py-1.5 text-xs font-medium text-zinc-300 border border-zinc-700 rounded-md hover:bg-zinc-800 transition cursor-pointer"
+                      className="px-3 py-1.5 text-xs font-medium text-zinc-700 border border-zinc-300 rounded-md hover:bg-zinc-100 transition cursor-pointer"
                     >
                       Discard
                     </button>
@@ -2019,30 +2019,30 @@ export function DropClockStudio({
           </div>
 
           {/* RIGHT PANE: Realistic DTC Storefront Canvas */}
-          <div className="col-span-12 lg:col-span-8 h-full overflow-y-auto p-6 bg-[#0a0a0a] flex flex-col items-center">
-            <div className="m-auto py-6 w-full max-w-xl flex flex-col items-center">
+          <div className="col-span-12 lg:col-span-8 h-full overflow-y-auto flex flex-col items-center p-6 py-10 bg-[#f7f8fa]">
+            <div className="m-auto py-6 w-full max-w-xl flex flex-col items-center mb-12">
               {/* Browser Window Chrome Wrapper */}
-              <div className="w-full bg-[#121215] border border-zinc-800/80 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">
                 {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
-                <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                <div className="bg-zinc-100/90 border-b border-zinc-200 px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-                    <span className="ml-3 text-xs text-zinc-400 font-mono">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span className="ml-3 text-xs text-zinc-500 font-mono">
                       yourstore.com/products/classic-boxy-crewneck
                     </span>
                   </div>
 
                   {/* Device Viewport Toggle */}
-                  <div className="flex items-center gap-0.5 bg-zinc-800 p-0.5 rounded-lg border border-zinc-700/60">
+                  <div className="flex items-center gap-0.5 bg-zinc-200/80 p-0.5 rounded-lg border border-zinc-300/80">
                     <button
                       type="button"
                       onClick={() => setViewportMode("desktop")}
                       className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
                         viewportMode === "desktop"
-                          ? "bg-zinc-700 text-zinc-100 shadow-sm"
-                          : "text-zinc-400 hover:text-zinc-200"
+                          ? "bg-white text-zinc-900 shadow-2xs font-semibold"
+                          : "text-zinc-600 hover:text-zinc-900"
                       }`}
                     >
                       Desktop
@@ -2052,8 +2052,8 @@ export function DropClockStudio({
                       onClick={() => setViewportMode("mobile")}
                       className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
                         viewportMode === "mobile"
-                          ? "bg-zinc-700 text-zinc-100 shadow-sm"
-                          : "text-zinc-400 hover:text-zinc-200"
+                          ? "bg-white text-zinc-900 shadow-2xs font-semibold"
+                          : "text-zinc-600 hover:text-zinc-900"
                       }`}
                     >
                       Mobile (375px)
@@ -2061,11 +2061,11 @@ export function DropClockStudio({
                   </div>
                 </div>
 
-                {/* Canvas Surface with Refined Dot Grid */}
+                {/* Canvas Surface with Refined Light Neutral Dot Grid */}
                 <div
-                  className="p-8 bg-[#09090b] flex justify-center items-center"
+                  className="p-8 bg-[#f8fafc] flex justify-center items-center"
                   style={{
-                    backgroundImage: "radial-gradient(#27272a 1px, transparent 1px)",
+                    backgroundImage: "radial-gradient(#e5e7eb 1.5px, transparent 1.5px)",
                     backgroundSize: "16px 16px",
                   }}
                 >
@@ -2073,7 +2073,7 @@ export function DropClockStudio({
                   <div
                     className={`transition-all duration-300 ease-in-out mx-auto ${
                       viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
-                    } w-full bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden p-6`}
+                    } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-6 mb-12`}
                   >
                     {/* Stock State Quick Switcher */}
                     <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
