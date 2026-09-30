@@ -18,6 +18,10 @@ export async function loader() {
       bgColor: "#F4F6F8",
       textColor: "#202223",
       presetStyle: "capsule",
+      leadText: "Order within",
+      sameDayText: "for same-day dispatch",
+      nextDayText: "for tomorrow's dispatch",
+      etaText: "Estimated Delivery:",
     },
     shop: "preview-store.myshopify.com",
     ianaTimezone: "America/New_York",
@@ -50,6 +54,10 @@ export default function StandalonePreviewRoute() {
           bgColor: "#F4F6F8",
           textColor: "#202223",
           presetStyle: "capsule",
+          leadText: "Order within",
+          sameDayText: "for same-day dispatch",
+          nextDayText: "for tomorrow's dispatch",
+          etaText: "Estimated Delivery:",
         }}
         shop="demo-store.myshopify.com"
         ianaTimezone="America/New_York"

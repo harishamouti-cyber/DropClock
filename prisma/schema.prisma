@@ -35,6 +35,10 @@ model DropClockSettings {
   primaryColor    String   @default("#008060")
   bgColor         String   @default("#f4f6f8")
   textColor       String   @default("#202223")
+  leadText        String   @default("Order within")
+  sameDayText     String   @default("for same-day dispatch")
+  nextDayText     String   @default("for tomorrow's dispatch")
+  etaText         String   @default("Estimated Delivery:")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

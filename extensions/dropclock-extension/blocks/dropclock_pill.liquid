@@ -13,6 +13,12 @@
 {% assign market_overrides = config.marketOverrides | default: "{}" %}
 {% assign tz_offset = config.timezoneOffsetMinutes | default: 0 %}
 {% assign iana_tz = config.ianaTimezone | default: 'UTC' %}
+{% assign lead_text = config.leadText | default: 'Order within' %}
+{% assign sameday_text = config.sameDayText | default: 'for same-day dispatch' %}
+{% assign nextday_text = config.nextDayText | default: "for tomorrow's dispatch" %}
+{% assign eta_text = config.etaText | default: 'Estimated Delivery:' %}
+{% assign active_style = block.settings.style_preset | default: config.presetStyle | default: 'capsule' %}
+{% if active_style == 'bar' %}{% assign active_style = 'urgency' %}{% endif %}
 
 {% comment %} Defensive Evaluation of Tag Overrides {% endcomment %}
 {% assign active_cutoff_hour = base_cutoff_hour %}
@@ -35,7 +41,7 @@
 {% assign is_available = product.selected_or_first_available_variant.available %}
 
 <div 
-  class="dropclock-wrapper"
+  class="dropclock-wrapper dc-w"
   id="dropclock-{{ block.id }}"
   data-cutoff-hour="{{ active_cutoff_hour }}"
   data-cutoff-minute="{{ active_cutoff_minute }}"
@@ -48,6 +54,11 @@
   data-iana-tz="{{ iana_tz }}"
   data-current-country="{{ current_country }}"
   data-available="{{ is_available }}"
+  data-widget-style="{{ active_style }}"
+  data-lead-text="{{ lead_text | escape }}"
+  data-sameday-text="{{ sameday_text | escape }}"
+  data-nextday-text="{{ nextday_text | escape }}"
+  data-eta-text="{{ eta_text | escape }}"
   style="
     --dc-primary: {{ block.settings.primary_color | default: config.primaryColor | default: '#008060' }};
     --dc-bg: {{ block.settings.bg_color | default: config.bgColor | default: '#f4f6f8' }};
@@ -57,28 +68,30 @@
 >
   {% comment %} Both elements are pre-rendered into the DOM with fixed min-height to defend against Cumulative Layout Shift (CLS) {% endcomment %}
   <div 
-    class="dropclock-container {{ block.settings.style_preset | default: 'capsule' }}" 
+    class="dropclock-container dc-c {{ active_style }}" 
     style="display: {% if is_available %}flex{% else %}none{% endif %};"
   >
-    <div class="dropclock-pulse-icon">
-      <span class="dropclock-pulse-dot"></span>
-      <svg class="dropclock-svg" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <div class="dropclock-pulse-icon dc-p">
+      <span class="dropclock-pulse-dot dc-d"></span>
+      <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
     </div>
 
-    <div class="dropclock-text-stack">
-      <div class="dropclock-line-timer">
-        Order within <strong class="dc-timer-countdown">--h --m</strong> for 
-        <span class="dc-dispatch-target">Same-Day Dispatch</span>
+    <div class="dropclock-text-stack dc-s">
+      <div class="dropclock-line-timer dc-t">
+        <span>{{ lead_text }}</span> <strong class="dc-timer-countdown dc-tc">--h --m</strong> <span class="dc-dispatch-target dc-dt">{{ sameday_text }}</span>
       </div>
-      <div class="dropclock-line-eta">
-        <svg class="dropclock-truck-svg" width="13" height="13" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        <span>Estimated Delivery: <strong class="dc-eta-target">In {{ active_lead_days }} business days</strong></span>
+      <div class="dc-bar">
+        <div class="dc-bf" style="width:100%"><span class="dc-bp"></span></div>
+      </div>
+      <div class="dropclock-line-eta dc-e">
+        <svg width="13" height="13" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        <span><span>{{ eta_text }}</span> <strong class="dc-eta-target dc-et">In {{ effective_lead_days }} business days</strong></span>
       </div>
     </div>
   </div>
 
   <div 
-    class="dropclock-backorder-notice" 
+    class="dropclock-backorder-notice dc-b" 
     style="display: {% if is_available %}none{% else %}flex{% endif %};"
   >
     <svg width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
@@ -88,23 +101,29 @@
 
 <style>
 .dropclock-wrapper{margin:14px 0;font-size:13px;line-height:1.4;min-height: 52px;contain: layout;}
-.dropclock-wrapper svg{fill:none;stroke:currentColor;stroke-width:2}
-.dropclock-container,.dropclock-backorder-notice{align-items:center;border-radius:var(--dc-radius);box-sizing:border-box;border:1px solid rgba(0,0,0,.06)}
-.dropclock-container{display:flex;gap:12px;padding:10px 14px;background:var(--dc-bg);color:var(--dc-text);min-height: 52px}
-.dropclock-pulse-icon{position:relative;display:flex;color:var(--dc-primary);flex-shrink:0}
-.dropclock-pulse-dot{position:absolute;top:-2px;right:-2px;width:6px;height:6px;border-radius:50%;background:var(--dc-primary);animation:p 1.8s infinite}
-@keyframes p{0%,100%{box-shadow:0 0 0 0 rgba(0,128,96,.7)}70%{box-shadow:0 0 0 5px transparent}}
-.dropclock-text-stack{display:flex;flex-direction:column;gap:2px;overflow:hidden}
-.dropclock-line-timer{word-break:break-word}
-.dropclock-line-timer strong{color:var(--dc-primary)}
-.dropclock-line-eta{display:flex;align-items:center;gap:5px;font-size:12px;opacity:.9;word-break:break-word}
-.dropclock-backorder-notice{gap:8px;padding:8px 12px;font-size:12px;background:#fff8e5;color:#8a6100;border-color:#e6c280;min-height:44px}
-@media (max-width: 380px){.dropclock-wrapper{margin:10px 0;min-height: 52px}.dropclock-container{padding:8px 10px;gap:8px;flex-wrap:wrap}.dropclock-line-timer,.dropclock-line-eta{font-size:11.5px}}
+.dc-w svg{fill:none;stroke:currentColor;stroke-width:2}
+.dc-c,.dc-b{display:flex;align-items:center;border-radius:var(--dc-radius);box-sizing:border-box;border:1px solid #0000000f}
+.dropclock-container{gap:12px;padding:10px 14px;background:var(--dc-bg);color:var(--dc-text)}
+.dc-p{position:relative;display:flex;flex-shrink:0}
+.dc-t strong,.dc-p{color:var(--dc-primary)}
+.dc-d,.dc-bp{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--dc-primary);animation:p 1.8s infinite}
+.dc-d{top:-2px;right:-2px}
+.dc-bp{display:none;top:-1px;right:-2px}
+.dc-urgent .dc-bp{display:block}
+@keyframes p{0%,to{box-shadow:0 0 #008060b3}70%{box-shadow:0 0 0 5px #0000}}
+.dc-s{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1}
+.dc-t,.dc-e{word-break:break-word}
+.dc-e{display:flex;align-items:center;gap:5px;font-size:12px;opacity:.9}
+.dc-bar{display:none;width:100%;height:4px;background:#0000000f;border-radius:99px;position:relative;margin:3px 0}
+[data-widget-style="urgency"] .dc-bar,.urgency .dc-bar{display:block}
+.dc-bf{height:100%;background:var(--dc-primary);border-radius:99px;position:relative;transition:width .4s}
+.dc-b{gap:8px;padding:8px 12px;font-size:12px;background:#fff8e5;color:#8a6100;border-color:#e6c280;min-height:44px}
+@media (max-width: 380px){.dropclock-wrapper{margin:10px 0;min-height: 52px}.dropclock-container{padding:8px 10px;gap:8px;flex-wrap:wrap}.dc-t,.dc-e{font-size:11.5px}}
 </style>
 
 <script>
 (function() {
-function I(){var r=document.getElementById("dropclock-{{ block.id }}");if(!r)return;var d=r.dataset||{},c=r.querySelector(".dropclock-container"),b=r.querySelector(".dropclock-backorder-notice"),t=r.querySelector(".dc-timer-countdown"),l=r.querySelector(".dc-dispatch-target"),e=r.querySelector(".dc-eta-target");var ch=d.cutoffHour!=null?+d.cutoffHour:14,cm=+d.cutoffMinute||0,ld=+d.leadDays||2,tz=+(d.tzOffset||0);function P(s){try{return JSON.parse(s)}catch(x){}}var wd=P(d.workingDays),bo=P(d.blackoutDates||d.blackouts),mo=P(d.marketOverrides)||{};if(!Array.isArray(wd)||!wd.length)wd=[1,2,3,4,5];if(!Array.isArray(bo))bo=[];if(d.currentCountry&&mo[d.currentCountry])ld+=+mo[d.currentCountry]||0;function calc(){if(d.available!=="true")return;var now=new Date(Date.now()+tz*6e4);var curM=now.getUTCHours()*60+now.getUTCMinutes()+now.getUTCSeconds()/60;var diff=(ch*60+cm)-curM,past=diff<=0;if(past)diff+=1440;if(l)l.textContent=past?"Next-Day Dispatch":"Same-Day Dispatch";if(t)t.textContent=((diff/60)|0)+"h "+((diff%60)|0)+"m";var eta=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));var add=0,tgt=ld+(past?1:0);while(add<tgt){eta.setUTCDate(eta.getUTCDate()+1);var s=eta.toISOString().split("T")[0];if(wd.indexOf(eta.getUTCDay())!==-1&&bo.indexOf(s)===-1)add++}if(e)e.textContent=eta.toLocaleDateString(undefined,{timeZone:"UTC",weekday:"short",month:"short",day:"numeric"})}function setA(v){d.available=v?"true":"false";r.setAttribute("data-available",d.available);if(c)c.style.display=v?"flex":"none";if(b)b.style.display=v?"none":"flex";if(v)calc()}document.addEventListener("variant:change",function(ev){var v=ev&&ev.detail&&(ev.detail.variant||ev.detail);if(v&&v.available!=null)setA(Boolean(v.available))});document.addEventListener("change",function(ev){var el=ev.target,f=el.form||el.closest("form")||document.querySelector("form[action*='/cart/add']");if(f){setTimeout(function(){var btn=f.querySelector('[name="add"],.product-form__submit');if(btn)setA(!(btn.disabled||/sold|unavail/i.test(btn.textContent||""))) },50)}});calc();setInterval(calc,6e4)}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",I);else I();
+function y(){var a=document.getElementById("dropclock-{{ block.id }}");if(!a)return;var e=a.dataset||{},m=function(t){return a.querySelector(t)},h=m(".dc-c"),g=m(".dc-b"),v=m(".dc-tc"),C=m(".dc-dt"),b=m(".dc-et"),k=m(".dc-bf"),d=e.cutoffHour!=null?+e.cutoffHour:14,l=+e.cutoffMinute||0,T=+e.leadDays||2,p=+(e.tzOffset||0),w=e.samedayText||"for same-day dispatch",U=e.nextdayText||"for tomorrow's dispatch";function u(t){try{return JSON.parse(t)}catch{}}var c=u(e.workingDays),f=u(e.blackoutDates||e.blackouts),S=u(e.marketOverrides)||{};(!Array.isArray(c)||!c.length)&&(c=[1,2,3,4,5]),Array.isArray(f)||(f=[]),e.currentCountry&&S[e.currentCountry]&&(T+=+S[e.currentCountry]||0);function s(){if(e.available==="true"){var t=new Date(Date.now()+p*6e4),n=t.getUTCHours()*60+t.getUTCMinutes()+t.getUTCSeconds()/60,r=d*60+l-n,o=r<=0;if(o&&(r+=1440),C&&(C.textContent=o?U:w),v&&(v.textContent=(r/60|0)+"h "+(r%60|0)+"m"),k){var x=d*60+l>480?d*60+l-480:480;k.style.width=(o?0:Math.max(5,Math.min(100,Math.round(r/x*100))))+"%"}a.classList.toggle("dc-urgent",!o&&r<=60);for(var i=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate())),D=0,q=T+(o?1:0);D<q;)i.setUTCDate(i.getUTCDate()+1),~c.indexOf(i.getUTCDay())&&!~f.indexOf(i.toISOString().split("T")[0])&&D++;b&&(b.textContent=i.toLocaleDateString(void 0,{timeZone:"UTC",weekday:"short",month:"short",day:"numeric"}))}}function j(t){e.available=t?"true":"false",a.setAttribute("data-available",e.available),h&&(h.style.display=t?"flex":"none"),g&&(g.style.display=t?"none":"flex"),t&&s()}function I(t,n){document.addEventListener(t,n)}I("variant:change",function(t){var n=t&&t.detail&&(t.detail.variant||t.detail);n&&n.available!=null&&j(Boolean(n.available))}),I("change",function(t){var n=t.target.form||t.target.closest("form")||document.querySelector("form[action*='/cart/add']");n&&setTimeout(function(){var r=n.querySelector('[name="add"],.product-form__submit');r&&j(!(r.disabled||/sold|unavail/i.test(r.textContent||"")))},50)}),s(),setInterval(s,6e4)}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",y):y()
 })();
 </script>
 

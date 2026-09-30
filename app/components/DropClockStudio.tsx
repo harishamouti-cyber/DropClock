@@ -17,6 +17,10 @@ export interface StudioSettings {
   primaryColor: string;
   bgColor: string;
   textColor: string;
+  leadText?: string;
+  sameDayText?: string;
+  nextDayText?: string;
+  etaText?: string;
 }
 
 declare global {
@@ -40,6 +44,14 @@ interface DropClockStudioProps {
 }
 
 // Crisp Monochrome Lucide-style SVG Icons
+const GlobeIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
 const ClockIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" />
@@ -331,6 +343,13 @@ export function DropClockStudio({
   });
   const [isTagRulesOpen, setIsTagRulesOpen] = useState(true);
 
+  // Storefront Text & Translations State
+  const [leadText, setLeadText] = useState(settings.leadText || "Order within");
+  const [sameDayText, setSameDayText] = useState(settings.sameDayText || "for same-day dispatch");
+  const [nextDayText, setNextDayText] = useState(settings.nextDayText || "for tomorrow's dispatch");
+  const [etaText, setEtaText] = useState(settings.etaText || "Estimated Delivery:");
+  const [isTranslationsOpen, setIsTranslationsOpen] = useState(true);
+
   // Mock Storefront Stock State & Dawn Variant Selector
   const [mockStockState, setMockStockState] = useState<"in_stock" | "backorder">("in_stock");
   const [selectedSize, setSelectedSize] = useState<"S" | "M" | "L" | "XL">("M");
@@ -362,7 +381,11 @@ export function DropClockStudio({
       textColor.toLowerCase() !== (baselineSettings.textColor || "").toLowerCase() ||
       JSON.stringify(workingDays) !== (baselineSettings.workingDays || "[1,2,3,4,5]") ||
       JSON.stringify(blackoutDates) !== (baselineSettings.blackoutDates || "[]") ||
-      JSON.stringify(tagRules) !== (baselineSettings.tagRulesJson || "[]")
+      JSON.stringify(tagRules) !== (baselineSettings.tagRulesJson || "[]") ||
+      leadText !== (baselineSettings.leadText || "Order within") ||
+      sameDayText !== (baselineSettings.sameDayText || "for same-day dispatch") ||
+      nextDayText !== (baselineSettings.nextDayText || "for tomorrow's dispatch") ||
+      etaText !== (baselineSettings.etaText || "Estimated Delivery:")
     );
   }, [
     cutoffHour,
@@ -375,6 +398,10 @@ export function DropClockStudio({
     workingDays,
     blackoutDates,
     tagRules,
+    leadText,
+    sameDayText,
+    nextDayText,
+    etaText,
     baselineSettings,
   ]);
 
@@ -387,6 +414,10 @@ export function DropClockStudio({
     setPrimaryColor(baselineSettings.primaryColor || "#008060");
     setBgColor(baselineSettings.bgColor || "#F4F6F8");
     setTextColor(baselineSettings.textColor || "#202223");
+    setLeadText(baselineSettings.leadText || "Order within");
+    setSameDayText(baselineSettings.sameDayText || "for same-day dispatch");
+    setNextDayText(baselineSettings.nextDayText || "for tomorrow's dispatch");
+    setEtaText(baselineSettings.etaText || "Estimated Delivery:");
     try {
       setWorkingDays(JSON.parse(baselineSettings.workingDays || "[1,2,3,4,5]"));
     } catch {
@@ -430,6 +461,10 @@ export function DropClockStudio({
           workingDays: JSON.stringify(workingDays),
           blackoutDates: JSON.stringify(blackoutDates),
           tagRulesJson: JSON.stringify(tagRules),
+          leadText,
+          sameDayText,
+          nextDayText,
+          etaText,
         });
         setTimeout(() => setHasSaved(false), 2500);
       }, 600);
@@ -450,6 +485,10 @@ export function DropClockStudio({
     formData.append("blackoutDates", JSON.stringify(blackoutDates));
     formData.append("tagRules", JSON.stringify(tagRules));
     formData.append("tagRulesJson", JSON.stringify(tagRules));
+    formData.append("leadText", leadText);
+    formData.append("sameDayText", sameDayText);
+    formData.append("nextDayText", nextDayText);
+    formData.append("etaText", etaText);
     submit(formData, { method: "post" });
     safeHideSaveBar();
   };
@@ -530,9 +569,17 @@ export function DropClockStudio({
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-    // Calculate progress percent remaining of fulfillment window
-    const totalDayMs = 24 * 60 * 60 * 1000;
-    const progressPercent = Math.max(5, Math.min(100, Math.round((diffMs / totalDayMs) * 100)));
+    // Urgency progress bar arithmetic: start of business (8:00 AM = 480 mins) to cutoffHour
+    const startOfBusinessMinutes = 8 * 60; // 480 mins
+    const cutoffTotalMinutes = cutoffHour * 60 + cutoffMinute;
+    const totalWindowMinutes = cutoffTotalMinutes > startOfBusinessMinutes
+      ? cutoffTotalMinutes - startOfBusinessMinutes
+      : 480;
+    const remainingMinutes = hours * 60 + minutes;
+    const progressPercent = isPastCutoff
+      ? 0
+      : Math.max(5, Math.min(100, Math.round((remainingMinutes / totalWindowMinutes) * 100)));
+    const isUrgent = !isPastCutoff && hours === 0 && minutes <= 60;
 
     // Tag Rule Resolution for Simulation
     let effectiveLeadDays = leadDays;
@@ -579,6 +626,7 @@ export function DropClockStudio({
       isPastCutoff,
       formattedArrival,
       progressPercent,
+      isUrgent,
       effectiveLeadDays,
     };
   }, [
@@ -1518,6 +1566,197 @@ export function DropClockStudio({
               )}
             </div>
 
+            {/* 6. Storefront Text & Translations Accordion Card */}
+            <div
+              style={{
+                backgroundColor: "#121215",
+                border: "1px solid #1f1f23",
+                borderRadius: "12px",
+                padding: "18px",
+                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
+              }}
+            >
+              <div
+                onClick={() => setIsTranslationsOpen(!isTranslationsOpen)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <GlobeIcon />
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#fafafa" }}>
+                    Storefront Text &amp; Translations
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span
+                    style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: "500",
+                      color: "#10b981",
+                      backgroundColor: "rgba(16, 185, 129, 0.1)",
+                      border: "1px solid rgba(16, 185, 129, 0.25)",
+                      padding: "2px 8px",
+                      borderRadius: "9999px",
+                    }}
+                  >
+                    4 Tokens
+                  </span>
+                  <span style={{ color: "#71717a" }}>
+                    <ChevronDownIcon open={isTranslationsOpen} />
+                  </span>
+                </div>
+              </div>
+
+              {isTranslationsOpen && (
+                <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#a1a1aa", lineHeight: "1.4" }}>
+                    Customize storefront labels and translation strings for international customers. Updates reflect instantly in live preview and Liquid server paint.
+                  </p>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {/* Token 1: Cutoff Lead Text */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "#fafafa" }}>
+                          Cutoff Lead Text
+                        </label>
+                        <span style={{ fontSize: "0.6875rem", color: "#71717a" }}>Default: "Order within"</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={leadText}
+                        onChange={(e) => setLeadText(e.target.value)}
+                        placeholder="Order within"
+                        style={{
+                          width: "100%",
+                          backgroundColor: "#18181b",
+                          border: "1px solid #27272a",
+                          borderRadius: "8px",
+                          padding: "8px 12px",
+                          fontSize: "0.8125rem",
+                          color: "#fafafa",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+
+                    {/* Token 2: Same-Day Dispatch Label */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "#fafafa" }}>
+                          Same-Day Dispatch Label
+                        </label>
+                        <span style={{ fontSize: "0.6875rem", color: "#71717a" }}>Default: "for same-day dispatch"</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={sameDayText}
+                        onChange={(e) => setSameDayText(e.target.value)}
+                        placeholder="for same-day dispatch"
+                        style={{
+                          width: "100%",
+                          backgroundColor: "#18181b",
+                          border: "1px solid #27272a",
+                          borderRadius: "8px",
+                          padding: "8px 12px",
+                          fontSize: "0.8125rem",
+                          color: "#fafafa",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+
+                    {/* Token 3: Next-Day Dispatch Label */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "#fafafa" }}>
+                          Next-Day Dispatch Label
+                        </label>
+                        <span style={{ fontSize: "0.6875rem", color: "#71717a" }}>Default: "for tomorrow's dispatch"</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={nextDayText}
+                        onChange={(e) => setNextDayText(e.target.value)}
+                        placeholder="for tomorrow's dispatch"
+                        style={{
+                          width: "100%",
+                          backgroundColor: "#18181b",
+                          border: "1px solid #27272a",
+                          borderRadius: "8px",
+                          padding: "8px 12px",
+                          fontSize: "0.8125rem",
+                          color: "#fafafa",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+
+                    {/* Token 4: Delivery ETA Label */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "#fafafa" }}>
+                          Delivery ETA Label
+                        </label>
+                        <span style={{ fontSize: "0.6875rem", color: "#71717a" }}>Default: "Estimated Delivery:"</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={etaText}
+                        onChange={(e) => setEtaText(e.target.value)}
+                        placeholder="Estimated Delivery:"
+                        style={{
+                          width: "100%",
+                          backgroundColor: "#18181b",
+                          border: "1px solid #27272a",
+                          borderRadius: "8px",
+                          padding: "8px 12px",
+                          fontSize: "0.8125rem",
+                          color: "#fafafa",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+
+                    {/* Reset to English Defaults */}
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "4px" }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLeadText("Order within");
+                          setSameDayText("for same-day dispatch");
+                          setNextDayText("for tomorrow's dispatch");
+                          setEtaText("Estimated Delivery:");
+                        }}
+                        style={{
+                          backgroundColor: "transparent",
+                          border: "none",
+                          color: "#71717a",
+                          fontSize: "0.6875rem",
+                          cursor: "pointer",
+                          textDecoration: "underline",
+                          padding: "2px 4px",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "#fafafa")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "#71717a")}
+                      >
+                        Reset to English Defaults
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* 7. Brand Alignment & Functional Color Swatches */}
             <div
               style={{
@@ -2250,7 +2489,7 @@ export function DropClockStudio({
                             }}
                           />
                           <span>
-                            Order within{" "}
+                            {leadText}{" "}
                             <span
                               style={{
                                 color: primaryColor,
@@ -2260,7 +2499,7 @@ export function DropClockStudio({
                             >
                               {preview.hours}h {preview.minutes}m {preview.seconds}s
                             </span>{" "}
-                            for dispatch {preview.isPastCutoff ? "tomorrow" : "today"}
+                            {preview.isPastCutoff ? nextDayText : sameDayText}
                           </span>
                         </div>
 
@@ -2280,7 +2519,7 @@ export function DropClockStudio({
                             <TruckIcon />
                           </span>
                           <span>
-                            Estimated Delivery: <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
+                            {etaText} <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
                           </span>
                         </div>
                       </div>
@@ -2308,7 +2547,7 @@ export function DropClockStudio({
                             <ClockIcon />
                           </span>
                           <span>
-                            Order within{" "}
+                            {leadText}{" "}
                             <span
                               style={{
                                 color: primaryColor,
@@ -2318,18 +2557,18 @@ export function DropClockStudio({
                             >
                               {preview.hours}h {preview.minutes}m {preview.seconds}s
                             </span>{" "}
-                            for dispatch {preview.isPastCutoff ? "tomorrow" : "today"}
+                            {preview.isPastCutoff ? nextDayText : sameDayText}
                           </span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.75rem", color: "#64748b", flexShrink: 0 }}>
                           <TruckIcon />
-                          <span>Est. {preview.formattedArrival}</span>
+                          <span>{etaText} {preview.formattedArrival}</span>
                         </div>
                       </div>
                     )}
 
                     {/* Style 3: Urgency Progress Bar */}
-                    {presetStyle === "bar" && (
+                    {(presetStyle === "bar" || presetStyle === "urgency") && (
                       <div
                         style={{
                           backgroundColor: bgColor,
@@ -2363,7 +2602,7 @@ export function DropClockStudio({
                               }}
                             />
                             <span>
-                              Order within{" "}
+                              {leadText}{" "}
                               <span
                                 style={{
                                   color: primaryColor,
@@ -2385,7 +2624,7 @@ export function DropClockStudio({
                               borderRadius: "4px",
                             }}
                           >
-                            {preview.isPastCutoff ? "Tomorrow" : "Today"}
+                            {preview.isPastCutoff ? nextDayText : sameDayText}
                           </span>
                         </div>
 
@@ -2396,7 +2635,7 @@ export function DropClockStudio({
                             height: "4px",
                             backgroundColor: "rgba(0,0,0,0.06)",
                             borderRadius: "9999px",
-                            overflow: "hidden",
+                            position: "relative",
                           }}
                         >
                           <div
@@ -2406,8 +2645,25 @@ export function DropClockStudio({
                               backgroundColor: primaryColor,
                               borderRadius: "9999px",
                               transition: "width 0.5s ease",
+                              position: "relative",
                             }}
-                          />
+                          >
+                            {preview.isUrgent && (
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  right: "-3px",
+                                  top: "-2px",
+                                  width: "8px",
+                                  height: "8px",
+                                  borderRadius: "50%",
+                                  backgroundColor: primaryColor,
+                                  boxShadow: `0 0 0 0 ${primaryColor}88`,
+                                  animation: "p 1.8s infinite",
+                                }}
+                              />
+                            )}
+                          </div>
                         </div>
 
                         <div
@@ -2424,7 +2680,7 @@ export function DropClockStudio({
                               <TruckIcon />
                             </span>
                             <span>
-                              Estimated Delivery: <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
+                              {etaText} <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
                             </span>
                           </div>
                           <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>

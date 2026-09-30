@@ -78,6 +78,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       primaryColor: settings.primaryColor,
       bgColor: settings.bgColor,
       textColor: settings.textColor,
+      leadText: settings.leadText || "Order within",
+      sameDayText: settings.sameDayText || "for same-day dispatch",
+      nextDayText: settings.nextDayText || "for tomorrow's dispatch",
+      etaText: settings.etaText || "Estimated Delivery:",
     };
 
     await admin.graphql(
@@ -107,7 +111,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return json({
-    settings,
+    settings: {
+      ...settings,
+      leadText: settings.leadText || "Order within",
+      sameDayText: settings.sameDayText || "for same-day dispatch",
+      nextDayText: settings.nextDayText || "for tomorrow's dispatch",
+      etaText: settings.etaText || "Estimated Delivery:",
+    },
     shop: session.shop,
     ianaTimezone,
     timezoneOffsetMinutes,
@@ -137,6 +147,10 @@ export async function action({ request }: ActionFunctionArgs) {
   const bgColor = (formData.get("bgColor") as string) || "#F4F6F8";
   const textColor = (formData.get("textColor") as string) || "#202223";
   const presetStyle = (formData.get("presetStyle") as string) || "capsule";
+  const leadText = (formData.get("leadText") as string) || "Order within";
+  const sameDayText = (formData.get("sameDayText") as string) || "for same-day dispatch";
+  const nextDayText = (formData.get("nextDayText") as string) || "for tomorrow's dispatch";
+  const etaText = (formData.get("etaText") as string) || "Estimated Delivery:";
   const workingDaysRaw = (formData.get("workingDays") as string) || "[1,2,3,4,5]";
   const blackoutDatesRaw = (formData.get("blackoutDates") as string) || "[]";
   const tagRulesRaw = (formData.get("tagRules") as string) || (formData.get("tagRulesJson") as string) || "[]";
@@ -151,6 +165,10 @@ export async function action({ request }: ActionFunctionArgs) {
       bgColor,
       textColor,
       presetStyle,
+      leadText,
+      sameDayText,
+      nextDayText,
+      etaText,
       workingDays: workingDaysRaw,
       blackoutDates: blackoutDatesRaw,
       tagRulesJson: tagRulesRaw,
@@ -164,6 +182,10 @@ export async function action({ request }: ActionFunctionArgs) {
       bgColor,
       textColor,
       presetStyle,
+      leadText,
+      sameDayText,
+      nextDayText,
+      etaText,
       workingDays: workingDaysRaw,
       blackoutDates: blackoutDatesRaw,
       tagRulesJson: tagRulesRaw,
@@ -216,6 +238,10 @@ export async function action({ request }: ActionFunctionArgs) {
     primaryColor: updated.primaryColor,
     bgColor: updated.bgColor,
     textColor: updated.textColor,
+    leadText: updated.leadText || leadText,
+    sameDayText: updated.sameDayText || sameDayText,
+    nextDayText: updated.nextDayText || nextDayText,
+    etaText: updated.etaText || etaText,
   };
 
   if (shopGid) {
