@@ -721,7 +721,7 @@ export function DropClockStudio({
   ]);
 
   return (
-    <div className="h-[calc(100vh-56px)] flex flex-col overflow-hidden bg-[#f1f2f4] text-zinc-900 font-sans">
+    <div className="h-full w-full flex flex-col overflow-hidden bg-[#f1f2f4] text-zinc-900 font-sans">
       {/* App Bridge Contextual TitleBar & Native SaveBar */}
       {!isStandalone && isEmbedded && (
         <>
