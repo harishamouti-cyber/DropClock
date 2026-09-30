@@ -1,7 +1,6 @@
 {% comment %}
-  DropClock - 0ms Shipping Cutoff & Arrival ETA Capsule
-  Reads shop settings directly from Metafields to avoid external script calls.
-  Certified 0ms Blocking Time | Cumulative Layout Shift (CLS) Defense (<4KB payload)
+  DropClock - 21ST.DEV / SHADCN DTC Shipping Cutoff & Arrival ETA Capsule
+  Reads shop settings directly from Metafields for 0ms blocking time & CLS defense.
 {% endcomment %}
 
 {% assign config = shop.metafields.dropclock.settings.value %}
@@ -21,7 +20,7 @@
 {% assign active_style = block.settings.style_preset | default: config.widgetStyle | default: config.presetStyle | default: 'capsule' %}
 {% if active_style == 'bar' %}{% assign active_style = 'urgency' %}{% endif %}
 
-{% comment %} Defensive Evaluation of Tag Overrides {% endcomment %}
+{% comment %} Tag Rule Overrides {% endcomment %}
 {% assign active_cutoff_hour = base_cutoff_hour %}
 {% assign active_cutoff_minute = base_cutoff_minute %}
 {% assign effective_lead_days = config.leadDays | default: 2 %}
@@ -41,7 +40,7 @@
 {% assign is_available = product.selected_or_first_available_variant.available %}
 
 <div 
-  class="dropclock-wrapper dc-w"
+  class="dropclock-widget-root dc-w"
   id="dropclock-{{ block.id }}"
   data-cutoff-hour="{{ active_cutoff_hour }}"
   data-cutoff-min="{{ active_cutoff_minute }}"
@@ -64,69 +63,321 @@
   data-eta-text="{{ eta_text | escape }}"
   style="
     --dc-primary: {{ block.settings.primary_color | default: config.accentColor | default: config.primaryColor | default: '#008060' }};
-    --dc-bg: {{ block.settings.bg_color | default: config.cardBg | default: config.bgColor | default: '#f4f6f8' }};
-    --dc-text: {{ block.settings.text_color | default: config.textColor | default: '#202223' }};
-    --dc-radius: {{ block.settings.corner_radius | default: 8 }}px;
+    --dc-bg: {{ block.settings.bg_color | default: config.cardBg | default: config.bgColor | default: '#f8fafc' }};
+    --dc-text: {{ block.settings.text_color | default: config.textColor | default: '#0f172a' }};
+    --dc-radius: {{ block.settings.corner_radius | default: 12 }}px;
+    min-height: 48px;
+    width: 100%;
+    margin: 14px 0;
   "
 >
-  {% comment %} Both elements are pre-rendered into the DOM with fixed min-height to defend against Cumulative Layout Shift (CLS) {% endcomment %}
   <div 
-    class="dropclock-container dc-c {{ active_style }}" 
+    class="dc-pill-card {{ active_style }}" 
     style="display: {% if is_available %}flex{% else %}none{% endif %};"
   >
-    <div class="dropclock-pulse-icon dc-p">
-      <span class="dropclock-pulse-dot dc-d"></span>
-      <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <div class="dc-primary-row">
+      <div class="dc-pulse-indicator">
+        <span class="dc-ping"></span>
+        <span class="dc-dot"></span>
+      </div>
+      <div class="dc-text-wrap">
+        <span class="dc-label">{{ lead_text }}</span>
+        <span class="dc-timer-val" data-dc-timer>--h --m --s</span>
+        <span class="dc-subtext" data-dc-subtext>{{ sameday_text }}</span>
+      </div>
     </div>
+    
+    {% if active_style == 'urgency' %}
+      <div class="dc-bar-track">
+        <div class="dc-bar-fill" data-dc-bar-fill style="width: 100%;"></div>
+      </div>
+    {% endif %}
 
-    <div class="dropclock-text-stack dc-s">
-      <div class="dropclock-line-timer dc-t">
-        <span>{{ lead_text }}</span> <strong class="dc-timer-countdown dc-tc">--h --m</strong> <span class="dc-dispatch-target dc-dt">{{ sameday_text }}</span>
-      </div>
-      <div class="dc-bar">
-        <div class="dc-bf" style="width:100%"><span class="dc-bp"></span></div>
-      </div>
-      <div class="dropclock-line-eta dc-e">
-        <svg width="13" height="13" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        <span><span>{{ eta_text }}</span> <strong class="dc-eta-target dc-et">In {{ effective_lead_days }} business days</strong></span>
-      </div>
+    <div class="dc-secondary-row">
+      <svg class="dc-truck-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="3" width="15" height="13"></rect>
+        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+      </svg>
+      <span class="dc-eta-label">{{ eta_text }}</span>
+      <span class="dc-eta-date" data-dc-eta>Calculating...</span>
     </div>
   </div>
 
   <div 
-    class="dropclock-backorder-notice dc-b" 
+    class="dc-backorder-notice" 
     style="display: {% if is_available %}none{% else %}flex{% endif %};"
   >
-    <svg width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <span>Backorder Item: Ships as soon as restocked.</span>
   </div>
 </div>
 
 <style>
-.dropclock-wrapper{margin:14px 0;font-size:13px;line-height:1.4;min-height: 52px;contain: layout;}
-.dc-w svg{fill:none;stroke:currentColor;stroke-width:2}
-.dc-c,.dc-b{display:flex;align-items:center;border-radius:var(--dc-radius);box-sizing:border-box;border:1px solid #0000000f}
-.dropclock-container{gap:12px;padding:10px 14px;background:var(--dc-bg);color:var(--dc-text)}
-.dc-p{position:relative;display:flex;flex-shrink:0}
-.dc-t strong,.dc-p{color:var(--dc-primary)}
-.dc-d,.dc-bp{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--dc-primary);animation:p 1.8s infinite}
-.dc-d{top:-2px;right:-2px}
-.dc-bp{display:none;top:-1px;right:-2px}
-.dc-urgent .dc-bp{display:block}
-@keyframes p{0%,to{box-shadow:0 0 #008060b3}70%{box-shadow:0 0 0 5px #0000}}
-.dc-s{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1}
-.dc-t,.dc-e{word-break:break-word}
-.dc-e{display:flex;align-items:center;gap:5px;font-size:12px;opacity:.9}
-.dc-bar{display:none;width:100%;height:4px;background:#0000000f;border-radius:99px;position:relative;margin:3px 0}
-[data-widget-style="urgency"] .dc-bar,.urgency .dc-bar{display:block}
-.dc-bf{height:100%;background:var(--dc-primary);border-radius:99px;position:relative;transition:width .4s}
-.dc-b{gap:8px;padding:8px 12px;font-size:12px;background:#fff8e5;color:#8a6100;border-color:#e6c280;min-height:44px}
-@media (max-width: 380px){.dropclock-wrapper{margin:10px 0;min-height: 52px}.dropclock-container{padding:8px 10px;gap:8px;flex-wrap:wrap}.dc-t,.dc-e{font-size:11.5px}}
+  .dropclock-widget-root {
+    contain: layout;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .dc-pill-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--dc-bg);
+    border: 1px solid #e2e8f0;
+    border-radius: var(--dc-radius);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    color: var(--dc-text);
+    transition: all 0.2s ease;
+  }
+  .dc-primary-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .dc-pulse-indicator {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+  }
+  .dc-ping {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 9999px;
+    background-color: var(--dc-primary);
+    opacity: 0.6;
+    animation: dc-ping-anim 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  .dc-dot {
+    position: relative;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background-color: var(--dc-primary);
+  }
+  .dc-text-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .dc-label {
+    color: #475569;
+    font-weight: 450;
+  }
+  .dc-timer-val {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--dc-primary);
+    letter-spacing: -0.02em;
+  }
+  .dc-subtext {
+    color: #475569;
+    font-weight: 450;
+  }
+  .dc-bar-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 9999px;
+    overflow: hidden;
+    margin: 2px 0;
+  }
+  .dc-bar-fill {
+    height: 100%;
+    background-color: var(--dc-primary);
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+  }
+  .dc-secondary-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #64748b;
+    padding-top: 4px;
+    border-top: 1px solid #f1f5f9;
+  }
+  .dc-truck-icon {
+    width: 13px;
+    height: 13px;
+    stroke: #64748b;
+    flex-shrink: 0;
+  }
+  .dc-eta-label {
+    font-weight: 450;
+  }
+  .dc-eta-date {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .dc-backorder-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    background: #fff8e5;
+    color: #8a6100;
+    border: 1px solid #e6c280;
+    border-radius: var(--dc-radius);
+    min-height: 44px;
+  }
+  @keyframes dc-ping-anim {
+    75%, 100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+  @media (max-width: 380px) {
+    .dc-primary-row, .dc-secondary-row {
+      font-size: 11.5px;
+    }
+  }
 </style>
 
 <script>
 (function() {
-function y(){var a=document.getElementById("dropclock-{{ block.id }}");if(!a)return;var e=a.dataset||{},m=function(t){return a.querySelector(t)},h=m(".dc-c"),g=m(".dc-b"),v=m(".dc-tc"),C=m(".dc-dt"),b=m(".dc-et"),k=m(".dc-bf"),d=e.cutoffHour!=null?+e.cutoffHour:14,l=+(e.cutoffMin||e.cutoffMinute||0),T=+e.leadDays||2,p=+(e.timezoneOffset||e.tzOffset||0),w=e.samedayText||"for same-day dispatch",U=e.nextdayText||"for tomorrow's dispatch";function u(t){try{return JSON.parse(t)}catch{}}var c=u(e.workingDays),f=u(e.blackoutDates||e.blackouts),S=u(e.marketOverrides)||{};(!Array.isArray(c)||!c.length)&&(c=[1,2,3,4,5]),Array.isArray(f)||(f=[]),e.currentCountry&&S[e.currentCountry]&&(T+=+S[e.currentCountry]||0);function s(){if(e.available==="true"){var t=new Date(Date.now()+p*6e4),n=t.getUTCHours()*60+t.getUTCMinutes()+t.getUTCSeconds()/60,r=d*60+l-n,o=r<=0;if(o&&(r+=1440),C&&(C.textContent=o?U:w),v&&(v.textContent=(r/60|0)+"h "+(r%60|0)+"m"),k){var x=d*60+l>480?d*60+l-480:480;k.style.width=(o?0:Math.max(5,Math.min(100,Math.round(r/x*100))))+"%"}a.classList.toggle("dc-urgent",!o&&r<=60);for(var i=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate())),D=0,q=T+(o?1:0);D<q;)i.setUTCDate(i.getUTCDate()+1),~c.indexOf(i.getUTCDay())&&!~f.indexOf(i.toISOString().split("T")[0])&&D++;b&&(b.textContent=i.toLocaleDateString(void 0,{timeZone:"UTC",weekday:"short",month:"short",day:"numeric"}))}}function j(t){e.available=t?"true":"false",a.setAttribute("data-available",e.available),h&&(h.style.display=t?"flex":"none"),g&&(g.style.display=t?"none":"flex"),t&&s()}function I(t,n){document.addEventListener(t,n)}I("variant:change",function(t){var n=t&&t.detail&&(t.detail.variant||t.detail);n&&n.available!=null&&j(Boolean(n.available))}),I("change",function(t){var n=t.target.form||t.target.closest("form")||document.querySelector("form[action*='/cart/add']");n&&setTimeout(function(){var r=n.querySelector('[name="add"],.product-form__submit');r&&j(!(r.disabled||/sold|unavail/i.test(r.textContent||"")))},50)}),s(),setInterval(s,6e4)}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",y):y()
+  function init() {
+    var root = document.getElementById("dropclock-{{ block.id }}");
+    if (!root) return;
+    var ds = root.dataset || {};
+    var cardEl = root.querySelector(".dc-pill-card");
+    var backorderEl = root.querySelector(".dc-backorder-notice");
+    var timerValEl = root.querySelector("[data-dc-timer]");
+    var subtextEl = root.querySelector("[data-dc-subtext]");
+    var etaDateEl = root.querySelector("[data-dc-eta]");
+    var barFillEl = root.querySelector("[data-dc-bar-fill]");
+
+    var cutoffH = ds.cutoffHour != null ? +ds.cutoffHour : 14;
+    var cutoffM = +(ds.cutoffMin || ds.cutoffMinute || 0);
+    var leadDays = +ds.leadDays || 2;
+    var tzOffset = +(ds.timezoneOffset || ds.tzOffset || 0);
+    var samedayText = ds.samedayText || "for same-day dispatch";
+    var nextdayText = ds.nextdayText || "for tomorrow's dispatch";
+
+    function safeParse(str) {
+      try { return JSON.parse(str); } catch(e) { return null; }
+    }
+
+    var workingDays = safeParse(ds.workingDays);
+    var blackoutDates = safeParse(ds.blackoutDates || ds.blackouts);
+    var marketOverrides = safeParse(ds.marketOverrides) || {};
+
+    if (!Array.isArray(workingDays) || !workingDays.length) {
+      workingDays = [1, 2, 3, 4, 5];
+    }
+    if (!Array.isArray(blackoutDates)) {
+      blackoutDates = [];
+    }
+
+    if (ds.currentCountry && marketOverrides[ds.currentCountry]) {
+      leadDays += +marketOverrides[ds.currentCountry] || 0;
+    }
+
+    function tick() {
+      if (ds.available === "false") return;
+
+      var now = new Date(Date.now() + tzOffset * 60 * 1000);
+      var currentSecs = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+      var cutoffSecs = cutoffH * 3600 + cutoffM * 60;
+      var diffSecs = cutoffSecs - currentSecs;
+      var isPastCutoff = diffSecs <= 0;
+
+      if (isPastCutoff) {
+        diffSecs += 86400;
+      }
+
+      var h = Math.floor(diffSecs / 3600);
+      var m = Math.floor((diffSecs % 3600) / 60);
+      var s = Math.floor(diffSecs % 60);
+
+      if (timerValEl) {
+        timerValEl.textContent = h + "h " + (m < 10 ? "0" + m : m) + "m " + (s < 10 ? "0" + s : s) + "s";
+      }
+
+      if (subtextEl) {
+        subtextEl.textContent = isPastCutoff ? nextdayText : samedayText;
+      }
+
+      if (barFillEl) {
+        var startSecs = 8 * 3600; // 8:00 AM
+        var windowSecs = cutoffSecs > startSecs ? cutoffSecs - startSecs : 14400;
+        var pct = isPastCutoff ? 0 : Math.max(5, Math.min(100, Math.round((diffSecs / windowSecs) * 100)));
+        barFillEl.style.width = pct + "%";
+      }
+
+      // Calculate Delivery Arrival Date
+      var delivery = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      if (isPastCutoff) {
+        delivery.setUTCDate(delivery.getUTCDate() + 1);
+      }
+
+      var transitLeft = leadDays;
+      while (transitLeft > 0 || workingDays.indexOf(delivery.getUTCDay()) === -1 || blackoutDates.indexOf(delivery.toISOString().split("T")[0]) !== -1) {
+        delivery.setUTCDate(delivery.getUTCDate() + 1);
+        if (workingDays.indexOf(delivery.getUTCDay()) !== -1 && blackoutDates.indexOf(delivery.toISOString().split("T")[0]) === -1) {
+          if (transitLeft > 0) transitLeft--;
+        }
+      }
+
+      if (etaDateEl) {
+        etaDateEl.textContent = delivery.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          weekday: "short",
+          month: "short",
+          day: "numeric"
+        });
+      }
+    }
+
+    function setStockState(isAvailable) {
+      ds.available = isAvailable ? "true" : "false";
+      root.setAttribute("data-available", ds.available);
+      if (cardEl) cardEl.style.display = isAvailable ? "flex" : "none";
+      if (backorderEl) backorderEl.style.display = isAvailable ? "none" : "flex";
+      if (isAvailable) tick();
+    }
+
+    function listen(evtName, fn) {
+      document.addEventListener(evtName, fn);
+    }
+
+    listen("variant:change", function(e) {
+      var v = e && e.detail && (e.detail.variant || e.detail);
+      if (v && v.available != null) setStockState(Boolean(v.available));
+    });
+
+    listen("change", function(e) {
+      var form = e.target.form || e.target.closest("form") || document.querySelector("form[action*='/cart/add']");
+      if (form) {
+        setTimeout(function() {
+          var submitBtn = form.querySelector('[name="add"], .product-form__submit');
+          if (submitBtn) {
+            setStockState(!(submitBtn.disabled || /sold|unavail/i.test(submitBtn.textContent || "")));
+          }
+        }, 50);
+      }
+    });
+
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();
 </script>
 
@@ -140,8 +391,8 @@ function y(){var a=document.getElementById("dropclock-{{ block.id }}");if(!a)ret
       "id": "style_preset",
       "label": "Display Style",
       "options": [
-        { "value": "capsule", "label": "Modern Capsule (Recommended)" },
-        { "value": "urgency", "label": "Urgency Highlight" },
+        { "value": "capsule", "label": "21st.dev DTC Micro-Card (Recommended)" },
+        { "value": "urgency", "label": "Urgency Highlight Bar" },
         { "value": "minimal", "label": "Minimal Text Line" }
       ],
       "default": "capsule"
@@ -156,13 +407,13 @@ function y(){var a=document.getElementById("dropclock-{{ block.id }}");if(!a)ret
       "type": "color",
       "id": "bg_color",
       "label": "Background Card Color",
-      "default": "#f4f6f8"
+      "default": "#f8fafc"
     },
     {
       "type": "color",
       "id": "text_color",
       "label": "Primary Text Color",
-      "default": "#202223"
+      "default": "#0f172a"
     },
     {
       "type": "range",
@@ -172,7 +423,7 @@ function y(){var a=document.getElementById("dropclock-{{ block.id }}");if(!a)ret
       "step": 2,
       "unit": "px",
       "label": "Border Radius",
-      "default": 8
+      "default": 12
     },
     {
       "type": "range",
