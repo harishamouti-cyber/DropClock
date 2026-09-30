@@ -310,6 +310,17 @@ export function DropClockStudio({
   // Form State
   const [cutoffHour, setCutoffHour] = useState(settings.cutoffHour);
   const [cutoffMinute, setCutoffMinute] = useState(settings.cutoffMinute);
+  const [hourInput, setHourInput] = useState(settings.cutoffHour.toString().padStart(2, "0"));
+  const [minuteInput, setMinuteInput] = useState(settings.cutoffMinute.toString().padStart(2, "0"));
+
+  useEffect(() => {
+    setHourInput(cutoffHour.toString().padStart(2, "0"));
+  }, [cutoffHour]);
+
+  useEffect(() => {
+    setMinuteInput(cutoffMinute.toString().padStart(2, "0"));
+  }, [cutoffMinute]);
+
   const [leadDays, setLeadDays] = useState(settings.leadDays);
   const [isCustomLeadDays, setIsCustomLeadDays] = useState(settings.leadDays > 2);
   const [presetStyle, setPresetStyle] = useState(settings.widgetStyle || settings.presetStyle || "capsule");
@@ -412,6 +423,8 @@ export function DropClockStudio({
   const handleDiscard = () => {
     setCutoffHour(baselineSettings.cutoffHour);
     setCutoffMinute(baselineSettings.cutoffMinute);
+    setHourInput(baselineSettings.cutoffHour.toString().padStart(2, "0"));
+    setMinuteInput(baselineSettings.cutoffMinute.toString().padStart(2, "0"));
     setLeadDays(baselineSettings.leadDays);
     setIsCustomLeadDays(baselineSettings.leadDays > 2);
     setPresetStyle(baselineSettings.presetStyle || "capsule");
@@ -605,6 +618,10 @@ export function DropClockStudio({
       );
       if (matched) {
         effectiveLeadDays = matched.leadDays;
+      } else if (activeSimulatedTag.toLowerCase() === "pre-order") {
+        effectiveLeadDays = 14;
+      } else if (activeSimulatedTag.toLowerCase() === "freight") {
+        effectiveLeadDays = 5;
       }
     }
 
@@ -702,65 +719,97 @@ export function DropClockStudio({
       `}</style>
 
       {/* Header Bar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0 flex-wrap gap-3">
-        <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-base font-semibold tracking-tight text-zinc-100 m-0">
-            DropClock Studio
-          </h1>
+      {isEmbedded ? (
+        <div className="flex items-center justify-between px-6 py-2.5 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[11px] font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Dawn 15.0 (Active)
+            </span>
 
-          <span className="text-[11px] font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Dawn 15.0
-          </span>
-
-          {/* Sync Status Badge in Header */}
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                hasSaved
-                  ? "bg-emerald-400 animate-pulse"
+            {/* Sync Status Badge in Header */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px]">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  hasSaved
+                    ? "bg-emerald-400 animate-pulse"
+                    : isDirty
+                    ? "bg-amber-400"
+                    : "bg-emerald-500"
+                }`}
+              />
+              <span className="font-semibold text-zinc-200">
+                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
+              </span>
+              <span className="text-[10px] text-zinc-400 hidden sm:inline">
+                • {hasSaved
+                  ? "Saved to store"
                   : isDirty
-                  ? "bg-amber-400"
-                  : "bg-emerald-500"
-              }`}
-            />
-            <span className="font-semibold text-zinc-200">
-              {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-            </span>
-            <span className="text-[11px] text-zinc-400 hidden sm:inline">
-              • {hasSaved
-                ? "Saved to store"
-                : isDirty
-                ? isStandalone
-                  ? "Ready to test"
-                  : "Staged in SaveBar"
-                : "Active on Shopify Edge CDN"}
-            </span>
+                  ? "Staged in SaveBar"
+                  : "Active on Shopify Edge CDN"}
+              </span>
+            </div>
           </div>
         </div>
+      ) : (
+        <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0 flex-wrap gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-base font-semibold tracking-tight text-zinc-100 m-0">
+              DropClock Studio
+            </h1>
 
-        <div className="flex items-center gap-2.5">
-          {isStandalone && isDirty && (
-            <button
-              type="button"
-              onClick={handleDiscard}
-              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-md px-3 py-1.5 text-xs font-medium transition cursor-pointer"
+            <span className="text-[11px] font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Dawn 15.0 (Active)
+            </span>
+
+            {/* Sync Status Badge in Header */}
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  hasSaved
+                    ? "bg-emerald-400 animate-pulse"
+                    : isDirty
+                    ? "bg-amber-400"
+                    : "bg-emerald-500"
+                }`}
+              />
+              <span className="font-semibold text-zinc-200">
+                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
+              </span>
+              <span className="text-[11px] text-zinc-400 hidden sm:inline">
+                • {hasSaved
+                  ? "Saved to store"
+                  : isDirty
+                  ? "Ready to test"
+                  : "Active on Shopify Edge CDN"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            {isDirty && (
+              <button
+                type="button"
+                onClick={handleDiscard}
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-md px-3 py-1.5 text-xs font-medium transition cursor-pointer"
+              >
+                Reset Changes
+              </button>
+            )}
+
+            <a
+              href={themeEditorDeepLink}
+              target="_blank"
+              rel="noreferrer"
+              className="bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 rounded-md px-3.5 py-1.5 text-xs font-medium inline-flex items-center gap-1.5 transition shadow-sm"
             >
-              Reset Changes
-            </button>
-          )}
-
-          <a
-            href={themeEditorDeepLink}
-            target="_blank"
-            rel="noreferrer"
-            className="bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 rounded-md px-3.5 py-1.5 text-xs font-medium inline-flex items-center gap-1.5 transition shadow-sm"
-          >
-            <span>Add to Theme Editor</span>
-            <ExternalLinkIcon />
-          </a>
+              <span>Add to Theme Editor</span>
+              <ExternalLinkIcon />
+            </a>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Studio Grid */}
       <div className="grid grid-cols-12 flex-1 min-h-0">
@@ -796,17 +845,17 @@ export function DropClockStudio({
                 </span>
               </div>
 
-              {/* 24h Digital Time Display & Stepper */}
+              {/* 24h Digital Time Display & Stepper with Direct Manual Numeric Inputs */}
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "10px",
+                  gap: "12px",
                   backgroundColor: "#18181b",
                   border: "1px solid #27272a",
                   borderRadius: "10px",
-                  padding: "14px",
+                  padding: "12px",
                   marginBottom: "14px",
                 }}
               >
@@ -814,54 +863,127 @@ export function DropClockStudio({
                   type="button"
                   onClick={() => setCutoffHour((h) => (h > 0 ? h - 1 : 23))}
                   style={{
-                    width: "30px",
-                    height: "30px",
+                    width: "32px",
+                    height: "32px",
                     borderRadius: "6px",
-                    border: "1px solid #27272a",
+                    border: "1px solid #3f3f46",
                     backgroundColor: "#27272a",
                     color: "#fafafa",
                     fontWeight: "700",
-                    fontSize: "1rem",
+                    fontSize: "1.125rem",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    userSelect: "none",
                   }}
+                  title="Decrement Hour"
                 >
                   -
                 </button>
                 <div
                   style={{
-                    fontSize: "2rem",
-                    fontWeight: "700",
-                    fontFamily: "monospace",
-                    letterSpacing: "0.05em",
-                    color: "#fafafa",
                     display: "flex",
                     alignItems: "center",
+                    gap: "6px",
+                    fontFamily: "monospace",
                   }}
                 >
-                  <span>{cutoffHour.toString().padStart(2, "0")}</span>
-                  <span style={{ color: "#10b981", margin: "0 4px" }}>:</span>
-                  <span>{cutoffMinute.toString().padStart(2, "0")}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={23}
+                    inputMode="numeric"
+                    value={hourInput}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setHourInput(val);
+                      const num = parseInt(val, 10);
+                      if (!isNaN(num) && num >= 0 && num <= 23) {
+                        setCutoffHour(num);
+                      }
+                    }}
+                    onBlur={() => {
+                      let num = parseInt(hourInput, 10);
+                      if (isNaN(num)) num = 0;
+                      num = Math.max(0, Math.min(23, num));
+                      setCutoffHour(num);
+                      setHourInput(num.toString().padStart(2, "0"));
+                    }}
+                    style={{
+                      width: "56px",
+                      textAlign: "center",
+                      backgroundColor: "#121215",
+                      border: "1px solid #3f3f46",
+                      borderRadius: "6px",
+                      padding: "4px 0",
+                      fontSize: "1.75rem",
+                      fontWeight: "700",
+                      color: "#fafafa",
+                      fontFamily: "monospace",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                    aria-label="Cutoff Hour"
+                  />
+                  <span style={{ color: "#10b981", fontSize: "1.5rem", fontWeight: "700" }}>:</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={59}
+                    inputMode="numeric"
+                    value={minuteInput}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setMinuteInput(val);
+                      const num = parseInt(val, 10);
+                      if (!isNaN(num) && num >= 0 && num <= 59) {
+                        setCutoffMinute(num);
+                      }
+                    }}
+                    onBlur={() => {
+                      let num = parseInt(minuteInput, 10);
+                      if (isNaN(num)) num = 0;
+                      num = Math.max(0, Math.min(59, num));
+                      setCutoffMinute(num);
+                      setMinuteInput(num.toString().padStart(2, "0"));
+                    }}
+                    style={{
+                      width: "56px",
+                      textAlign: "center",
+                      backgroundColor: "#121215",
+                      border: "1px solid #3f3f46",
+                      borderRadius: "6px",
+                      padding: "4px 0",
+                      fontSize: "1.75rem",
+                      fontWeight: "700",
+                      color: "#fafafa",
+                      fontFamily: "monospace",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                    aria-label="Cutoff Minute"
+                  />
                 </div>
                 <button
                   type="button"
                   onClick={() => setCutoffHour((h) => (h < 23 ? h + 1 : 0))}
                   style={{
-                    width: "30px",
-                    height: "30px",
+                    width: "32px",
+                    height: "32px",
                     borderRadius: "6px",
-                    border: "1px solid #27272a",
+                    border: "1px solid #3f3f46",
                     backgroundColor: "#27272a",
                     color: "#fafafa",
                     fontWeight: "700",
-                    fontSize: "1rem",
+                    fontSize: "1.125rem",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    userSelect: "none",
                   }}
+                  title="Increment Hour"
                 >
                   +
                 </button>
@@ -1897,17 +2019,17 @@ export function DropClockStudio({
           </div>
 
           {/* RIGHT PANE: Realistic DTC Storefront Canvas */}
-          <div className="col-span-12 lg:col-span-8 h-full overflow-y-auto flex items-center justify-center p-6 bg-[#0a0a0a]">
-            <div className="my-auto py-8 w-full flex flex-col items-center">
+          <div className="col-span-12 lg:col-span-8 h-full overflow-y-auto p-6 bg-[#0a0a0a] flex flex-col items-center">
+            <div className="m-auto py-6 w-full max-w-xl flex flex-col items-center">
               {/* Browser Window Chrome Wrapper */}
-              <div className="w-full max-w-xl bg-[#121215] border border-zinc-800/80 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="w-full bg-[#121215] border border-zinc-800/80 rounded-2xl overflow-hidden shadow-2xl">
                 {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
                 <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
                     <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
                     <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-                    <span className="ml-3 text-xs text-zinc-500 font-mono">
+                    <span className="ml-3 text-xs text-zinc-400 font-mono">
                       yourstore.com/products/classic-boxy-crewneck
                     </span>
                   </div>
@@ -1991,10 +2113,10 @@ export function DropClockStudio({
                     </div>
 
                     {/* PRODUCT IMAGE CONTAINER */}
-                    <div className="relative w-full aspect-[16/10] min-h-[220px] bg-zinc-100 dark:bg-zinc-800/50 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-6 select-none mb-4">
+                    <div className="relative w-full aspect-[4/3] bg-zinc-100 dark:bg-zinc-800/40 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-6 select-none mb-4">
                       <svg 
                         viewBox="0 0 120 120" 
-                        className="w-40 h-40 text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                        className="w-36 h-36 text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
                         fill="currentColor"
                         xmlns="http://www.w3.org/2000/svg"
                       >
@@ -2170,8 +2292,62 @@ export function DropClockStudio({
                       Tag: none
                     </button>
 
+                    <button
+                      type="button"
+                      onClick={() => setActiveSimulatedTag("pre-order")}
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: "6px",
+                        border: activeSimulatedTag.toLowerCase() === "pre-order" ? "1.5px solid #008060" : "1px solid #cbd5e1",
+                        backgroundColor: activeSimulatedTag.toLowerCase() === "pre-order" ? "#008060" : "#ffffff",
+                        color: activeSimulatedTag.toLowerCase() === "pre-order" ? "#ffffff" : "#334155",
+                        fontSize: "0.6875rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "3px",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <span>Tag: pre-order</span>
+                      <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
+                        (+{tagRules.find((r) => r.tag.trim().toLowerCase() === "pre-order")?.leadDays || 14}d)
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveSimulatedTag("freight")}
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: "6px",
+                        border: activeSimulatedTag.toLowerCase() === "freight" ? "1.5px solid #008060" : "1px solid #cbd5e1",
+                        backgroundColor: activeSimulatedTag.toLowerCase() === "freight" ? "#008060" : "#ffffff",
+                        color: activeSimulatedTag.toLowerCase() === "freight" ? "#ffffff" : "#334155",
+                        fontSize: "0.6875rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "3px",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <span>Tag: freight</span>
+                      <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
+                        (+{tagRules.find((r) => r.tag.trim().toLowerCase() === "freight")?.leadDays || 5}d)
+                      </span>
+                    </button>
+
                     {tagRules
-                      .filter((r) => r.tag && r.tag.trim().length > 0)
+                      .filter(
+                        (r) =>
+                          r.tag &&
+                          r.tag.trim().length > 0 &&
+                          r.tag.trim().toLowerCase() !== "pre-order" &&
+                          r.tag.trim().toLowerCase() !== "freight"
+                      )
                       .map((rule) => {
                         const isSelected = activeSimulatedTag.toLowerCase() === rule.tag.trim().toLowerCase();
                         return (
@@ -2203,6 +2379,10 @@ export function DropClockStudio({
                         );
                       })}
                   </div>
+
+                  <p style={{ margin: "6px 0 0 0", fontSize: "0.6875rem", color: "#64748b", fontStyle: "italic" }}>
+                    Preview how product tags dynamically override delivery dates.
+                  </p>
                 </div>
 
                 {/* 4. THE LIVE DYNAMIC DROPCLOCK WIDGET (POLISHED TYPOGRAPHY) */}
