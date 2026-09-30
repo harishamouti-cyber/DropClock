@@ -29,13 +29,13 @@ if (host === "localhost") {
   hmrConfig = {
     protocol: "wss",
     host: host,
-    port: parseInt(process.env.FRONTEND_PORT!) || 8002,
     clientPort: 443,
   };
 }
 
 export default defineConfig({
   server: {
+    host: "127.0.0.1",
     port: Number(process.env.PORT || 3000),
     hmr: hmrConfig,
     fs: {

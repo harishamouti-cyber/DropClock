@@ -13,6 +13,47 @@ export const apiVersion = LATEST_API_VERSION;
 // Standardized Recurring Billing Plan Constant
 export const DROPCLOCK_PRO_MONTHLY = "DropClock Pro";
 
+export async function requireBillingSafely(billing: any) {
+  if (process.env.DISABLE_BILLING === "true") {
+    return null;
+  }
+
+  try {
+    return await billing.require({
+      plans: [DROPCLOCK_PRO_MONTHLY],
+      isTest: process.env.NODE_ENV !== "production",
+      onFailure: async () =>
+        billing.request({
+          plan: DROPCLOCK_PRO_MONTHLY,
+          isTest: process.env.NODE_ENV !== "production",
+        }),
+    });
+  } catch (error: any) {
+    // If Remix redirect response was thrown by redirectOutOfApp, rethrow it
+    if (
+      error instanceof Response ||
+      (error && typeof error === "object" && ("status" in error || "headers" in error))
+    ) {
+      throw error;
+    }
+
+    const isDistributionError =
+      error?.message?.includes("public distribution") ||
+      (Array.isArray(error?.errorData) &&
+        error.errorData.some((e: any) => e?.message?.includes("public distribution")));
+
+    if (isDistributionError || process.env.NODE_ENV !== "production") {
+      console.warn(
+        "⚠️ Billing check bypassed (App does not have public distribution enabled or in dev mode):",
+        error?.message || error
+      );
+      return null;
+    }
+
+    throw error;
+  }
+}
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY || "dummy_key",
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "dummy_secret",

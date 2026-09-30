@@ -1,0 +1,9 @@
+# Shopify Web Configuration for Remix App
+type = "frontend"
+
+[commands]
+predev = "npx prisma generate"
+dev = "npm run dev:remix"
+
+[warmup]
+urls = ["/"]

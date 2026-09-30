@@ -1,21 +1,13 @@
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { authenticate, DROPCLOCK_PRO_MONTHLY } from "~/shopify.server";
+import { authenticate, requireBillingSafely } from "~/shopify.server";
 import prisma from "~/db.server";
 import { DropClockStudio } from "~/components/DropClockStudio";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session, admin, billing } = await authenticate.admin(request);
 
-  await billing.require({
-    plans: [DROPCLOCK_PRO_MONTHLY],
-    isTest: process.env.NODE_ENV !== "production",
-    onFailure: async () =>
-      billing.request({
-        plan: DROPCLOCK_PRO_MONTHLY,
-        isTest: process.env.NODE_ENV !== "production",
-      }),
-  });
+  await requireBillingSafely(billing);
 
   let isNewInstall = false;
   let settings = await prisma.dropClockSettings.findUnique({
@@ -152,15 +144,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const { admin, session, billing } = await authenticate.admin(request);
 
-  await billing.require({
-    plans: [DROPCLOCK_PRO_MONTHLY],
-    isTest: process.env.NODE_ENV !== "production",
-    onFailure: async () =>
-      billing.request({
-        plan: DROPCLOCK_PRO_MONTHLY,
-        isTest: process.env.NODE_ENV !== "production",
-      }),
-  });
+  await requireBillingSafely(billing);
 
   const formData = await request.formData();
 
