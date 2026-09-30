@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSubmit, useNavigation } from "@remix-run/react";
-import { Page } from "@shopify/polaris";
 import { SaveBar, TitleBar } from "@shopify/app-bridge-react";
 
 export interface StudioSettings {
@@ -659,7 +658,7 @@ export function DropClockStudio({
   ]);
 
   return (
-    <Page fullWidth>
+    <div className="h-[calc(100vh-56px)] flex flex-col overflow-hidden bg-zinc-950 text-zinc-100 font-sans">
       {/* App Bridge Contextual TitleBar & Native SaveBar */}
       {!isStandalone && isEmbedded && (
         <>
@@ -695,157 +694,80 @@ export function DropClockStudio({
       )}
 
       <style>{`
-        @media (max-width: 1023px) {
-          .dropclock-studio-grid {
-            grid-template-columns: 1fr !important;
-          }
+        .Polaris-Page, .Polaris-Page--fullWidth, .Polaris-Page__Content {
+          padding: 0 !important;
+          margin: 0 !important;
+          max-width: 100% !important;
         }
       `}</style>
 
-      <div
-        style={{
-          minHeight: "calc(100vh - 4rem)",
-          backgroundColor: "#09090b",
-          color: "#fafafa",
-          fontFamily:
-            'Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          margin: "-20px",
-          padding: "24px 32px",
-          boxSizing: "border-box",
-        }}
-      >
-        {/* 2. CLEAN HEADER (SCRUBBED OF JARGON & PROMOTIONS) */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingBottom: "16px",
-            borderBottom: "1px solid #1f1f23",
-            marginBottom: "24px",
-            flexWrap: "wrap",
-            gap: "12px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <h1
-              style={{
-                fontSize: "1.1875rem",
-                fontWeight: "600",
-                letterSpacing: "-0.02em",
-                margin: 0,
-                color: "#fafafa",
-              }}
-            >
-              DropClock Studio
-            </h1>
+      {/* Header Bar */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0 flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-base font-semibold tracking-tight text-zinc-100 m-0">
+            DropClock Studio
+          </h1>
 
+          <span className="text-[11px] font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Dawn 15.0
+          </span>
+
+          {/* Sync Status Badge in Header */}
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
             <span
-              style={{
-                fontSize: "0.6875rem",
-                fontWeight: "500",
-                color: "#a1a1aa",
-                backgroundColor: "#18181b",
-                border: "1px solid #27272a",
-                padding: "2px 8px",
-                borderRadius: "9999px",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <span
-                style={{
-                  width: "5px",
-                  height: "5px",
-                  borderRadius: "50%",
-                  backgroundColor: "#10b981",
-                }}
-              />
-              Dawn 15.0 (Active Theme)
+              className={`w-2 h-2 rounded-full ${
+                hasSaved
+                  ? "bg-emerald-400 animate-pulse"
+                  : isDirty
+                  ? "bg-amber-400"
+                  : "bg-emerald-500"
+              }`}
+            />
+            <span className="font-semibold text-zinc-200">
+              {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
             </span>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {isStandalone && isDirty && (
-              <button
-                type="button"
-                onClick={handleDiscard}
-                style={{
-                  backgroundColor: "#27272a",
-                  color: "#fafafa",
-                  border: "1px solid #3f3f46",
-                  borderRadius: "6px",
-                  padding: "7px 12px",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                Reset Changes
-              </button>
-            )}
-
-            <a
-              href={themeEditorDeepLink}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                backgroundColor: "#18181b",
-                color: "#fafafa",
-                border: "1px solid #27272a",
-                borderRadius: "6px",
-                padding: "7px 14px",
-                fontSize: "0.8125rem",
-                fontWeight: "500",
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05)",
-                transition: "all 0.15s ease",
-              }}
-            >
-              <span>Add to Theme Editor</span>
-              <ExternalLinkIcon />
-            </a>
+            <span className="text-[11px] text-zinc-400 hidden sm:inline">
+              • {hasSaved
+                ? "Saved to store"
+                : isDirty
+                ? isStandalone
+                  ? "Ready to test"
+                  : "Staged in SaveBar"
+                : "Active on Shopify Edge CDN"}
+            </span>
           </div>
         </div>
 
-        {/* 21st.dev Split-Pane Studio Layout (Collapsing cleanly to single-column under 1024px) */}
-        <div
-          className="dropclock-studio-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(340px, 440px) 1fr",
-            gap: "28px",
-            alignItems: "start",
-          }}
-        >
-          {/* 3. LEFT PANE: Modular Parameter Controls (Scrollable Container) */}
-          <div
-            className="overflow-y-auto max-h-[calc(100vh-80px)] pr-2 pb-16"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "18px",
-              maxHeight: "calc(100vh - 80px)",
-              overflowY: "auto",
-              paddingRight: "8px",
-              paddingBottom: "64px",
-            }}
-          >
-            {/* 1. Cutoff Time Controller */}
-            <div
-              style={{
-                backgroundColor: "#121215",
-                border: "1px solid #1f1f23",
-                borderRadius: "12px",
-                padding: "18px",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
-              }}
+        <div className="flex items-center gap-2.5">
+          {isStandalone && isDirty && (
+            <button
+              type="button"
+              onClick={handleDiscard}
+              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-md px-3 py-1.5 text-xs font-medium transition cursor-pointer"
             >
+              Reset Changes
+            </button>
+          )}
+
+          <a
+            href={themeEditorDeepLink}
+            target="_blank"
+            rel="noreferrer"
+            className="bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 rounded-md px-3.5 py-1.5 text-xs font-medium inline-flex items-center gap-1.5 transition shadow-sm"
+          >
+            <span>Add to Theme Editor</span>
+            <ExternalLinkIcon />
+          </a>
+        </div>
+      </div>
+
+      {/* Studio Grid */}
+      <div className="grid grid-cols-12 flex-1 min-h-0">
+        {/* Left Sidebar Container */}
+        <div className="col-span-12 lg:col-span-4 h-full overflow-y-auto overscroll-contain p-4 space-y-4 border-r border-zinc-800/80 pr-3 pb-24">
+          {/* 1. Cutoff Time Controller */}
+          <div className="bg-[#121215] border border-zinc-800/80 rounded-xl p-4 shadow-sm space-y-3">
               <div
                 style={{
                   display: "flex",
@@ -987,7 +909,7 @@ export function DropClockStudio({
                 backgroundColor: "#121215",
                 border: "1px solid #1f1f23",
                 borderRadius: "12px",
-                padding: "18px",
+                padding: "16px",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
               }}
             >
@@ -1065,7 +987,7 @@ export function DropClockStudio({
                 backgroundColor: "#121215",
                 border: "1px solid #1f1f23",
                 borderRadius: "12px",
-                padding: "18px",
+                padding: "16px",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
               }}
             >
@@ -1213,7 +1135,7 @@ export function DropClockStudio({
                 backgroundColor: "#121215",
                 border: "1px solid #1f1f23",
                 borderRadius: "12px",
-                padding: "18px",
+                padding: "16px",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
               }}
             >
@@ -1277,7 +1199,7 @@ export function DropClockStudio({
                 backgroundColor: "#121215",
                 border: "1px solid #1f1f23",
                 borderRadius: "12px",
-                padding: "18px",
+                padding: "16px",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
               }}
             >
@@ -1426,7 +1348,7 @@ export function DropClockStudio({
                 backgroundColor: "#121215",
                 border: "1px solid #1f1f23",
                 borderRadius: "12px",
-                padding: "18px",
+                padding: "16px",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
               }}
             >
@@ -1617,7 +1539,7 @@ export function DropClockStudio({
                 backgroundColor: "#121215",
                 border: "1px solid #1f1f23",
                 borderRadius: "12px",
-                padding: "18px",
+                padding: "16px",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
               }}
             >
@@ -1808,7 +1730,7 @@ export function DropClockStudio({
                 backgroundColor: "#121215",
                 border: "1px solid #1f1f23",
                 borderRadius: "12px",
-                padding: "18px",
+                padding: "16px",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.03)",
               }}
             >
@@ -1944,54 +1866,19 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 3. DOCKED BOTTOM ACTION BAR (CLEAN, NO OVERLAPPING) */}
-            <div
-              style={{
-                position: "sticky",
-                bottom: 0,
-                backgroundColor: "#09090b",
-                borderTop: "1px solid #1f1f23",
-                paddingTop: "14px",
-                paddingBottom: "8px",
-                marginTop: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "12px",
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "0.8125rem", fontWeight: "600", color: "#fafafa" }}>
-                  {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-                </span>
-                <span style={{ fontSize: "0.6875rem", color: hasSaved ? "#34d399" : isDirty ? "#34d399" : "#71717a" }}>
-                  {hasSaved
-                    ? "Settings saved successfully"
-                    : isDirty
-                    ? isStandalone
-                      ? "Ready to test in sandbox"
-                      : "Staged in Shopify Admin SaveBar"
-                    : "Active on Shopify Edge CDN"}
-                </span>
-              </div>
-
-              {isStandalone ? (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {/* Relative-flow footer in standalone mode (no absolute/sticky overlap) */}
+            {isStandalone && (
+              <div className="pt-3 border-t border-zinc-800/80 mt-2 flex items-center justify-between">
+                <div className="text-xs text-zinc-400">
+                  {hasSaved ? "Saved" : isDirty ? "Sandbox mode" : "Synced"}
+                </div>
+                <div className="flex items-center gap-2">
                   {isDirty && (
                     <button
                       type="button"
                       onClick={handleDiscard}
                       disabled={isSaving}
-                      style={{
-                        backgroundColor: "transparent",
-                        color: "#a1a1aa",
-                        border: "1px solid #27272a",
-                        borderRadius: "6px",
-                        padding: "7px 12px",
-                        fontSize: "0.75rem",
-                        fontWeight: "500",
-                        cursor: "pointer",
-                      }}
+                      className="px-3 py-1.5 text-xs font-medium text-zinc-300 border border-zinc-700 rounded-md hover:bg-zinc-800 transition cursor-pointer"
                     >
                       Discard
                     </button>
@@ -2000,304 +1887,127 @@ export function DropClockStudio({
                     type="button"
                     onClick={handleSave}
                     disabled={(!isDirty && !hasSaved) || isSaving}
-                    style={{
-                      backgroundColor: hasSaved ? "#059669" : isDirty ? "#10b981" : "#27272a",
-                      color: isDirty || hasSaved ? "#09090b" : "#71717a",
-                      border: "none",
-                      borderRadius: "6px",
-                      padding: "7px 16px",
-                      fontSize: "0.75rem",
-                      fontWeight: "600",
-                      cursor: (isDirty || hasSaved) && !isSaving ? "pointer" : "not-allowed",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.15s ease",
-                    }}
+                    className="px-4 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
                   >
-                    {isSaving ? (
-                      "Saving..."
-                    ) : hasSaved ? (
-                      <>
-                        <CheckIcon />
-                        <span>Settings Saved</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckIcon />
-                        <span>Save Settings</span>
-                      </>
-                    )}
+                    {isSaving ? "Saving..." : hasSaved ? "Saved" : "Save Settings"}
                   </button>
                 </div>
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span
-                    style={{
-                      fontSize: "0.6875rem",
-                      color: isDirty ? "#10b981" : "#71717a",
-                      backgroundColor: isDirty ? "rgba(16, 185, 129, 0.1)" : "#18181b",
-                      border: `1px solid ${isDirty ? "rgba(16, 185, 129, 0.25)" : "#27272a"}`,
-                      padding: "4px 10px",
-                      borderRadius: "6px",
-                      fontWeight: "500",
-                    }}
-                  >
-                    {isDirty ? "● SaveBar Active Above" : "✓ Edge Metastore Synchronized"}
-                  </span>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* RIGHT PANE: Realistic DTC Storefront Canvas */}
-          <div
-            style={{
-              position: "sticky",
-              top: "24px",
-              backgroundColor: "#121215",
-              border: "1px solid #1f1f23",
-              borderRadius: "16px",
-              overflow: "hidden",
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5)",
-            }}
-          >
-            {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
-            <div
-              style={{
-                backgroundColor: "#18181b",
-                borderBottom: "1px solid #27272a",
-                padding: "10px 16px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: "10px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#ef4444" }} />
-                <span style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#eab308" }} />
-                <span style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#22c55e" }} />
-                <span
-                  style={{
-                    marginLeft: "12px",
-                    fontSize: "0.6875rem",
-                    color: "#71717a",
-                    fontFamily: "monospace",
-                  }}
-                >
-                  yourstore.com/products/classic-boxy-crewneck
-                </span>
-              </div>
+          <div className="col-span-12 lg:col-span-8 h-full overflow-y-auto flex items-center justify-center p-6 bg-[#0a0a0a]">
+            <div className="my-auto py-8 w-full flex flex-col items-center">
+              {/* Browser Window Chrome Wrapper */}
+              <div className="w-full max-w-xl bg-[#121215] border border-zinc-800/80 rounded-2xl overflow-hidden shadow-2xl">
+                {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
+                <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+                    <span className="ml-3 text-xs text-zinc-500 font-mono">
+                      yourstore.com/products/classic-boxy-crewneck
+                    </span>
+                  </div>
 
-              {/* Device Viewport Toggle */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "2px",
-                  backgroundColor: "#27272a",
-                  padding: "2px",
-                  borderRadius: "6px",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setViewportMode("desktop")}
-                  style={{
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                    border: "none",
-                    fontSize: "0.6875rem",
-                    fontWeight: "500",
-                    cursor: "pointer",
-                    backgroundColor: viewportMode === "desktop" ? "#3f3f46" : "transparent",
-                    color: viewportMode === "desktop" ? "#fafafa" : "#a1a1aa",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Desktop
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewportMode("mobile")}
-                  style={{
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                    border: "none",
-                    fontSize: "0.6875rem",
-                    fontWeight: "500",
-                    cursor: "pointer",
-                    backgroundColor: viewportMode === "mobile" ? "#3f3f46" : "transparent",
-                    color: viewportMode === "mobile" ? "#fafafa" : "#a1a1aa",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Mobile (375px)
-                </button>
-              </div>
-            </div>
-
-            {/* Canvas Surface with Refined Dot Grid */}
-            <div
-              style={{
-                padding: "32px 24px",
-                backgroundImage: "radial-gradient(#27272a 1px, transparent 1px)",
-                backgroundSize: "16px 16px",
-                backgroundColor: "#09090b",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {/* Authentic Shopify Dawn Product Card Mock */}
-              <div
-                className={`transition-all duration-300 ease-in-out mx-auto ${
-                  viewportMode === "mobile" ? "max-w-[375px]" : "max-w-xl"
-                }`}
-                style={{
-                  maxWidth: viewportMode === "mobile" ? "375px" : "576px",
-                  width: "100%",
-                  backgroundColor: "#ffffff",
-                  color: "#18181b",
-                  borderRadius: "14px",
-                  padding: "24px",
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  transition: "max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  margin: "0 auto",
-                }}
-              >
-                {/* Stock State Quick Switcher */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: "14px",
-                    paddingBottom: "10px",
-                    borderBottom: "1px solid #f1f5f9",
-                  }}
-                >
-                  <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#64748b" }}>
-                    Stock Simulation:
-                  </span>
-                  <div
-                    style={{
-                      display: "flex",
-                      backgroundColor: "#f1f5f9",
-                      padding: "3px",
-                      borderRadius: "8px",
-                      border: "1px solid #e2e8f0",
-                    }}
-                  >
+                  {/* Device Viewport Toggle */}
+                  <div className="flex items-center gap-0.5 bg-zinc-800 p-0.5 rounded-lg border border-zinc-700/60">
                     <button
                       type="button"
-                      onClick={() => {
-                        setMockStockState("in_stock");
-                        if (selectedSize === "L") setSelectedSize("M");
-                      }}
-                      style={{
-                        padding: "4px 10px",
-                        borderRadius: "6px",
-                        border: "none",
-                        fontSize: "0.6875rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        backgroundColor: mockStockState === "in_stock" ? "#ffffff" : "transparent",
-                        color: mockStockState === "in_stock" ? "#0f172a" : "#64748b",
-                        boxShadow: mockStockState === "in_stock" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                        transition: "all 0.15s ease",
-                      }}
+                      onClick={() => setViewportMode("desktop")}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
+                        viewportMode === "desktop"
+                          ? "bg-zinc-700 text-zinc-100 shadow-sm"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      }`}
                     >
-                      In Stock
+                      Desktop
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setMockStockState("backorder");
-                        setSelectedSize("L");
-                      }}
-                      style={{
-                        padding: "4px 10px",
-                        borderRadius: "6px",
-                        border: "none",
-                        fontSize: "0.6875rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        backgroundColor: mockStockState === "backorder" ? "#ffffff" : "transparent",
-                        color: mockStockState === "backorder" ? "#b45309" : "#64748b",
-                        boxShadow: mockStockState === "backorder" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                        transition: "all 0.15s ease",
-                      }}
+                      onClick={() => setViewportMode("mobile")}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
+                        viewportMode === "mobile"
+                          ? "bg-zinc-700 text-zinc-100 shadow-sm"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      }`}
                     >
-                      Sold Out / Backorder
+                      Mobile (375px)
                     </button>
                   </div>
                 </div>
 
-                {/* PRODUCT IMAGE CONTAINER - NO EXTERNAL URLS ALLOWED */}
+                {/* Canvas Surface with Refined Dot Grid */}
                 <div
-                  className="relative w-full aspect-[4/3] bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80 flex items-center justify-center p-6 select-none"
+                  className="p-8 bg-[#09090b] flex justify-center items-center"
                   style={{
-                    position: "relative",
-                    width: "100%",
-                    aspectRatio: "4 / 3",
-                    backgroundColor: "#f4f4f5",
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                    border: "1px solid rgba(228, 228, 231, 0.8)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "24px",
-                    userSelect: "none",
-                    marginBottom: "16px",
+                    backgroundImage: "radial-gradient(#27272a 1px, transparent 1px)",
+                    backgroundSize: "16px 16px",
                   }}
                 >
-                  <svg 
-                    viewBox="0 0 120 120" 
-                    className="w-32 h-32 text-zinc-800 drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    style={{
-                      width: "128px",
-                      height: "128px",
-                      color: "#27272a",
-                      filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08))",
-                      transition: "transform 300ms ease",
-                    }}
+                  {/* Authentic Shopify Dawn Product Card Mock */}
+                  <div
+                    className={`transition-all duration-300 ease-in-out mx-auto ${
+                      viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
+                    } w-full bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden p-6`}
                   >
-                    {/* Clean Streetwear Boxy T-Shirt Vector */}
-                    <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
-                    {/* Subtle Neck Collar Highlight */}
-                    <path d="M 40 16 C 46 25 74 25 80 16 C 74 21 46 21 40 16 Z" fill="rgba(255,255,255,0.25)" />
-                  </svg>
-                  
-                  <span
-                    className="absolute bottom-2.5 right-2.5 text-[10px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded border border-zinc-200 shadow-xs"
-                    style={{
-                      position: "absolute",
-                      bottom: "10px",
-                      right: "10px",
-                      fontSize: "10px",
-                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                      letterSpacing: "0.05em",
-                      textTransform: "uppercase",
-                      color: "#71717a",
-                      backgroundColor: "rgba(255, 255, 255, 0.9)",
-                      backdropFilter: "blur(4px)",
-                      WebkitBackdropFilter: "blur(4px)",
-                      padding: "2px 8px",
-                      borderRadius: "4px",
-                      border: "1px solid #e4e4e7",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                    }}
-                  >
-                    Heavyweight 280 GSM
-                  </span>
-                </div>
+                    {/* Stock State Quick Switcher */}
+                    <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
+                      <span className="text-xs font-semibold text-zinc-500">
+                        Stock Simulation:
+                      </span>
+                      <div className="flex bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200/80 dark:border-zinc-700/60">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMockStockState("in_stock");
+                            if (selectedSize === "L") setSelectedSize("M");
+                          }}
+                          className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+                            mockStockState === "in_stock"
+                              ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
+                              : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                          }`}
+                        >
+                          In Stock
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMockStockState("backorder");
+                            setSelectedSize("L");
+                          }}
+                          className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+                            mockStockState === "backorder"
+                              ? "bg-white dark:bg-zinc-900 text-amber-700 dark:text-amber-400 shadow-xs"
+                              : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                          }`}
+                        >
+                          Sold Out / Backorder
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* PRODUCT IMAGE CONTAINER */}
+                    <div className="relative w-full aspect-[16/10] min-h-[220px] bg-zinc-100 dark:bg-zinc-800/50 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-6 select-none mb-4">
+                      <svg 
+                        viewBox="0 0 120 120" 
+                        className="w-40 h-40 text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                        fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        {/* Clean Streetwear Boxy T-Shirt Vector */}
+                        <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
+                        {/* Subtle Neck Collar Highlight */}
+                        <path d="M 40 16 C 46 25 74 25 80 16 C 74 21 46 21 40 16 Z" fill="rgba(255,255,255,0.25)" />
+                      </svg>
+                      
+                      <span className="absolute bottom-2.5 right-2.5 text-[10px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 shadow-xs">
+                        Heavyweight 280 GSM
+                      </span>
+                    </div>
 
                 {/* Stock Status & Title */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
@@ -2838,6 +2548,7 @@ export function DropClockStudio({
           </div>
         </div>
       </div>
-    </Page>
-  );
+    </div>
+  </div>
+);
 }

@@ -2,6 +2,7 @@ import { vitePlugin as remix } from "@remix-run/dev";
 import { defineConfig, type UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { vercelPreset } from "@vercel/remix/vite";
+import tailwindcss from "@tailwindcss/vite";
 
 // Related: https://github.com/remix-run/remix/issues/2835#issuecomment-1144102176
 // Replace the HOST env var with SHOPIFY_APP_URL so that it doesn't break the remix server
@@ -42,12 +43,8 @@ export default defineConfig({
       allow: ["app", "node_modules"],
     },
   },
-  css: {
-    postcss: {
-      plugins: [],
-    },
-  },
   plugins: [
+    tailwindcss(),
     remix({
       presets: [vercelPreset()],
       ignoredRouteFiles: ["**/.*"],
