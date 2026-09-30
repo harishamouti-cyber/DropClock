@@ -49,6 +49,38 @@ interface DropClockStudioProps {
 }
 
 // Crisp Monochrome Lucide-style SVG Icons
+const ActivityIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+  </svg>
+);
+
+const ShoppingBagIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+    <path d="M3 6h18" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </svg>
+);
+
+const ShoppingCartIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="8" cy="21" r="1" />
+    <circle cx="19" cy="21" r="1" />
+    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+  </svg>
+);
+
+const PackageCheckIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m16 16 2 2 4-4" />
+    <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" />
+    <path d="m7.5 4.27 9 5.15" />
+    <polyline points="3.29 7 12 12 20.71 7" />
+    <line x1="12" y1="22" x2="12" y2="12" />
+  </svg>
+);
+
 const GlobeIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" />
@@ -398,6 +430,13 @@ export function DropClockStudio({
 
   // Device Viewport Toggle (Desktop Full vs Mobile 375px)
   const [viewportMode, setViewportMode] = useState<"desktop" | "mobile">("desktop");
+
+  // Multi-Surface Preview Mode Switcher (Product Page vs Cart Drawer vs Thank You Page)
+  const [activeSurface, setActiveSurface] = useState<"product" | "cart" | "thankyou">("product");
+
+  // Simulated Cart State for Cart Drawer Preview
+  const [cartThreshold, setCartThreshold] = useState<number>(75);
+  const [cartSubtotal, setCartSubtotal] = useState<number>(60.95);
 
   // Save feedback states
   const [isSaving, setIsSaving] = useState(false);
@@ -860,6 +899,46 @@ export function DropClockStudio({
       <div className="grid grid-cols-12 flex-1 min-h-0">
         {/* Left Sidebar Container */}
         <div className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-4 space-y-4 border-r border-zinc-200 dark:border-zinc-800 bg-[#f1f2f4] pr-3 pb-24 text-zinc-900">
+          {/* 0. ROI & Dispatch Velocity Analytics Card */}
+          <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ActivityIcon />
+                <span className="text-sm font-semibold text-zinc-900">
+                  Analytics &amp; Dispatch Velocity
+                </span>
+              </div>
+              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                Live 30d ROI
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
+                <span className="text-[11px] text-zinc-500 font-medium">Storefront Views</span>
+                <span className="text-base font-bold text-zinc-900 mt-0.5">42,850</span>
+                <span className="text-[10px] text-emerald-600 font-semibold mt-0.5">↑ 14.2% MoM</span>
+              </div>
+
+              <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
+                <span className="text-[11px] text-zinc-500 font-medium">Urgency Adds</span>
+                <span className="text-base font-bold text-emerald-700 mt-0.5">3,412</span>
+                <span className="text-[10px] text-emerald-600 font-semibold mt-0.5">&lt; 2h to cutoff</span>
+              </div>
+
+              <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
+                <span className="text-[11px] text-zinc-500 font-medium">WISMO Deflection</span>
+                <span className="text-base font-bold text-indigo-700 mt-0.5">~28.5%</span>
+                <span className="text-[10px] text-zinc-500 font-medium mt-0.5">$1,840 saved</span>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
+              <span>On-Time Dispatch SLA:</span>
+              <span className="font-semibold text-zinc-900">99.4% On-Track</span>
+            </div>
+          </div>
+
           {/* 1. Cutoff Time Controller */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
               <div
@@ -2074,338 +2153,323 @@ export function DropClockStudio({
                     <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                    <span className="ml-3 text-xs text-zinc-500 font-mono">
-                      yourstore.com/products/classic-boxy-crewneck
+                    <span className="ml-3 text-xs text-zinc-500 font-mono hidden sm:inline">
+                      {activeSurface === "product"
+                        ? "yourstore.com/products/classic-boxy-crewneck"
+                        : activeSurface === "cart"
+                        ? "yourstore.com/cart (Slide-Out Drawer)"
+                        : "yourstore.com/checkout/orders/1084/thank_you"}
                     </span>
                   </div>
 
-                  {/* Device Viewport Toggle */}
-                  <div className="flex items-center gap-0.5 bg-zinc-200/80 p-0.5 rounded-lg border border-zinc-300/80">
-                    <button
-                      type="button"
-                      onClick={() => setViewportMode("desktop")}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
-                        viewportMode === "desktop"
-                          ? "bg-white text-zinc-900 shadow-2xs font-semibold"
-                          : "text-zinc-600 hover:text-zinc-900"
-                      }`}
-                    >
-                      Desktop
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setViewportMode("mobile")}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
-                        viewportMode === "mobile"
-                          ? "bg-white text-zinc-900 shadow-2xs font-semibold"
-                          : "text-zinc-600 hover:text-zinc-900"
-                      }`}
-                    >
-                      Mobile (375px)
-                    </button>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Multi-Surface Switcher */}
+                    <div className="flex items-center gap-0.5 bg-zinc-200/90 p-0.5 rounded-lg border border-zinc-300/80">
+                      <button
+                        type="button"
+                        onClick={() => setActiveSurface("product")}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                          activeSurface === "product"
+                            ? "bg-white text-zinc-900 shadow-2xs font-semibold"
+                            : "text-zinc-600 hover:text-zinc-900"
+                        }`}
+                      >
+                        <ShoppingBagIcon />
+                        <span>Product Page</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveSurface("cart")}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                          activeSurface === "cart"
+                            ? "bg-white text-zinc-900 shadow-2xs font-semibold"
+                            : "text-zinc-600 hover:text-zinc-900"
+                        }`}
+                      >
+                        <ShoppingCartIcon />
+                        <span>Cart Drawer</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveSurface("thankyou")}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                          activeSurface === "thankyou"
+                            ? "bg-white text-zinc-900 shadow-2xs font-semibold"
+                            : "text-zinc-600 hover:text-zinc-900"
+                        }`}
+                      >
+                        <PackageCheckIcon />
+                        <span>Order Status</span>
+                      </button>
+                    </div>
+
+                    {/* Device Viewport Toggle */}
+                    <div className="flex items-center gap-0.5 bg-zinc-200/80 p-0.5 rounded-lg border border-zinc-300/80">
+                      <button
+                        type="button"
+                        onClick={() => setViewportMode("desktop")}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
+                          viewportMode === "desktop"
+                            ? "bg-white text-zinc-900 shadow-2xs font-semibold"
+                            : "text-zinc-600 hover:text-zinc-900"
+                        }`}
+                      >
+                        Desktop
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewportMode("mobile")}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
+                          viewportMode === "mobile"
+                            ? "bg-white text-zinc-900 shadow-2xs font-semibold"
+                            : "text-zinc-600 hover:text-zinc-900"
+                        }`}
+                      >
+                        Mobile (375px)
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Canvas Surface with Refined Light Neutral Dot Grid */}
                 <div
-                  className="p-8 bg-[#f8fafc] flex justify-center items-center"
+                  className="p-8 bg-[#f8fafc] flex justify-center items-center min-h-[520px]"
                   style={{
                     backgroundImage: "radial-gradient(#e5e7eb 1.5px, transparent 1.5px)",
                     backgroundSize: "16px 16px",
                   }}
                 >
-                  {/* Authentic Shopify Dawn Product Card Mock */}
-                  <div
-                    className={`transition-all duration-300 ease-in-out mx-auto ${
-                      viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
-                    } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-6 mb-16`}
-                  >
-                    {/* Stock State Quick Switcher */}
-                    <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
-                      <span className="text-xs font-semibold text-zinc-500">
-                        Stock Simulation:
-                      </span>
-                      <div className="flex bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200/80 dark:border-zinc-700/60">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMockStockState("in_stock");
-                            if (selectedSize === "L") setSelectedSize("M");
-                          }}
-                          className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-                            mockStockState === "in_stock"
-                              ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
-                              : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                          }`}
-                        >
-                          In Stock
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMockStockState("backorder");
-                            setSelectedSize("L");
-                          }}
-                          className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-                            mockStockState === "backorder"
-                              ? "bg-white dark:bg-zinc-900 text-amber-700 dark:text-amber-400 shadow-xs"
-                              : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                          }`}
-                        >
-                          Sold Out / Backorder
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* PRODUCT IMAGE CONTAINER */}
-                    <div className="relative w-full aspect-[4/3] bg-zinc-100 dark:bg-zinc-800/40 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-6 select-none mb-4">
-                      <svg 
-                        viewBox="0 0 120 120" 
-                        className="w-36 h-36 text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                        fill="currentColor"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        {/* Clean Streetwear Boxy T-Shirt Vector */}
-                        <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
-                        {/* Subtle Neck Collar Highlight */}
-                        <path d="M 40 16 C 46 25 74 25 80 16 C 74 21 46 21 40 16 Z" fill="rgba(255,255,255,0.25)" />
-                      </svg>
-                      
-                      <span className="absolute bottom-2.5 right-2.5 text-[10px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 shadow-xs">
-                        Heavyweight 280 GSM
-                      </span>
-                    </div>
-
-                {/* Stock Status & Title */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <span
-                    style={{
-                      fontSize: "0.6875rem",
-                      fontWeight: "600",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      color: mockStockState === "in_stock" ? "#008060" : "#b45309",
-                    }}
-                  >
-                    {mockStockState === "in_stock" ? "● In Stock · Ships Promptly" : "○ Sold Out · Restock Queued"}
-                  </span>
-                  <span style={{ fontSize: "0.75rem", color: "#71717a" }}>SKU: DC-101</span>
-                </div>
-
-                <h2
-                  className="text-base font-semibold tracking-tight text-zinc-900"
-                  style={{
-                    fontSize: "1rem",
-                    fontWeight: "600",
-                    margin: "0 0 6px 0",
-                    color: "#18181b",
-                    letterSpacing: "-0.025em",
-                  }}
-                >
-                  Classic Boxy Crewneck
-                </h2>
-
-                <div
-                  style={{
-                    fontSize: "1.125rem",
-                    fontWeight: "700",
-                    color: "#09090b",
-                    marginBottom: "14px",
-                  }}
-                >
-                  $42.00
-                </div>
-
-                {/* Shopify Dawn Variant Selector */}
-                <div style={{ marginBottom: "16px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                    <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#3f3f46", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                      Size: <span style={{ color: "#09090b" }}>{selectedSize}</span>
-                    </span>
-                    <span style={{ fontSize: "0.6875rem", color: "#71717a", textDecoration: "underline", cursor: "pointer" }}>
-                      Size Guide
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    {(["S", "M", "L", "XL"] as const).map((size) => {
-                      const isSoldOut = size === "L";
-                      const isSelected = selectedSize === size;
-                      return (
-                        <button
-                          key={size}
-                          type="button"
-                          onClick={() => {
-                            setSelectedSize(size);
-                            if (isSoldOut) {
-                              setMockStockState("backorder");
-                            } else {
-                              setMockStockState("in_stock");
-                            }
-                          }}
-                          style={{
-                            flex: 1,
-                            padding: "8px 4px",
-                            borderRadius: "6px",
-                            border: isSelected ? "1.5px solid #09090b" : "1px solid #e4e4e7",
-                            backgroundColor: isSelected ? "#09090b" : "#ffffff",
-                            color: isSelected ? "#ffffff" : isSoldOut ? "#a1a1aa" : "#18181b",
-                            fontSize: "0.75rem",
-                            fontWeight: "600",
-                            cursor: "pointer",
-                            position: "relative",
-                            transition: "all 0.15s ease",
-                          }}
-                        >
-                          {size}
-                          {isSoldOut && (
-                            <span style={{ fontSize: "0.625rem", display: "block", fontWeight: "400", opacity: 0.8 }}>
-                              Sold Out
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Enterprise Tag Rule Simulator Chips */}
-                <div
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "8px",
-                    padding: "8px 10px",
-                    marginBottom: "14px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "0.6875rem",
-                        fontWeight: "600",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                        color: "#64748b",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
+                  {/* SURFACE 1: PRODUCT PAGE PREVIEW */}
+                  {activeSurface === "product" && (
+                    <div
+                      className={`transition-all duration-300 ease-in-out mx-auto ${
+                        viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
+                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-6 mb-16`}
                     >
-                      <TagIcon />
-                      <span>Tag Simulator:</span>
-                    </span>
-                    {activeSimulatedTag !== "none" && (
-                      <span
+                      {/* Stock State Quick Switcher */}
+                      <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
+                        <span className="text-xs font-semibold text-zinc-500">
+                          Stock Simulation:
+                        </span>
+                        <div className="flex bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200/80 dark:border-zinc-700/60">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMockStockState("in_stock");
+                              if (selectedSize === "L") setSelectedSize("M");
+                            }}
+                            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+                              mockStockState === "in_stock"
+                                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
+                                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                            }`}
+                          >
+                            In Stock
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMockStockState("backorder");
+                              setSelectedSize("L");
+                            }}
+                            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+                              mockStockState === "backorder"
+                                ? "bg-white dark:bg-zinc-900 text-amber-700 dark:text-amber-400 shadow-xs"
+                                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                            }`}
+                          >
+                            Sold Out / Backorder
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* PRODUCT IMAGE CONTAINER */}
+                      <div className="relative w-full aspect-[4/3] bg-zinc-100 dark:bg-zinc-800/40 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-6 select-none mb-4">
+                        <svg 
+                          viewBox="0 0 120 120" 
+                          className="w-36 h-36 text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                          fill="currentColor"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
+                          <path d="M 40 16 C 46 25 74 25 80 16 C 74 21 46 21 40 16 Z" fill="rgba(255,255,255,0.25)" />
+                        </svg>
+                        
+                        <span className="absolute bottom-2.5 right-2.5 text-[10px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 shadow-xs">
+                          Heavyweight 280 GSM
+                        </span>
+                      </div>
+
+                      {/* Stock Status & Title */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                        <span
+                          style={{
+                            fontSize: "0.6875rem",
+                            fontWeight: "600",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.06em",
+                            color: mockStockState === "in_stock" ? "#008060" : "#b45309",
+                          }}
+                        >
+                          {mockStockState === "in_stock" ? "● In Stock · Ships Promptly" : "○ Sold Out · Restock Queued"}
+                        </span>
+                        <span style={{ fontSize: "0.75rem", color: "#71717a" }}>SKU: DC-101</span>
+                      </div>
+
+                      <h2
+                        className="text-base font-semibold tracking-tight text-zinc-900"
                         style={{
-                          fontSize: "0.625rem",
+                          fontSize: "1rem",
                           fontWeight: "600",
-                          color: "#059669",
-                          backgroundColor: "#ecfdf5",
-                          padding: "1px 6px",
-                          borderRadius: "4px",
-                          border: "1px solid #a7f3d0",
+                          margin: "0 0 6px 0",
+                          color: "#18181b",
+                          letterSpacing: "-0.025em",
                         }}
                       >
-                        +{preview.effectiveLeadDays}d Lead Time
-                      </span>
-                    )}
-                  </div>
+                        Classic Boxy Crewneck
+                      </h2>
 
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                    <button
-                      type="button"
-                      onClick={() => setActiveSimulatedTag("none")}
-                      style={{
-                        padding: "3px 8px",
-                        borderRadius: "6px",
-                        border: activeSimulatedTag === "none" ? "1.5px solid #0f172a" : "1px solid #cbd5e1",
-                        backgroundColor: activeSimulatedTag === "none" ? "#0f172a" : "#ffffff",
-                        color: activeSimulatedTag === "none" ? "#ffffff" : "#475569",
-                        fontSize: "0.6875rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      Tag: none
-                    </button>
+                      <div
+                        style={{
+                          fontSize: "1.125rem",
+                          fontWeight: "700",
+                          color: "#09090b",
+                          marginBottom: "14px",
+                        }}
+                      >
+                        $42.00
+                      </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setActiveSimulatedTag("pre-order")}
-                      style={{
-                        padding: "3px 8px",
-                        borderRadius: "6px",
-                        border: activeSimulatedTag.toLowerCase() === "pre-order" ? "1.5px solid #008060" : "1px solid #cbd5e1",
-                        backgroundColor: activeSimulatedTag.toLowerCase() === "pre-order" ? "#008060" : "#ffffff",
-                        color: activeSimulatedTag.toLowerCase() === "pre-order" ? "#ffffff" : "#334155",
-                        fontSize: "0.6875rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "3px",
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      <span>Tag: pre-order</span>
-                      <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
-                        (+{tagRules.find((r) => r.tag.trim().toLowerCase() === "pre-order")?.leadDays || 14}d)
-                      </span>
-                    </button>
+                      {/* Shopify Dawn Variant Selector */}
+                      <div style={{ marginBottom: "16px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                          <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#3f3f46", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                            Size: <span style={{ color: "#09090b" }}>{selectedSize}</span>
+                          </span>
+                          <span style={{ fontSize: "0.6875rem", color: "#71717a", textDecoration: "underline", cursor: "pointer" }}>
+                            Size Guide
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          {(["S", "M", "L", "XL"] as const).map((size) => {
+                            const isSoldOut = size === "L";
+                            const isSelected = selectedSize === size;
+                            return (
+                              <button
+                                key={size}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSize(size);
+                                  if (isSoldOut) {
+                                    setMockStockState("backorder");
+                                  } else {
+                                    setMockStockState("in_stock");
+                                  }
+                                }}
+                                style={{
+                                  flex: 1,
+                                  padding: "8px 4px",
+                                  borderRadius: "6px",
+                                  border: isSelected ? "1.5px solid #09090b" : "1px solid #e4e4e7",
+                                  backgroundColor: isSelected ? "#09090b" : "#ffffff",
+                                  color: isSelected ? "#ffffff" : isSoldOut ? "#a1a1aa" : "#18181b",
+                                  fontSize: "0.75rem",
+                                  fontWeight: "600",
+                                  cursor: "pointer",
+                                  position: "relative",
+                                  transition: "all 0.15s ease",
+                                }}
+                              >
+                                {size}
+                                {isSoldOut && (
+                                  <span style={{ fontSize: "0.625rem", display: "block", fontWeight: "400", opacity: 0.8 }}>
+                                    Sold Out
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setActiveSimulatedTag("freight")}
-                      style={{
-                        padding: "3px 8px",
-                        borderRadius: "6px",
-                        border: activeSimulatedTag.toLowerCase() === "freight" ? "1.5px solid #008060" : "1px solid #cbd5e1",
-                        backgroundColor: activeSimulatedTag.toLowerCase() === "freight" ? "#008060" : "#ffffff",
-                        color: activeSimulatedTag.toLowerCase() === "freight" ? "#ffffff" : "#334155",
-                        fontSize: "0.6875rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "3px",
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      <span>Tag: freight</span>
-                      <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
-                        (+{tagRules.find((r) => r.tag.trim().toLowerCase() === "freight")?.leadDays || 5}d)
-                      </span>
-                    </button>
+                      {/* Enterprise Tag Rule Simulator Chips */}
+                      <div
+                        style={{
+                          backgroundColor: "#f8fafc",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "8px",
+                          padding: "8px 10px",
+                          marginBottom: "14px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            marginBottom: "6px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "0.6875rem",
+                              fontWeight: "600",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.04em",
+                              color: "#64748b",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                            }}
+                          >
+                            <TagIcon />
+                            <span>Tag Simulator:</span>
+                          </span>
+                          {activeSimulatedTag !== "none" && (
+                            <span
+                              style={{
+                                fontSize: "0.625rem",
+                                fontWeight: "600",
+                                color: "#059669",
+                                backgroundColor: "#ecfdf5",
+                                padding: "1px 6px",
+                                borderRadius: "4px",
+                                border: "1px solid #a7f3d0",
+                              }}
+                            >
+                              +{preview.effectiveLeadDays}d Lead Time
+                            </span>
+                          )}
+                        </div>
 
-                    {tagRules
-                      .filter(
-                        (r) =>
-                          r.tag &&
-                          r.tag.trim().length > 0 &&
-                          r.tag.trim().toLowerCase() !== "pre-order" &&
-                          r.tag.trim().toLowerCase() !== "freight"
-                      )
-                      .map((rule) => {
-                        const isSelected = activeSimulatedTag.toLowerCase() === rule.tag.trim().toLowerCase();
-                        return (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                           <button
-                            key={rule.tag}
                             type="button"
-                            onClick={() => setActiveSimulatedTag(rule.tag.trim())}
+                            onClick={() => setActiveSimulatedTag("none")}
                             style={{
                               padding: "3px 8px",
                               borderRadius: "6px",
-                              border: isSelected ? "1.5px solid #008060" : "1px solid #cbd5e1",
-                              backgroundColor: isSelected ? "#008060" : "#ffffff",
-                              color: isSelected ? "#ffffff" : "#334155",
+                              border: activeSimulatedTag === "none" ? "1.5px solid #0f172a" : "1px solid #cbd5e1",
+                              backgroundColor: activeSimulatedTag === "none" ? "#0f172a" : "#ffffff",
+                              color: activeSimulatedTag === "none" ? "#ffffff" : "#475569",
+                              fontSize: "0.6875rem",
+                              fontWeight: "600",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                            }}
+                          >
+                            Tag: none
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setActiveSimulatedTag("pre-order")}
+                            style={{
+                              padding: "3px 8px",
+                              borderRadius: "6px",
+                              border: activeSimulatedTag.toLowerCase() === "pre-order" ? "1.5px solid #008060" : "1px solid #cbd5e1",
+                              backgroundColor: activeSimulatedTag.toLowerCase() === "pre-order" ? "#008060" : "#ffffff",
+                              color: activeSimulatedTag.toLowerCase() === "pre-order" ? "#ffffff" : "#334155",
                               fontSize: "0.6875rem",
                               fontWeight: "600",
                               cursor: "pointer",
@@ -2413,367 +2477,704 @@ export function DropClockStudio({
                               alignItems: "center",
                               gap: "3px",
                               transition: "all 0.15s ease",
-                              boxShadow: isSelected ? "0 1px 2px rgba(0,128,96,0.2)" : "none",
                             }}
                           >
-                            <span>Tag: {rule.tag.trim()}</span>
+                            <span>Tag: pre-order</span>
                             <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
-                              (+{rule.leadDays}d)
+                              (+{tagRules.find((r) => r.tag.trim().toLowerCase() === "pre-order")?.leadDays || 14}d)
                             </span>
                           </button>
-                        );
-                      })}
-                  </div>
 
-                  <p style={{ margin: "6px 0 0 0", fontSize: "0.6875rem", color: "#64748b", fontStyle: "italic" }}>
-                    Preview how product tags dynamically override delivery dates.
-                  </p>
-                </div>
-
-                {/* 4. THE LIVE DYNAMIC DROPCLOCK WIDGET (POLISHED TYPOGRAPHY) */}
-                {mockStockState === "backorder" ? (
-                  /* Gentle Backorder Notice Pill */
-                  <div
-                    style={{
-                      backgroundColor: "#fffbeb",
-                      color: "#92400e",
-                      border: "1px solid #fde68a",
-                      borderRadius: "8px",
-                      padding: "10px 14px",
-                      marginBottom: "16px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      fontSize: "0.8125rem",
-                      fontWeight: "500",
-                    }}
-                  >
-                    <span style={{ color: "#d97706", display: "inline-flex" }}>
-                      <AlertTriangleIcon />
-                    </span>
-                    <span>Backorder Item: Ships as soon as restocked.</span>
-                  </div>
-                ) : (
-                  <>
-                    {/* Style 1: Capsule Pill */}
-                    {presetStyle === "capsule" && (
-                      <div
-                        style={{
-                          backgroundColor: bgColor,
-                          color: textColor,
-                          border: `1px solid ${primaryColor}22`,
-                          borderRadius: "10px",
-                          padding: "12px 14px",
-                          marginBottom: "16px",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "6px",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                        }}
-                      >
-                        {/* Natural Inline Flow */}
-                        <div
-                          style={{
-                            fontSize: "0.8125rem",
-                            lineHeight: "1.4",
-                            color: textColor,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                          }}
-                        >
-                          <span
+                          <button
+                            type="button"
+                            onClick={() => setActiveSimulatedTag("freight")}
                             style={{
-                              width: "6px",
-                              height: "6px",
-                              borderRadius: "50%",
-                              backgroundColor: primaryColor,
-                              display: "inline-block",
-                              flexShrink: 0,
-                            }}
-                          />
-                          <span>
-                            {leadText}{" "}
-                            <span
-                              style={{
-                                color: primaryColor,
-                                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                                fontWeight: "600",
-                              }}
-                            >
-                              {preview.hours}h {preview.minutes}m {preview.seconds}s
-                            </span>{" "}
-                            {preview.isPastCutoff ? nextDayText : sameDayText}
-                          </span>
-                        </div>
-
-                        {/* Estimated Delivery with Clean Alignment */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "0.75rem",
-                            color: textColor,
-                            opacity: 0.88,
-                            paddingLeft: "12px",
-                          }}
-                        >
-                          <span style={{ color: primaryColor, display: "inline-flex", flexShrink: 0 }}>
-                            <TruckIcon />
-                          </span>
-                          <span>
-                            {etaText} <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Style 2: Minimal Line */}
-                    {presetStyle === "minimal" && (
-                      <div
-                        style={{
-                          padding: "10px 0",
-                          marginBottom: "16px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          borderTop: "1px solid #f1f5f9",
-                          borderBottom: "1px solid #f1f5f9",
-                          color: textColor,
-                          fontSize: "0.8125rem",
-                          gap: "8px",
-                          flexWrap: viewportMode === "mobile" ? "wrap" : "nowrap",
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ color: primaryColor, display: "inline-flex" }}>
-                            <ClockIcon />
-                          </span>
-                          <span>
-                            {leadText}{" "}
-                            <span
-                              style={{
-                                color: primaryColor,
-                                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                                fontWeight: "600",
-                              }}
-                            >
-                              {preview.hours}h {preview.minutes}m {preview.seconds}s
-                            </span>{" "}
-                            {preview.isPastCutoff ? nextDayText : sameDayText}
-                          </span>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.75rem", color: "#64748b", flexShrink: 0 }}>
-                          <TruckIcon />
-                          <span>{etaText} {preview.formattedArrival}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Style 3: Urgency Progress Bar */}
-                    {(presetStyle === "bar" || presetStyle === "urgency") && (
-                      <div
-                        style={{
-                          backgroundColor: bgColor,
-                          color: textColor,
-                          border: `1px solid ${primaryColor}26`,
-                          borderRadius: "10px",
-                          padding: "12px 14px",
-                          marginBottom: "16px",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "8px",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            fontSize: "0.8125rem",
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                            <span
-                              style={{
-                                width: "6px",
-                                height: "6px",
-                                borderRadius: "50%",
-                                backgroundColor: primaryColor,
-                                display: "inline-block",
-                              }}
-                            />
-                            <span>
-                              {leadText}{" "}
-                              <span
-                                style={{
-                                  color: primaryColor,
-                                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                                  fontWeight: "600",
-                                }}
-                              >
-                                {preview.hours}h {preview.minutes}m {preview.seconds}s
-                              </span>
-                            </span>
-                          </div>
-                          <span
-                            style={{
+                              padding: "3px 8px",
+                              borderRadius: "6px",
+                              border: activeSimulatedTag.toLowerCase() === "freight" ? "1.5px solid #008060" : "1px solid #cbd5e1",
+                              backgroundColor: activeSimulatedTag.toLowerCase() === "freight" ? "#008060" : "#ffffff",
+                              color: activeSimulatedTag.toLowerCase() === "freight" ? "#ffffff" : "#334155",
                               fontSize: "0.6875rem",
                               fontWeight: "600",
-                              color: primaryColor,
-                              backgroundColor: `${primaryColor}15`,
-                              padding: "2px 6px",
-                              borderRadius: "4px",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "3px",
+                              transition: "all 0.15s ease",
                             }}
                           >
-                            {preview.isPastCutoff ? nextDayText : sameDayText}
+                            <span>Tag: freight</span>
+                            <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
+                              (+{tagRules.find((r) => r.tag.trim().toLowerCase() === "freight")?.leadDays || 5}d)
+                            </span>
+                          </button>
+
+                          {tagRules
+                            .filter(
+                              (r) =>
+                                r.tag &&
+                                r.tag.trim().length > 0 &&
+                                r.tag.trim().toLowerCase() !== "pre-order" &&
+                                r.tag.trim().toLowerCase() !== "freight"
+                            )
+                            .map((rule) => {
+                              const isSelected = activeSimulatedTag.toLowerCase() === rule.tag.trim().toLowerCase();
+                              return (
+                                <button
+                                  key={rule.tag}
+                                  type="button"
+                                  onClick={() => setActiveSimulatedTag(rule.tag.trim())}
+                                  style={{
+                                    padding: "3px 8px",
+                                    borderRadius: "6px",
+                                    border: isSelected ? "1.5px solid #008060" : "1px solid #cbd5e1",
+                                    backgroundColor: isSelected ? "#008060" : "#ffffff",
+                                    color: isSelected ? "#ffffff" : "#334155",
+                                    fontSize: "0.6875rem",
+                                    fontWeight: "600",
+                                    cursor: "pointer",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                    transition: "all 0.15s ease",
+                                    boxShadow: isSelected ? "0 1px 2px rgba(0,128,96,0.2)" : "none",
+                                  }}
+                                >
+                                  <span>Tag: {rule.tag.trim()}</span>
+                                  <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
+                                    (+{rule.leadDays}d)
+                                  </span>
+                                </button>
+                              );
+                            })}
+                        </div>
+
+                        <p style={{ margin: "6px 0 0 0", fontSize: "0.6875rem", color: "#64748b", fontStyle: "italic" }}>
+                          Preview how product tags dynamically override delivery dates.
+                        </p>
+                      </div>
+
+                      {/* 4. THE LIVE DYNAMIC DROPCLOCK WIDGET (POLISHED TYPOGRAPHY) */}
+                      {mockStockState === "backorder" ? (
+                        <div
+                          style={{
+                            backgroundColor: "#fffbeb",
+                            color: "#92400e",
+                            border: "1px solid #fde68a",
+                            borderRadius: "8px",
+                            padding: "10px 14px",
+                            marginBottom: "16px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            fontSize: "0.8125rem",
+                            fontWeight: "500",
+                          }}
+                        >
+                          <span style={{ color: "#d97706", display: "inline-flex" }}>
+                            <AlertTriangleIcon />
+                          </span>
+                          <span>Backorder Item: Ships as soon as restocked.</span>
+                        </div>
+                      ) : (
+                        <>
+                          {/* Style 1: Capsule Pill */}
+                          {presetStyle === "capsule" && (
+                            <div
+                              style={{
+                                backgroundColor: bgColor,
+                                color: textColor,
+                                border: `1px solid ${primaryColor}22`,
+                                borderRadius: "10px",
+                                padding: "12px 14px",
+                                marginBottom: "16px",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "6px",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: "0.8125rem",
+                                  lineHeight: "1.4",
+                                  color: textColor,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    width: "6px",
+                                    height: "6px",
+                                    borderRadius: "50%",
+                                    backgroundColor: primaryColor,
+                                    display: "inline-block",
+                                    flexShrink: 0,
+                                  }}
+                                />
+                                <span>
+                                  {leadText}{" "}
+                                  <span
+                                    style={{
+                                      color: primaryColor,
+                                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                                      fontWeight: "600",
+                                    }}
+                                  >
+                                    {preview.hours}h {preview.minutes}m {preview.seconds}s
+                                  </span>{" "}
+                                  {preview.isPastCutoff ? nextDayText : sameDayText}
+                                </span>
+                              </div>
+
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                  fontSize: "0.75rem",
+                                  color: textColor,
+                                  opacity: 0.88,
+                                  paddingLeft: "12px",
+                                }}
+                              >
+                                <span style={{ color: primaryColor, display: "inline-flex", flexShrink: 0 }}>
+                                  <TruckIcon />
+                                </span>
+                                <span>
+                                  {etaText} <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Style 2: Minimal Line */}
+                          {presetStyle === "minimal" && (
+                            <div
+                              style={{
+                                padding: "10px 0",
+                                marginBottom: "16px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                borderTop: "1px solid #f1f5f9",
+                                borderBottom: "1px solid #f1f5f9",
+                                color: textColor,
+                                fontSize: "0.8125rem",
+                                gap: "8px",
+                                flexWrap: viewportMode === "mobile" ? "wrap" : "nowrap",
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ color: primaryColor, display: "inline-flex" }}>
+                                  <ClockIcon />
+                                </span>
+                                <span>
+                                  {leadText}{" "}
+                                  <span
+                                    style={{
+                                      color: primaryColor,
+                                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                                      fontWeight: "600",
+                                    }}
+                                  >
+                                    {preview.hours}h {preview.minutes}m {preview.seconds}s
+                                  </span>{" "}
+                                  {preview.isPastCutoff ? nextDayText : sameDayText}
+                                </span>
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.75rem", color: "#64748b", flexShrink: 0 }}>
+                                <TruckIcon />
+                                <span>{etaText} {preview.formattedArrival}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Style 3: Urgency Progress Bar */}
+                          {(presetStyle === "bar" || presetStyle === "urgency") && (
+                            <div
+                              style={{
+                                backgroundColor: bgColor,
+                                color: textColor,
+                                border: `1px solid ${primaryColor}26`,
+                                borderRadius: "10px",
+                                padding: "12px 14px",
+                                marginBottom: "16px",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "8px",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  fontSize: "0.8125rem",
+                                }}
+                              >
+                                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                  <span
+                                    style={{
+                                      width: "6px",
+                                      height: "6px",
+                                      borderRadius: "50%",
+                                      backgroundColor: primaryColor,
+                                      display: "inline-block",
+                                    }}
+                                  />
+                                  <span>
+                                    {leadText}{" "}
+                                    <span
+                                      style={{
+                                        color: primaryColor,
+                                        fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      {preview.hours}h {preview.minutes}m {preview.seconds}s
+                                    </span>
+                                  </span>
+                                </div>
+                                <span
+                                  style={{
+                                    fontSize: "0.6875rem",
+                                    fontWeight: "600",
+                                    color: primaryColor,
+                                    backgroundColor: `${primaryColor}15`,
+                                    padding: "2px 6px",
+                                    borderRadius: "4px",
+                                  }}
+                                >
+                                  {preview.isPastCutoff ? nextDayText : sameDayText}
+                                </span>
+                              </div>
+
+                              {/* Progress Bar Track */}
+                              <div
+                                style={{
+                                  width: "100%",
+                                  height: "4px",
+                                  backgroundColor: "rgba(0,0,0,0.06)",
+                                  borderRadius: "9999px",
+                                  position: "relative",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: `${preview.progressPercent}%`,
+                                    height: "100%",
+                                    backgroundColor: primaryColor,
+                                    borderRadius: "9999px",
+                                    transition: "width 0.5s ease",
+                                    position: "relative",
+                                  }}
+                                >
+                                  {preview.isUrgent && (
+                                    <span
+                                      style={{
+                                        position: "absolute",
+                                        right: "-3px",
+                                        top: "-2px",
+                                        width: "8px",
+                                        height: "8px",
+                                        borderRadius: "50%",
+                                        backgroundColor: primaryColor,
+                                        boxShadow: `0 0 0 0 ${primaryColor}88`,
+                                        animation: "p 1.8s infinite",
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              </div>
+
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  fontSize: "0.75rem",
+                                  opacity: 0.88,
+                                }}
+                              >
+                                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                  <span style={{ color: primaryColor, display: "inline-flex" }}>
+                                    <TruckIcon />
+                                  </span>
+                                  <span>
+                                    {etaText} <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
+                                  </span>
+                                </div>
+                                <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>
+                                  {preview.progressPercent}% window left
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Add to Cart Button */}
+                      <button
+                        type="button"
+                        disabled
+                        style={{
+                          width: "100%",
+                          backgroundColor: "#09090b",
+                          color: "#ffffff",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "12px",
+                          fontSize: "0.875rem",
+                          fontWeight: "600",
+                          cursor: "not-allowed",
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        {mockStockState === "in_stock" ? "Add to Cart" : "Sold Out"}
+                      </button>
+
+                      {/* Shop Pay Direct Checkout Button */}
+                      <button
+                        type="button"
+                        disabled
+                        style={{
+                          width: "100%",
+                          backgroundColor: "#5a31f4",
+                          color: "#ffffff",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "11px",
+                          fontSize: "0.875rem",
+                          fontWeight: "600",
+                          cursor: "not-allowed",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                          marginTop: "8px",
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        <span>Buy with</span>
+                        <span
+                          style={{
+                            backgroundColor: "#ffffff",
+                            color: "#5a31f4",
+                            fontSize: "0.75rem",
+                            fontWeight: "800",
+                            padding: "1px 6px",
+                            borderRadius: "4px",
+                            letterSpacing: "-0.02em",
+                            display: "inline-flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          Shop Pay
+                        </span>
+                      </button>
+
+                      <div
+                        style={{
+                          textAlign: "center",
+                          marginTop: "8px",
+                          fontSize: "0.6875rem",
+                          color: "#71717a",
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                        }}
+                      >
+                        More payment options
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SURFACE 2: SLIDE-OUT CART DRAWER PREVIEW */}
+                  {activeSurface === "cart" && (
+                    <div
+                      className={`transition-all duration-300 ease-in-out mx-auto ${
+                        viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
+                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-16 flex flex-col`}
+                    >
+                      {/* Cart Drawer Header */}
+                      <div className="p-4 border-b border-zinc-200/80 bg-zinc-50/70 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <ShoppingCartIcon />
+                          <h3 className="text-sm font-bold text-zinc-900 m-0">
+                            Your Cart (2 items)
+                          </h3>
+                        </div>
+                        <span className="text-xs text-zinc-400 font-mono">DRAWER OPEN</span>
+                      </div>
+
+                      {/* Interactive Threshold Test Stepper Chips */}
+                      <div className="p-3 bg-zinc-100/70 border-b border-zinc-200/70 flex items-center justify-between flex-wrap gap-2 text-xs">
+                        <span className="text-zinc-600 font-medium flex items-center gap-1">
+                          <span>Simulate Cart Subtotal:</span>
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setCartSubtotal(32.00)}
+                            className={`px-2 py-1 rounded text-[11px] font-semibold transition cursor-pointer ${
+                              cartSubtotal === 32
+                                ? "bg-zinc-900 text-white shadow-2xs"
+                                : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
+                            }`}
+                          >
+                            $32.00 (Below)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCartSubtotal(60.95)}
+                            className={`px-2 py-1 rounded text-[11px] font-semibold transition cursor-pointer ${
+                              cartSubtotal === 60.95
+                                ? "bg-zinc-900 text-white shadow-2xs"
+                                : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
+                            }`}
+                          >
+                            $60.95 (Near)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCartSubtotal(84.00)}
+                            className={`px-2 py-1 rounded text-[11px] font-semibold transition cursor-pointer ${
+                              cartSubtotal === 84
+                                ? "bg-emerald-700 text-white shadow-2xs"
+                                : "bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50"
+                            }`}
+                          >
+                            $84.00 (Qualified)
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* The DropClock Live Cart Pill Component */}
+                      <div className="p-4 bg-white">
+                        {(() => {
+                          const diff = Math.max(0, cartThreshold - cartSubtotal);
+                          const isQualified = diff <= 0;
+                          const progress = Math.min(100, Math.round((cartSubtotal / cartThreshold) * 100));
+
+                          return (
+                            <div className="p-3.5 rounded-xl border border-zinc-200/90 bg-[#f8fafc] shadow-xs space-y-2.5">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                                    <TruckIcon />
+                                  </div>
+                                  <div>
+                                    <div className="text-xs font-bold text-zinc-900">
+                                      {isQualified ? (
+                                        <span className="text-emerald-700 flex items-center gap-1">
+                                          <CheckIcon /> Free Express Delivery Unlocked!
+                                        </span>
+                                      ) : (
+                                        <span>
+                                          Add <strong className="text-emerald-700">${diff.toFixed(2)}</strong> more for Free Express Delivery
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-[11px] text-zinc-500 mt-0.5">
+                                      ⚡ Order within{" "}
+                                      <span className="font-mono font-semibold text-emerald-700">
+                                        {preview.hours}h {preview.minutes}m {preview.seconds}s
+                                      </span>{" "}
+                                      {preview.isPastCutoff ? "for tomorrow's dispatch" : "for same-day dispatch"}
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/70 shrink-0">
+                                  {progress}%
+                                </span>
+                              </div>
+
+                              {/* Progress bar */}
+                              <div className="w-full bg-zinc-200/90 h-2 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full transition-all duration-500 ease-out rounded-full ${
+                                    isQualified ? "bg-emerald-600" : "bg-emerald-500"
+                                  }`}
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Mock Cart Items */}
+                        <div className="mt-4 space-y-3">
+                          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-600">
+                                TEE
+                              </div>
+                              <div>
+                                <div className="text-xs font-semibold text-zinc-900">
+                                  Classic Boxy Crewneck
+                                </div>
+                                <div className="text-[11px] text-zinc-500">
+                                  Size: M · Qty: 1
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-zinc-900">$42.00</span>
+                          </div>
+
+                          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-600">
+                                SOCK
+                              </div>
+                              <div>
+                                <div className="text-xs font-semibold text-zinc-900">
+                                  Heavyweight Ribbed Socks
+                                </div>
+                                <div className="text-[11px] text-zinc-500">
+                                  Ivory · Qty: 1
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-zinc-900">
+                              ${(cartSubtotal - 42.00 > 0 ? (cartSubtotal - 42.00).toFixed(2) : "18.95")}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Cart Summary and Checkout Button */}
+                        <div className="mt-4 pt-3 border-t border-zinc-200/90 space-y-2">
+                          <div className="flex justify-between text-xs text-zinc-600">
+                            <span>Subtotal</span>
+                            <span className="font-semibold text-zinc-900">${cartSubtotal.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs text-zinc-600">
+                            <span>Shipping</span>
+                            <span className="font-semibold text-emerald-700">
+                              {cartSubtotal >= cartThreshold ? "FREE Express" : "$5.99 Standard"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-zinc-100">
+                            <span>Total</span>
+                            <span>${(cartSubtotal + (cartSubtotal >= cartThreshold ? 0 : 5.99)).toFixed(2)}</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            disabled
+                            className="w-full mt-3 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-3 rounded-xl text-xs flex items-center justify-center gap-2 cursor-not-allowed"
+                          >
+                            <span>Checkout Now</span>
+                            <span className="text-zinc-400">•</span>
+                            <span>Delivery by {preview.formattedArrival}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SURFACE 3: POST-PURCHASE ORDER STATUS / THANK YOU PAGE */}
+                  {activeSurface === "thankyou" && (
+                    <div
+                      className={`transition-all duration-300 ease-in-out mx-auto ${
+                        viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
+                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-16 p-6 space-y-4`}
+                    >
+                      {/* Order Confirmation Badge */}
+                      <div className="flex items-center gap-3 pb-3 border-b border-zinc-100">
+                        <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                          <CheckIcon />
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
+                            Order #1084 Confirmed
+                          </span>
+                          <h3 className="text-sm font-bold text-zinc-900 m-0">
+                            Thank you, Alex!
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* DropClock 3-Step Milestone Fulfillment Timeline Card */}
+                      <div className="p-4 rounded-xl border border-emerald-200/80 bg-emerald-50/40 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
+                            <span className="text-xs font-bold text-zinc-900">
+                              Live Fulfillment Promise
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                            Priority Dispatch
                           </span>
                         </div>
 
-                        {/* Progress Bar Track */}
-                        <div
-                          style={{
-                            width: "100%",
-                            height: "4px",
-                            backgroundColor: "rgba(0,0,0,0.06)",
-                            borderRadius: "9999px",
-                            position: "relative",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${preview.progressPercent}%`,
-                              height: "100%",
-                              backgroundColor: primaryColor,
-                              borderRadius: "9999px",
-                              transition: "width 0.5s ease",
-                              position: "relative",
-                            }}
-                          >
-                            {preview.isUrgent && (
-                              <span
-                                style={{
-                                  position: "absolute",
-                                  right: "-3px",
-                                  top: "-2px",
-                                  width: "8px",
-                                  height: "8px",
-                                  borderRadius: "50%",
-                                  backgroundColor: primaryColor,
-                                  boxShadow: `0 0 0 0 ${primaryColor}88`,
-                                  animation: "p 1.8s infinite",
-                                }}
-                              />
-                            )}
+                        {/* 3-Step Timeline */}
+                        <div className="grid grid-cols-3 gap-2 pt-2 text-center relative">
+                          {/* Timeline connector bar */}
+                          <div className="absolute top-6 left-12 right-12 h-0.5 bg-emerald-200 -z-0" />
+
+                          <div className="flex flex-col items-center relative z-10">
+                            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                              ✓
+                            </div>
+                            <span className="text-[11px] font-bold text-zinc-900 mt-1.5">Order Placed</span>
+                            <span className="text-[10px] text-zinc-500">Today, 10:24 AM</span>
+                          </div>
+
+                          <div className="flex flex-col items-center relative z-10">
+                            <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-xs animate-pulse">
+                              ⚡
+                            </div>
+                            <span className="text-[11px] font-bold text-emerald-800 mt-1.5">Dispatched</span>
+                            <span className="text-[10px] text-emerald-700 font-semibold">
+                              Today by {cutoffHour.toString().padStart(2, "0")}:{cutoffMinute.toString().padStart(2, "0")}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col items-center relative z-10">
+                            <div className="w-6 h-6 rounded-full bg-zinc-200 text-zinc-600 flex items-center justify-center text-[10px] font-bold">
+                              🚚
+                            </div>
+                            <span className="text-[11px] font-bold text-zinc-900 mt-1.5">Arrival</span>
+                            <span className="text-[10px] text-zinc-700 font-semibold">
+                              {preview.formattedArrival}
+                            </span>
                           </div>
                         </div>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            fontSize: "0.75rem",
-                            opacity: 0.88,
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                            <span style={{ color: primaryColor, display: "inline-flex" }}>
-                              <TruckIcon />
-                            </span>
-                            <span>
-                              {etaText} <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
-                            </span>
-                          </div>
-                          <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>
-                            {preview.progressPercent}% window left
+                        <div className="pt-2 border-t border-emerald-100 text-[11px] text-zinc-600 leading-relaxed flex items-start gap-1.5">
+                          <span className="text-emerald-700 font-bold shrink-0">✓</span>
+                          <span>
+                            Automated warehouse dispatch SLA active. Carrier tracking will be emailed the moment the parcel is scanned by express courier.
                           </span>
                         </div>
                       </div>
-                    )}
-                  </>
-                )}
 
-                {/* Add to Cart Button */}
-                <button
-                  type="button"
-                  disabled
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#09090b",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "8px",
-                    padding: "12px",
-                    fontSize: "0.875rem",
-                    fontWeight: "600",
-                    cursor: "not-allowed",
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  {mockStockState === "in_stock" ? "Add to Cart" : "Sold Out"}
-                </button>
-
-                {/* Shop Pay Direct Checkout Button */}
-                <button
-                  type="button"
-                  disabled
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#5a31f4",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "8px",
-                    padding: "11px",
-                    fontSize: "0.875rem",
-                    fontWeight: "600",
-                    cursor: "not-allowed",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    marginTop: "8px",
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  <span>Buy with</span>
-                  <span
-                    style={{
-                      backgroundColor: "#ffffff",
-                      color: "#5a31f4",
-                      fontSize: "0.75rem",
-                      fontWeight: "800",
-                      padding: "1px 6px",
-                      borderRadius: "4px",
-                      letterSpacing: "-0.02em",
-                      display: "inline-flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    Shop Pay
-                  </span>
-                </button>
-
-                <div
-                  style={{
-                    textAlign: "center",
-                    marginTop: "8px",
-                    fontSize: "0.6875rem",
-                    color: "#71717a",
-                    textDecoration: "underline",
-                    cursor: "pointer",
-                  }}
-                >
-                  More payment options
+                      {/* Customer & Shipping Summary */}
+                      <div className="text-xs space-y-2 pt-2 border-t border-zinc-100">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Recipient:</span>
+                          <span className="font-medium text-zinc-800">Alex Merchant (alex@example.com)</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Shipping to:</span>
+                          <span className="font-medium text-zinc-800">742 Evergreen Terrace, Springfield</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Fulfillment Method:</span>
+                          <span className="font-bold text-emerald-700">Express Delivery (ETA: {preview.formattedArrival})</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-);
+  );
 }

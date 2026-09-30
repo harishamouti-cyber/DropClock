@@ -1,0 +1,186 @@
+{% comment %}
+  DropClock Cart Drawer & Cart Page Delivery Promise Block
+  Features dynamic Free Shipping / Express Dispatch threshold upsells & live countdown.
+{% endcomment %}
+
+{% assign config = shop.metafields.dropclock.settings.value %}
+{% assign threshold_dollars = block.settings.free_shipping_threshold | default: 75 %}
+{% assign threshold_cents = threshold_dollars | times: 100 %}
+{% assign cart_total = cart.total_price | default: 0 %}
+{% assign diff_cents = threshold_cents | minus: cart_total %}
+{% assign is_qualified = false %}
+{% if diff_cents <= 0 %}
+  {% assign is_qualified = true %}
+{% endif %}
+
+{% assign progress_pct = cart_total | times: 100 | divided_by: threshold_cents %}
+{% if progress_pct > 100 %}
+  {% assign progress_pct = 100 %}
+{% endif %}
+
+{% assign tz_offset = config.timezoneOffsetMinutes | default: 0 %}
+{% assign iana_tz = config.ianaTimezone | default: 'UTC' %}
+{% assign current_country = localization.country.iso_code %}
+
+<div 
+  class="dropclock-cart-pill-root dc-cart-root"
+  id="dropclock-cart-{{ block.id }}"
+  data-cutoff-hour="{{ config.cutoffHour | default: 14 }}"
+  data-cutoff-min="{{ config.cutoffMinute | default: 0 }}"
+  data-threshold-cents="{{ threshold_cents }}"
+  data-cart-total="{{ cart_total }}"
+  data-currency-symbol="{{ cart.currency.symbol | default: '$' }}"
+  data-lead-days="{{ config.leadDays | default: 2 }}"
+  data-working-days='{{ config.workingDays | default: "[1,2,3,4,5]" }}'
+  data-blackouts='{{ config.blackoutDates | default: "[]" }}'
+  data-market-overrides='{{ config.marketOverrides | default: "{}" }}'
+  data-timezone-offset="{{ tz_offset }}"
+  data-iana-tz="{{ iana_tz }}"
+  data-current-country="{{ current_country }}"
+  style="
+    --dc-primary: {{ block.settings.primary_color | default: config.accentColor | default: '#008060' }};
+    --dc-bg: {{ block.settings.bg_color | default: '#f8fafc' }};
+    --dc-text: {{ block.settings.text_color | default: '#0f172a' }};
+    --dc-radius: {{ block.settings.border_radius | default: 10 }}px;
+    margin-top: {{ block.settings.margin_top | default: 8 }}px;
+    margin-bottom: {{ block.settings.margin_bottom | default: 8 }}px;
+  "
+>
+  <div class="dc-cart-card {% if block.settings.enable_shadow %}dc-shadow{% endif %}">
+    <div class="dc-cart-header">
+      <div class="dc-pulse-indicator" aria-hidden="true">
+        <span class="dc-ping"></span>
+        <span class="dc-dot"></span>
+      </div>
+      
+      <div class="dc-cart-content" data-dc-cart-msg>
+        {% if is_qualified %}
+          <span class="dc-qualified-badge">✓</span>
+          <span class="dc-cart-title font-semibold text-emerald-800">
+            {{ block.settings.qualified_text | default: "Free Express Delivery Qualified" }}
+          </span>
+          <span class="dc-cart-sub">
+            — Ships today if ordered within <strong class="dc-timer-val" data-dc-timer>--h --m --s</strong>
+          </span>
+        {% else %}
+          <span class="dc-cart-title">
+            Add <strong class="dc-remaining-amount" data-dc-remaining>{{ diff_cents | money }}</strong> {{ block.settings.threshold_subtext | default: "more to unlock Free Express Delivery" }}
+          </span>
+          <span class="dc-cart-sub">
+            — Order within <strong class="dc-timer-val" data-dc-timer>--h --m --s</strong> for today's dispatch
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if block.settings.show_progress_bar %}
+      <div class="dc-threshold-track" aria-hidden="true">
+        <div 
+          class="dc-threshold-bar" 
+          data-dc-progress 
+          style="width: {{ progress_pct }}%;"
+        ></div>
+      </div>
+    {% endif %}
+
+    <div class="dc-cart-eta-row">
+      <svg class="dc-truck-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="1" y="3" width="15" height="13"></rect>
+        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+      </svg>
+      <span class="dc-eta-label">Expected Arrival:</span>
+      <span class="dc-eta-date" data-dc-eta>Calculating...</span>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "DropClock Cart Upsell",
+  "target": "section",
+  "stylesheet": "dropclock.css",
+  "javascript": "dropclock.js",
+  "settings": [
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "Free Express Threshold ($)",
+      "default": 75
+    },
+    {
+      "type": "text",
+      "id": "threshold_subtext",
+      "label": "Upsell Subtext",
+      "default": "more to unlock Free Express Delivery"
+    },
+    {
+      "type": "text",
+      "id": "qualified_text",
+      "label": "Qualified Headline",
+      "default": "Free Express Delivery Qualified"
+    },
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Accent / Progress Color",
+      "default": "#008060"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Card Background Color",
+      "default": "#f8fafc"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#0f172a"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Top margin",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Bottom margin",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shadow",
+      "label": "Enable soft elevation shadow",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar",
+      "label": "Show threshold progress bar",
+      "default": true
+    }
+  ]
+}
+{% endschema %}
