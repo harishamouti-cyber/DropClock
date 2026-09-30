@@ -7,17 +7,17 @@
   "use strict";
 
   function initDropClock() {
-    var wrappers = document.querySelectorAll(".dropclock-wrapper");
-    if (!wrappers.length) return;
+    var roots = document.querySelectorAll(".dropclock-widget-root, .dropclock-wrapper");
+    if (!roots.length) return;
 
-    wrappers.forEach(function (wrapper) {
-      var ds = wrapper.dataset || {};
-      var container = wrapper.querySelector(".dc-c");
-      var backorder = wrapper.querySelector(".dc-b");
-      var countdownEl = wrapper.querySelector(".dc-tc");
-      var dispatchEl = wrapper.querySelector(".dc-dt");
-      var etaEl = wrapper.querySelector(".dc-et");
-      var barFill = wrapper.querySelector(".dc-bf");
+    roots.forEach(function (root) {
+      var ds = root.dataset || {};
+      var pillCard = root.querySelector(".dc-pill-card, .dc-c");
+      var backorderEl = root.querySelector(".dc-backorder-notice, .dc-b");
+      var timerValEl = root.querySelector("[data-dc-timer], .dc-timer-val, .dc-tc");
+      var subtextEl = root.querySelector("[data-dc-subtext], .dc-subtext, .dc-dt");
+      var etaDateEl = root.querySelector("[data-dc-eta], .dc-eta-date, .dc-et");
+      var barFillEl = root.querySelector("[data-dc-bar-fill], .dc-bar-fill, .dc-bf");
 
       var cutoffHour = ds.cutoffHour != null ? parseInt(ds.cutoffHour, 10) : 14;
       var cutoffMinute = ds.cutoffMin != null ? parseInt(ds.cutoffMin, 10) : (ds.cutoffMinute != null ? parseInt(ds.cutoffMinute, 10) : 0);
@@ -47,41 +47,39 @@
       }
 
       function updateCountdown() {
-        if (wrapper.getAttribute("data-available") !== "true") return;
+        if (root.getAttribute("data-available") === "false") return;
 
-        // Current time adjusted for warehouse timezone
         var storeNow = new Date(Date.now() + tzOffset * 60000);
-        var currentMinutes = storeNow.getUTCHours() * 60 + storeNow.getUTCMinutes() + storeNow.getUTCSeconds() / 60;
-        var cutoffTargetMinutes = cutoffHour * 60 + cutoffMinute;
-        var diffMinutes = cutoffTargetMinutes - currentMinutes;
-        var isPastCutoff = diffMinutes <= 0;
+        var currentSecs = storeNow.getUTCHours() * 3600 + storeNow.getUTCMinutes() * 60 + storeNow.getUTCSeconds();
+        var cutoffSecs = cutoffHour * 3600 + cutoffMinute * 60;
+        var diffSecs = cutoffSecs - currentSecs;
+        var isPastCutoff = diffSecs <= 0;
 
         if (isPastCutoff) {
-          diffMinutes += 1440; // 24 hours rollover
+          diffSecs += 86400;
         }
 
-        if (dispatchEl) {
-          dispatchEl.textContent = isPastCutoff ? nextDayText : sameDayText;
+        var h = Math.floor(diffSecs / 3600);
+        var m = Math.floor((diffSecs % 3600) / 60);
+        var s = Math.floor(diffSecs % 60);
+
+        if (timerValEl) {
+          timerValEl.textContent = h + "h " + (m < 10 ? "0" + m : m) + "m " + (s < 10 ? "0" + s : s) + "s";
         }
 
-        var hours = Math.floor(diffMinutes / 60);
-        var mins = Math.floor(diffMinutes % 60);
-        if (countdownEl) {
-          countdownEl.textContent = hours + "h " + mins + "m";
+        if (subtextEl) {
+          subtextEl.textContent = isPastCutoff ? nextDayText : sameDayText;
         }
 
-        // Urgency Progress Bar calculation (start of business 08:00 AM -> cutoff)
-        if (barFill) {
-          var windowSpan = cutoffTargetMinutes > 480 ? cutoffTargetMinutes - 480 : 480;
-          var percent = isPastCutoff ? 0 : Math.max(5, Math.min(100, Math.round((diffMinutes / windowSpan) * 100)));
-          barFill.style.width = percent + "%";
+        if (barFillEl) {
+          var startSecs = 8 * 3600;
+          var windowSecs = cutoffSecs > startSecs ? cutoffSecs - startSecs : 14400;
+          var pct = isPastCutoff ? 0 : Math.max(5, Math.min(100, Math.round((diffSecs / windowSecs) * 100)));
+          barFillEl.style.width = pct + "%";
         }
 
-        // Soft pulse animation under 60 minutes
-        var isUrgent = !isPastCutoff && diffMinutes <= 60;
-        wrapper.classList.toggle("dc-urgent", isUrgent);
+        root.classList.toggle("dc-urgent", !isPastCutoff && diffSecs <= 3600);
 
-        // Calculate delivery ETA skipping non-working days & blackout calendar
         var etaDate = new Date(Date.UTC(storeNow.getUTCFullYear(), storeNow.getUTCMonth(), storeNow.getUTCDate()));
         var daysAdded = 0;
         var targetDays = leadDays + (isPastCutoff ? 1 : 0);
@@ -95,8 +93,8 @@
           }
         }
 
-        if (etaEl) {
-          etaEl.textContent = etaDate.toLocaleDateString(undefined, {
+        if (etaDateEl) {
+          etaDateEl.textContent = etaDate.toLocaleDateString(undefined, {
             timeZone: "UTC",
             weekday: "short",
             month: "short",
@@ -106,13 +104,12 @@
       }
 
       function setAvailability(available) {
-        wrapper.setAttribute("data-available", available ? "true" : "false");
-        if (container) container.style.display = available ? "flex" : "none";
-        if (backorder) backorder.style.display = available ? "none" : "flex";
+        root.setAttribute("data-available", available ? "true" : "false");
+        if (pillCard) pillCard.style.display = available ? "flex" : "none";
+        if (backorderEl) backorderEl.style.display = available ? "none" : "flex";
         if (available) updateCountdown();
       }
 
-      // Variant event listeners for modern themes (Dawn, Prestige, Impulse)
       document.addEventListener("variant:change", function (e) {
         var variant = e && e.detail && (e.detail.variant || e.detail);
         if (variant && variant.available != null) {
@@ -141,7 +138,7 @@
       });
 
       updateCountdown();
-      setInterval(updateCountdown, 60000);
+      setInterval(updateCountdown, 1000);
     });
   }
 
