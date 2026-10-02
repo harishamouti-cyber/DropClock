@@ -56,15 +56,23 @@ const ActivityIcon = () => (
 );
 
 const ShoppingBagIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
     <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
     <path d="M3 6h18" />
     <path d="M16 10a4 4 0 0 1-8 0" />
   </svg>
 );
 
+const SidebarCloseIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+    <path d="M9 3v18" />
+    <path d="m16 15-3-3 3-3" />
+  </svg>
+);
+
 const ShoppingCartIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
     <circle cx="8" cy="21" r="1" />
     <circle cx="19" cy="21" r="1" />
     <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -72,12 +80,19 @@ const ShoppingCartIcon = () => (
 );
 
 const PackageCheckIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
     <path d="m16 16 2 2 4-4" />
     <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" />
     <path d="m7.5 4.27 9 5.15" />
     <polyline points="3.29 7 12 12 20.71 7" />
     <line x1="12" y1="22" x2="12" y2="12" />
+  </svg>
+);
+
+const Clock3Icon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16.5 12" />
   </svg>
 );
 
@@ -958,21 +973,11 @@ export function DropClockStudio({
                   e.preventDefault();
                   setActiveSurface("product");
                 }}
-                style={{
-                  padding: "8px 6px",
-                  borderRadius: "8px",
-                  border: activeSurface === "product" ? "2px solid #008060" : "1px solid #e2e8f0",
-                  backgroundColor: activeSurface === "product" ? "#f0fdf4" : "#ffffff",
-                  color: activeSurface === "product" ? "#008060" : "#475569",
-                  fontSize: "11px",
-                  fontWeight: activeSurface === "product" ? "700" : "500",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "4px",
-                  transition: "all 0.15s ease",
-                }}
+                className={`py-2 px-1.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                  activeSurface === "product"
+                    ? "bg-emerald-50 border-2 border-emerald-600 text-emerald-800 shadow-2xs"
+                    : "bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                }`}
               >
                 <ShoppingBagIcon />
                 <span>Product</span>
@@ -984,23 +989,13 @@ export function DropClockStudio({
                   e.preventDefault();
                   setActiveSurface("cart");
                 }}
-                style={{
-                  padding: "8px 6px",
-                  borderRadius: "8px",
-                  border: activeSurface === "cart" ? "2px solid #008060" : "1px solid #e2e8f0",
-                  backgroundColor: activeSurface === "cart" ? "#f0fdf4" : "#ffffff",
-                  color: activeSurface === "cart" ? "#008060" : "#475569",
-                  fontSize: "11px",
-                  fontWeight: activeSurface === "cart" ? "700" : "500",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "4px",
-                  transition: "all 0.15s ease",
-                }}
+                className={`py-2 px-1.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                  activeSurface === "cart"
+                    ? "bg-emerald-50 border-2 border-emerald-600 text-emerald-800 shadow-2xs"
+                    : "bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                }`}
               >
-                <ShoppingCartIcon />
+                <SidebarCloseIcon />
                 <span>Cart Drawer</span>
               </button>
 
@@ -1010,21 +1005,11 @@ export function DropClockStudio({
                   e.preventDefault();
                   setActiveSurface("thankyou");
                 }}
-                style={{
-                  padding: "8px 6px",
-                  borderRadius: "8px",
-                  border: activeSurface === "thankyou" ? "2px solid #008060" : "1px solid #e2e8f0",
-                  backgroundColor: activeSurface === "thankyou" ? "#f0fdf4" : "#ffffff",
-                  color: activeSurface === "thankyou" ? "#008060" : "#475569",
-                  fontSize: "11px",
-                  fontWeight: activeSurface === "thankyou" ? "700" : "500",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "4px",
-                  transition: "all 0.15s ease",
-                }}
+                className={`py-2 px-1.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                  activeSurface === "thankyou"
+                    ? "bg-emerald-50 border-2 border-emerald-600 text-emerald-800 shadow-2xs"
+                    : "bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                }`}
               >
                 <PackageCheckIcon />
                 <span>Order Status</span>
@@ -2264,18 +2249,8 @@ export function DropClockStudio({
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* Multi-Surface Switcher */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "2px",
-                        backgroundColor: "#e4e4e7",
-                        padding: "3px",
-                        borderRadius: "8px",
-                        border: "1px solid #d4d4d8",
-                      }}
-                    >
+                    {/* Multi-Surface Switcher (21st.dev Segmented Pill) */}
+                    <div className="bg-zinc-200/60 dark:bg-zinc-800/60 p-1 rounded-xl flex items-center gap-1 border border-zinc-200/80 dark:border-zinc-700/60">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -2283,22 +2258,11 @@ export function DropClockStudio({
                           e.stopPropagation();
                           setActiveSurface("product");
                         }}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          padding: "5px 10px",
-                          borderRadius: "6px",
-                          fontSize: "12px",
-                          fontWeight: activeSurface === "product" ? "700" : "500",
-                          backgroundColor: activeSurface === "product" ? "#ffffff" : "transparent",
-                          color: activeSurface === "product" ? "#09090b" : "#52525b",
-                          border: activeSurface === "product" ? "1px solid rgba(0,0,0,0.12)" : "1px solid transparent",
-                          boxShadow: activeSurface === "product" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                          cursor: "pointer",
-                          userSelect: "none",
-                          transition: "all 0.15s ease",
-                        }}
+                        className={
+                          activeSurface === "product"
+                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
+                            : "text-zinc-500 hover:text-zinc-800 text-xs py-1.5 px-3 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                        }
                       >
                         <ShoppingBagIcon />
                         <span>Product Page</span>
@@ -2311,24 +2275,13 @@ export function DropClockStudio({
                           e.stopPropagation();
                           setActiveSurface("cart");
                         }}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          padding: "5px 10px",
-                          borderRadius: "6px",
-                          fontSize: "12px",
-                          fontWeight: activeSurface === "cart" ? "700" : "500",
-                          backgroundColor: activeSurface === "cart" ? "#ffffff" : "transparent",
-                          color: activeSurface === "cart" ? "#09090b" : "#52525b",
-                          border: activeSurface === "cart" ? "1px solid rgba(0,0,0,0.12)" : "1px solid transparent",
-                          boxShadow: activeSurface === "cart" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                          cursor: "pointer",
-                          userSelect: "none",
-                          transition: "all 0.15s ease",
-                        }}
+                        className={
+                          activeSurface === "cart"
+                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
+                            : "text-zinc-500 hover:text-zinc-800 text-xs py-1.5 px-3 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                        }
                       >
-                        <ShoppingCartIcon />
+                        <SidebarCloseIcon />
                         <span>Cart Drawer</span>
                       </button>
 
@@ -2339,22 +2292,11 @@ export function DropClockStudio({
                           e.stopPropagation();
                           setActiveSurface("thankyou");
                         }}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          padding: "5px 10px",
-                          borderRadius: "6px",
-                          fontSize: "12px",
-                          fontWeight: activeSurface === "thankyou" ? "700" : "500",
-                          backgroundColor: activeSurface === "thankyou" ? "#ffffff" : "transparent",
-                          color: activeSurface === "thankyou" ? "#09090b" : "#52525b",
-                          border: activeSurface === "thankyou" ? "1px solid rgba(0,0,0,0.12)" : "1px solid transparent",
-                          boxShadow: activeSurface === "thankyou" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                          cursor: "pointer",
-                          userSelect: "none",
-                          transition: "all 0.15s ease",
-                        }}
+                        className={
+                          activeSurface === "thankyou"
+                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
+                            : "text-zinc-500 hover:text-zinc-800 text-xs py-1.5 px-3 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                        }
                       >
                         <PackageCheckIcon />
                         <span>Order Status</span>
@@ -3057,38 +2999,43 @@ export function DropClockStudio({
                         viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
                       } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-16 flex flex-col`}
                     >
-                      {/* Cart Drawer Header */}
+                      {/* Cart Drawer Header with Close Button */}
                       <div className="p-4 border-b border-zinc-200/80 bg-zinc-50/70 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <ShoppingCartIcon />
-                          <h3 className="text-sm font-bold text-zinc-900 m-0">
-                            Your Cart (2 items)
+                          <SidebarCloseIcon />
+                          <h3 className="text-sm font-semibold text-zinc-900 m-0">
+                            Your Cart (1 Item)
                           </h3>
                         </div>
-                        <span className="text-xs text-zinc-400 font-mono">DRAWER OPEN</span>
+                        <button
+                          type="button"
+                          className="w-7 h-7 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200/60 flex items-center justify-center transition-colors cursor-pointer"
+                        >
+                          <XIcon />
+                        </button>
                       </div>
 
-                      {/* Interactive Threshold Test Stepper Chips */}
-                      <div className="p-3 bg-zinc-100/70 border-b border-zinc-200/70 flex items-center justify-between flex-wrap gap-2 text-xs">
-                        <span className="text-zinc-600 font-medium flex items-center gap-1">
-                          <span>Simulate Cart Subtotal:</span>
+                      {/* Interactive Threshold Simulation Chips */}
+                      <div className="px-4 py-2.5 bg-zinc-100/70 border-b border-zinc-200/70 flex items-center justify-between flex-wrap gap-2 text-xs">
+                        <span className="text-zinc-600 font-medium">
+                          Simulate Subtotal:
                         </span>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => setCartSubtotal(32.00)}
-                            className={`px-2 py-1 rounded text-[11px] font-semibold transition cursor-pointer ${
-                              cartSubtotal === 32
+                            onClick={() => setCartSubtotal(42.00)}
+                            className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
+                              cartSubtotal === 42
                                 ? "bg-zinc-900 text-white shadow-2xs"
                                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
                             }`}
                           >
-                            $32.00 (Below)
+                            $42.00 (Below)
                           </button>
                           <button
                             type="button"
                             onClick={() => setCartSubtotal(60.95)}
-                            className={`px-2 py-1 rounded text-[11px] font-semibold transition cursor-pointer ${
+                            className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
                               cartSubtotal === 60.95
                                 ? "bg-zinc-900 text-white shadow-2xs"
                                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
@@ -3099,7 +3046,7 @@ export function DropClockStudio({
                           <button
                             type="button"
                             onClick={() => setCartSubtotal(84.00)}
-                            className={`px-2 py-1 rounded text-[11px] font-semibold transition cursor-pointer ${
+                            className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
                               cartSubtotal === 84
                                 ? "bg-emerald-700 text-white shadow-2xs"
                                 : "bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50"
@@ -3111,7 +3058,7 @@ export function DropClockStudio({
                       </div>
 
                       {/* The DropClock Live Cart Pill Component */}
-                      <div className="p-4 bg-white">
+                      <div className="p-4 bg-white space-y-4">
                         {(() => {
                           const diff = Math.max(0, cartThreshold - cartSubtotal);
                           const isQualified = diff <= 0;
@@ -3125,33 +3072,33 @@ export function DropClockStudio({
                                     <TruckIcon />
                                   </div>
                                   <div>
-                                    <div className="text-xs font-bold text-zinc-900">
+                                    <div className="text-xs font-semibold text-zinc-900">
                                       {isQualified ? (
-                                        <span className="text-emerald-700 flex items-center gap-1">
-                                          <CheckIcon /> Free Express Delivery Unlocked!
+                                        <span className="text-emerald-700 flex items-center gap-1 font-semibold">
+                                          <CheckIcon /> Free Express Delivery Qualified
                                         </span>
                                       ) : (
                                         <span>
-                                          Add <strong className="text-emerald-700">${diff.toFixed(2)}</strong> more for Free Express Delivery
+                                          Add <strong className="text-emerald-700">${diff.toFixed(2)}</strong> more to unlock Free Express Delivery
                                         </span>
                                       )}
                                     </div>
                                     <div className="text-[11px] text-zinc-500 mt-0.5">
-                                      ⚡ Order within{" "}
+                                      Order within{" "}
                                       <span className="font-mono font-semibold text-emerald-700">
                                         {preview.hours}h {preview.minutes}m {preview.seconds}s
                                       </span>{" "}
-                                      {preview.isPastCutoff ? "for tomorrow's dispatch" : "for same-day dispatch"}
+                                      {preview.isPastCutoff ? "for tomorrow's dispatch" : "for today's dispatch"}
                                     </div>
                                   </div>
                                 </div>
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/70 shrink-0">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/70 shrink-0 font-mono">
                                   {progress}%
                                 </span>
                               </div>
 
                               {/* Progress bar */}
-                              <div className="w-full bg-zinc-200/90 h-2 rounded-full overflow-hidden">
+                              <div className="w-full bg-zinc-200/90 h-1.5 rounded-full overflow-hidden">
                                 <div
                                   className={`h-full transition-all duration-500 ease-out rounded-full ${
                                     isQualified ? "bg-emerald-600" : "bg-emerald-500"
@@ -3163,12 +3110,14 @@ export function DropClockStudio({
                           );
                         })()}
 
-                        {/* Mock Cart Items */}
-                        <div className="mt-4 space-y-3">
+                        {/* Realistic Cart Item Row with Mini Thumbnail */}
+                        <div className="space-y-3 pt-1">
                           <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
                             <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-600">
-                                TEE
+                              <div className="w-12 h-12 rounded-lg bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-700 p-2 shrink-0">
+                                <svg viewBox="0 0 120 120" className="w-8 h-8" fill="currentColor">
+                                  <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
+                                </svg>
                               </div>
                               <div>
                                 <div className="text-xs font-semibold text-zinc-900">
@@ -3181,29 +3130,10 @@ export function DropClockStudio({
                             </div>
                             <span className="text-xs font-bold text-zinc-900">$42.00</span>
                           </div>
-
-                          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-600">
-                                SOCK
-                              </div>
-                              <div>
-                                <div className="text-xs font-semibold text-zinc-900">
-                                  Heavyweight Ribbed Socks
-                                </div>
-                                <div className="text-[11px] text-zinc-500">
-                                  Ivory · Qty: 1
-                                </div>
-                              </div>
-                            </div>
-                            <span className="text-xs font-bold text-zinc-900">
-                              ${(cartSubtotal - 42.00 > 0 ? (cartSubtotal - 42.00).toFixed(2) : "18.95")}
-                            </span>
-                          </div>
                         </div>
 
                         {/* Cart Summary and Checkout Button */}
-                        <div className="mt-4 pt-3 border-t border-zinc-200/90 space-y-2">
+                        <div className="pt-2 border-t border-zinc-200/90 space-y-2">
                           <div className="flex justify-between text-xs text-zinc-600">
                             <span>Subtotal</span>
                             <span className="font-semibold text-zinc-900">${cartSubtotal.toFixed(2)}</span>
@@ -3224,9 +3154,7 @@ export function DropClockStudio({
                             disabled
                             className="w-full mt-3 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-3 rounded-xl text-xs flex items-center justify-center gap-2 cursor-not-allowed"
                           >
-                            <span>Checkout Now</span>
-                            <span className="text-zinc-400">•</span>
-                            <span>Delivery by {preview.formattedArrival}</span>
+                            <span>Checkout • ${(cartSubtotal + (cartSubtotal >= cartThreshold ? 0 : 5.99)).toFixed(2)}</span>
                           </button>
                         </div>
                       </div>
@@ -3237,74 +3165,91 @@ export function DropClockStudio({
                   {activeSurface === "thankyou" && (
                     <div
                       className={`transition-all duration-300 ease-in-out mx-auto ${
-                        viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
+                        viewportMode === "mobile" ? "max-w-[375px]" : "max-w-xl"
                       } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-16 p-6 space-y-4`}
                     >
-                      {/* Order Confirmation Badge */}
-                      <div className="flex items-center gap-3 pb-3 border-b border-zinc-100">
-                        <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                          <CheckIcon />
+                      {/* Order Confirmation Header */}
+                      <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                            <CheckIcon />
+                          </div>
+                          <div>
+                            <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                              Order #1084 Confirmed
+                            </span>
+                            <h3 className="text-sm font-semibold text-zinc-900 m-0">
+                              Thank you, Alex!
+                            </h3>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
-                            Order #1084 Confirmed
-                          </span>
-                          <h3 className="text-sm font-bold text-zinc-900 m-0">
-                            Thank you, Alex!
-                          </h3>
-                        </div>
+                        <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full">
+                          Confirmed
+                        </span>
                       </div>
 
                       {/* DropClock 3-Step Milestone Fulfillment Timeline Card */}
-                      <div className="p-4 rounded-xl border border-emerald-200/80 bg-emerald-50/40 space-y-3">
+                      <div className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/50 space-y-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
-                            <span className="text-xs font-bold text-zinc-900">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span className="text-xs font-semibold text-zinc-900">
                               Live Fulfillment Promise
                             </span>
                           </div>
-                          <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                          <span className="text-[10px] font-medium text-zinc-500 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
                             Priority Dispatch
                           </span>
                         </div>
 
-                        {/* 3-Step Timeline */}
-                        <div className="grid grid-cols-3 gap-2 pt-2 text-center relative">
-                          {/* Timeline connector bar */}
-                          <div className="absolute top-6 left-12 right-12 h-0.5 bg-emerald-200 -z-0" />
+                        {/* 3-Step Timeline Track */}
+                        <div className="relative pt-2 pb-1">
+                          {/* Connecting Track Lines */}
+                          <div className="absolute top-[17px] left-[18%] right-[50%] h-[2px] bg-emerald-500 z-0" />
+                          <div className="absolute top-[17px] left-[50%] right-[18%] h-[2px] bg-zinc-200 z-0" />
 
-                          <div className="flex flex-col items-center relative z-10">
-                            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
-                              ✓
+                          <div className="grid grid-cols-3 gap-2 text-center relative z-10">
+                            {/* Step 1: Order Placed */}
+                            <div className="flex flex-col items-center">
+                              <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shadow-2xs">
+                                <CheckIcon />
+                              </div>
+                              <span className="text-xs font-medium text-zinc-900 mt-2">Order Placed</span>
+                              <span className="text-[10px] text-zinc-400 mt-0.5">Today, 10:24 AM</span>
                             </div>
-                            <span className="text-[11px] font-bold text-zinc-900 mt-1.5">Order Placed</span>
-                            <span className="text-[10px] text-zinc-500">Today, 10:24 AM</span>
-                          </div>
 
-                          <div className="flex flex-col items-center relative z-10">
-                            <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-xs animate-pulse">
-                              ⚡
+                            {/* Step 2: Dispatched */}
+                            <div className="flex flex-col items-center">
+                              <div className="relative flex items-center justify-center">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-40"></span>
+                                <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-400 text-emerald-600 flex items-center justify-center shadow-2xs relative">
+                                  <Clock3Icon />
+                                </div>
+                              </div>
+                              <span className="text-xs font-semibold text-emerald-700 mt-2">Dispatched</span>
+                              <span className="text-[10px] text-emerald-600 font-medium mt-0.5">
+                                Today by {cutoffHour.toString().padStart(2, "0")}:{cutoffMinute.toString().padStart(2, "0")}
+                              </span>
                             </div>
-                            <span className="text-[11px] font-bold text-emerald-800 mt-1.5">Dispatched</span>
-                            <span className="text-[10px] text-emerald-700 font-semibold">
-                              Today by {cutoffHour.toString().padStart(2, "0")}:{cutoffMinute.toString().padStart(2, "0")}
-                            </span>
-                          </div>
 
-                          <div className="flex flex-col items-center relative z-10">
-                            <div className="w-6 h-6 rounded-full bg-zinc-200 text-zinc-600 flex items-center justify-center text-[10px] font-bold">
-                              🚚
+                            {/* Step 3: Arrival */}
+                            <div className="flex flex-col items-center">
+                              <div className="w-7 h-7 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 flex items-center justify-center shadow-2xs">
+                                <TruckIcon />
+                              </div>
+                              <span className="text-xs font-medium text-zinc-600 mt-2">Estimated Arrival</span>
+                              <span className="text-[10px] text-zinc-500 font-medium mt-0.5">
+                                {preview.formattedArrival}
+                              </span>
                             </div>
-                            <span className="text-[11px] font-bold text-zinc-900 mt-1.5">Arrival</span>
-                            <span className="text-[10px] text-zinc-700 font-semibold">
-                              {preview.formattedArrival}
-                            </span>
                           </div>
                         </div>
 
-                        <div className="pt-2 border-t border-emerald-100 text-[11px] text-zinc-600 leading-relaxed flex items-start gap-1.5">
-                          <span className="text-emerald-700 font-bold shrink-0">✓</span>
+                        <div className="pt-2.5 border-t border-zinc-200/60 text-[11px] text-zinc-500 leading-relaxed flex items-start gap-2">
+                          <span className="text-emerald-600 font-bold shrink-0">✓</span>
                           <span>
                             Automated warehouse dispatch SLA active. Carrier tracking will be emailed the moment the parcel is scanned by express courier.
                           </span>
@@ -3323,7 +3268,7 @@ export function DropClockStudio({
                         </div>
                         <div className="flex justify-between">
                           <span className="text-zinc-500">Fulfillment Method:</span>
-                          <span className="font-bold text-emerald-700">Express Delivery (ETA: {preview.formattedArrival})</span>
+                          <span className="font-semibold text-emerald-700">Express Delivery (ETA: {preview.formattedArrival})</span>
                         </div>
                       </div>
                     </div>
