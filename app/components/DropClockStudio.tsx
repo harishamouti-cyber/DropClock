@@ -50,13 +50,13 @@ interface DropClockStudioProps {
 
 // Crisp Monochrome Lucide-style SVG Icons
 const ActivityIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
   </svg>
 );
 
 const ShoppingBagIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
     <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
     <path d="M3 6h18" />
     <path d="M16 10a4 4 0 0 1-8 0" />
@@ -64,7 +64,7 @@ const ShoppingBagIcon = () => (
 );
 
 const ShoppingCartIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
     <circle cx="8" cy="21" r="1" />
     <circle cx="19" cy="21" r="1" />
     <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -72,7 +72,7 @@ const ShoppingCartIcon = () => (
 );
 
 const PackageCheckIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
     <path d="m16 16 2 2 4-4" />
     <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" />
     <path d="m7.5 4.27 9 5.15" />
@@ -939,6 +939,99 @@ export function DropClockStudio({
             </div>
           </div>
 
+          {/* 0.5 Surface Target Switcher */}
+          <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-zinc-900 flex items-center gap-2">
+                <LayoutIcon />
+                <span>Storefront Surface Target</span>
+              </span>
+              <span className="text-[11px] font-semibold text-zinc-500 font-mono">
+                {activeSurface === "product" ? "Product Page" : activeSurface === "cart" ? "Cart Drawer" : "Order Status"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveSurface("product");
+                }}
+                style={{
+                  padding: "8px 6px",
+                  borderRadius: "8px",
+                  border: activeSurface === "product" ? "2px solid #008060" : "1px solid #e2e8f0",
+                  backgroundColor: activeSurface === "product" ? "#f0fdf4" : "#ffffff",
+                  color: activeSurface === "product" ? "#008060" : "#475569",
+                  fontSize: "11px",
+                  fontWeight: activeSurface === "product" ? "700" : "500",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "4px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <ShoppingBagIcon />
+                <span>Product</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveSurface("cart");
+                }}
+                style={{
+                  padding: "8px 6px",
+                  borderRadius: "8px",
+                  border: activeSurface === "cart" ? "2px solid #008060" : "1px solid #e2e8f0",
+                  backgroundColor: activeSurface === "cart" ? "#f0fdf4" : "#ffffff",
+                  color: activeSurface === "cart" ? "#008060" : "#475569",
+                  fontSize: "11px",
+                  fontWeight: activeSurface === "cart" ? "700" : "500",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "4px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <ShoppingCartIcon />
+                <span>Cart Drawer</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveSurface("thankyou");
+                }}
+                style={{
+                  padding: "8px 6px",
+                  borderRadius: "8px",
+                  border: activeSurface === "thankyou" ? "2px solid #008060" : "1px solid #e2e8f0",
+                  backgroundColor: activeSurface === "thankyou" ? "#f0fdf4" : "#ffffff",
+                  color: activeSurface === "thankyou" ? "#008060" : "#475569",
+                  fontSize: "11px",
+                  fontWeight: activeSurface === "thankyou" ? "700" : "500",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "4px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <PackageCheckIcon />
+                <span>Order Status</span>
+              </button>
+            </div>
+          </div>
+
           {/* 1. Cutoff Time Controller */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
               <div
@@ -1404,7 +1497,7 @@ export function DropClockStudio({
                 </span>
               </div>
 
-              <div style={{ display: "flex", gap: "6px" }}>
+              <div style={{ display: "flex", gap: "6px", maxWidth: "340px", width: "100%" }}>
                 {[
                   { label: "M", day: 1 },
                   { label: "T", day: 2 },
@@ -1422,7 +1515,10 @@ export function DropClockStudio({
                       onClick={() => toggleDay(day)}
                       style={{
                         flex: 1,
-                        aspectRatio: "1",
+                        height: "36px",
+                        maxHeight: "36px",
+                        minHeight: "36px",
+                        maxWidth: "44px",
                         borderRadius: "8px",
                         border: active ? "1px solid #10b981" : "1px solid #e2e8f0",
                         backgroundColor: active ? "#10b981" : "#ffffff",
@@ -1430,6 +1526,11 @@ export function DropClockStudio({
                         fontSize: "0.8125rem",
                         fontWeight: "600",
                         cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: 0,
+                        transition: "all 0.15s ease",
                       }}
                     >
                       {label}
@@ -2164,39 +2265,96 @@ export function DropClockStudio({
 
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* Multi-Surface Switcher */}
-                    <div className="flex items-center gap-0.5 bg-zinc-200/90 p-0.5 rounded-lg border border-zinc-300/80">
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "2px",
+                        backgroundColor: "#e4e4e7",
+                        padding: "3px",
+                        borderRadius: "8px",
+                        border: "1px solid #d4d4d8",
+                      }}
+                    >
                       <button
                         type="button"
-                        onClick={() => setActiveSurface("product")}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                          activeSurface === "product"
-                            ? "bg-white text-zinc-900 shadow-2xs font-semibold"
-                            : "text-zinc-600 hover:text-zinc-900"
-                        }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveSurface("product");
+                        }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          padding: "5px 10px",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          fontWeight: activeSurface === "product" ? "700" : "500",
+                          backgroundColor: activeSurface === "product" ? "#ffffff" : "transparent",
+                          color: activeSurface === "product" ? "#09090b" : "#52525b",
+                          border: activeSurface === "product" ? "1px solid rgba(0,0,0,0.12)" : "1px solid transparent",
+                          boxShadow: activeSurface === "product" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                          cursor: "pointer",
+                          userSelect: "none",
+                          transition: "all 0.15s ease",
+                        }}
                       >
                         <ShoppingBagIcon />
                         <span>Product Page</span>
                       </button>
+
                       <button
                         type="button"
-                        onClick={() => setActiveSurface("cart")}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                          activeSurface === "cart"
-                            ? "bg-white text-zinc-900 shadow-2xs font-semibold"
-                            : "text-zinc-600 hover:text-zinc-900"
-                        }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveSurface("cart");
+                        }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          padding: "5px 10px",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          fontWeight: activeSurface === "cart" ? "700" : "500",
+                          backgroundColor: activeSurface === "cart" ? "#ffffff" : "transparent",
+                          color: activeSurface === "cart" ? "#09090b" : "#52525b",
+                          border: activeSurface === "cart" ? "1px solid rgba(0,0,0,0.12)" : "1px solid transparent",
+                          boxShadow: activeSurface === "cart" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                          cursor: "pointer",
+                          userSelect: "none",
+                          transition: "all 0.15s ease",
+                        }}
                       >
                         <ShoppingCartIcon />
                         <span>Cart Drawer</span>
                       </button>
+
                       <button
                         type="button"
-                        onClick={() => setActiveSurface("thankyou")}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                          activeSurface === "thankyou"
-                            ? "bg-white text-zinc-900 shadow-2xs font-semibold"
-                            : "text-zinc-600 hover:text-zinc-900"
-                        }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveSurface("thankyou");
+                        }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          padding: "5px 10px",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          fontWeight: activeSurface === "thankyou" ? "700" : "500",
+                          backgroundColor: activeSurface === "thankyou" ? "#ffffff" : "transparent",
+                          color: activeSurface === "thankyou" ? "#09090b" : "#52525b",
+                          border: activeSurface === "thankyou" ? "1px solid rgba(0,0,0,0.12)" : "1px solid transparent",
+                          boxShadow: activeSurface === "thankyou" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                          cursor: "pointer",
+                          userSelect: "none",
+                          transition: "all 0.15s ease",
+                        }}
                       >
                         <PackageCheckIcon />
                         <span>Order Status</span>
