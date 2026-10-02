@@ -6,10 +6,6 @@
 {% assign config = shop.metafields.dropclock.settings.value %}
 {% assign base_cutoff_hour = config.cutoffHour | default: 14 %}
 {% assign base_cutoff_minute = config.cutoffMinute | default: 0 %}
-{% assign base_lead_days = config.leadDays | default: 2 %}
-{% assign working_days = config.workingDays | default: "[1,2,3,4,5]" %}
-{% assign blackout_dates = config.blackoutDates | default: "[]" %}
-{% assign market_overrides = config.marketOverrides | default: "{}" %}
 {% assign tz_offset = config.timezoneOffsetMinutes | default: 0 %}
 {% assign iana_tz = config.ianaTimezone | default: 'UTC' %}
 {% assign trans = config.translations %}
@@ -46,10 +42,10 @@
   data-cutoff-min="{{ active_cutoff_minute }}"
   data-cutoff-minute="{{ active_cutoff_minute }}"
   data-lead-days="{{ effective_lead_days }}"
-  data-working-days='{{ working_days }}'
+  data-working-days="{{ config.workingDays | default: '[1,2,3,4,5]' | escape }}"
   data-blackout-dates="{{ config.blackoutDates | json | escape }}"
-  data-blackouts='{{ blackout_dates }}'
-  data-market-overrides='{{ market_overrides }}'
+  data-blackouts="{{ config.blackoutDates | json | escape }}"
+  data-market-overrides="{{ config.marketOverrides | json | escape }}"
   data-timezone-offset="{{ tz_offset }}"
   data-tz-offset="{{ tz_offset }}"
   data-iana-tz="{{ iana_tz }}"

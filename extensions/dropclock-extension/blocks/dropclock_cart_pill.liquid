@@ -31,9 +31,9 @@
   data-cart-total="{{ cart_total }}"
   data-currency-symbol="{{ cart.currency.symbol | default: '$' }}"
   data-lead-days="{{ config.leadDays | default: 2 }}"
-  data-working-days='{{ config.workingDays | default: "[1,2,3,4,5]" }}'
-  data-blackouts='{{ config.blackoutDates | default: "[]" }}'
-  data-market-overrides='{{ config.marketOverrides | default: "{}" }}'
+  data-working-days="{{ config.workingDays | default: '[1,2,3,4,5]' | escape }}"
+  data-blackouts="{{ config.blackoutDates | json | escape }}"
+  data-market-overrides="{{ config.marketOverrides | json | escape }}"
   data-timezone-offset="{{ tz_offset }}"
   data-iana-tz="{{ iana_tz }}"
   data-current-country="{{ current_country }}"
