@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSubmit, useNavigation } from "@remix-run/react";
 import { SaveBar, TitleBar, useAppBridge } from "@shopify/app-bridge-react";
+import { Page, Badge, Banner } from "@shopify/polaris";
 
 export interface StudioSettings {
   id?: string | null;
@@ -815,104 +816,44 @@ export function DropClockStudio({
       )}
 
       <style>{`
-        .Polaris-Page, .Polaris-Page--fullWidth, .Polaris-Page__Content {
+        .Polaris-Page, .Polaris-Page--fullWidth {
+          max-width: 100% !important;
+          padding: 0 !important;
+        }
+        .Polaris-Page__Content {
           padding: 0 !important;
           margin: 0 !important;
-          max-width: 100% !important;
         }
       `}</style>
 
-      {/* Header Bar */}
-      {isEmbedded ? (
-        <div className="flex items-center justify-between px-6 py-2.5 border-b border-zinc-200/90 bg-white shrink-0">
-          <div className="flex items-center gap-2.5">
-            <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Dawn 15.0 (Active)
-            </span>
-
-            {/* Sync Status Badge in Header */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 text-[11px]">
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  hasSaved
-                    ? "bg-emerald-500 animate-pulse"
-                    : isDirty
-                    ? "bg-amber-500"
-                    : "bg-emerald-500"
-                }`}
-              />
-              <span className="font-semibold text-zinc-800">
-                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-              </span>
-              <span className="text-[10px] text-zinc-500 hidden sm:inline">
-                • {hasSaved
-                  ? "Saved to store"
-                  : isDirty
-                  ? "Staged in SaveBar"
-                  : "Active on Shopify Edge CDN"}
-              </span>
-            </div>
+      {/* Polaris BFS Compliant Page Header */}
+      <Page
+        title="DropClock Studio"
+        subtitle="Configure storefront fulfillment rules and preview live countdown delivery ETAs"
+        titleMetadata={
+          <div className="inline-flex items-center gap-2">
+            <Badge tone="success">Dawn 15.0 (Active)</Badge>
+            <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
+              {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
+            </Badge>
           </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-200 bg-white shrink-0 flex-wrap gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-base font-semibold tracking-tight text-zinc-900 m-0">
-              DropClock Studio
-            </h1>
-
-            <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Dawn 15.0 (Active)
-            </span>
-
-            {/* Sync Status Badge in Header */}
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-xs">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  hasSaved
-                    ? "bg-emerald-500 animate-pulse"
-                    : isDirty
-                    ? "bg-amber-500"
-                    : "bg-emerald-500"
-                }`}
-              />
-              <span className="font-semibold text-zinc-800">
-                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-              </span>
-              <span className="text-[11px] text-zinc-500 hidden sm:inline">
-                • {hasSaved
-                  ? "Saved to store"
-                  : isDirty
-                  ? "Ready to test"
-                  : "Active on Shopify Edge CDN"}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            {isDirty && (
-              <button
-                type="button"
-                onClick={handleDiscard}
-                className="bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-300 rounded-md px-3 py-1.5 text-xs font-medium transition cursor-pointer"
-              >
-                Reset Changes
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleAddToTheme}
-              className="bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-900 rounded-md px-3.5 py-1.5 text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <span>Add to Theme Editor</span>
-              <ExternalLinkIcon />
-            </button>
-          </div>
-        </div>
-      )}
+        }
+        primaryAction={{
+          content: "Add to Theme Editor",
+          onAction: handleAddToTheme,
+        }}
+        secondaryActions={
+          isDirty
+            ? [
+                {
+                  content: "Reset Changes",
+                  onAction: handleDiscard,
+                },
+              ]
+            : []
+        }
+        fullWidth
+      >
 
       {/* Studio Grid */}
       <div className="grid grid-cols-12 flex-1 min-h-0">
@@ -927,7 +868,7 @@ export function DropClockStudio({
                   Storefront Fulfillment Analytics
                 </span>
               </div>
-              {previewSampleData ? (
+              {previewSampleData && (
                 <button
                   type="button"
                   onClick={() => setPreviewSampleData(false)}
@@ -937,27 +878,22 @@ export function DropClockStudio({
                   <span>[ Previewing Sample Data ]</span>
                   <span className="text-[10px] text-amber-600 underline ml-0.5">Reset</span>
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setPreviewSampleData(true)}
-                  className="text-[11px] font-semibold text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200/80 border border-zinc-200 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer"
-                  title="Preview sample sandbox metrics"
-                >
-                  Preview Sample Data
-                </button>
               )}
             </div>
 
             {totalRecordedViews === 0 && !previewSampleData ? (
-              <div className="rounded-lg border border-dashed border-zinc-200 bg-[#f8fafc] p-3.5 text-center space-y-1">
-                <div className="text-xs font-semibold text-zinc-700">
-                  Tracking will begin as soon as DropClock is enabled in your live theme.
-                </div>
-                <div className="text-[11px] text-zinc-500">
-                  0 storefront views recorded. Live metrics and dispatch velocity will appear here once customers view your product pages.
-                </div>
-              </div>
+              <Banner
+                title="Storefront Analytics Active"
+                tone="info"
+                action={{
+                  content: "Preview Sample Data",
+                  onAction: () => setPreviewSampleData(true),
+                }}
+              >
+                <p>
+                  Impression tracking and dispatch velocity start automatically once the DropClock block is published to your live theme.
+                </p>
+              </Banner>
             ) : (
               <>
                 <p className="text-[11px] text-zinc-500 m-0">
@@ -2206,7 +2142,7 @@ export function DropClockStudio({
           </div>
 
           {/* RIGHT PANE: Realistic DTC Storefront Canvas */}
-          <div className="col-span-12 lg:col-span-7 xl:col-span-8 h-full overflow-y-auto overscroll-contain flex flex-col items-center p-4 sm:p-6 py-4 pb-16 bg-[#f7f8fa]">
+          <div className="col-span-12 lg:col-span-7 xl:col-span-8 h-full max-h-[calc(100vh-100px)] overflow-y-auto overscroll-contain flex flex-col items-center p-4 sm:p-6 py-4 pb-24 bg-[#f7f8fa]">
             <div className="w-full max-w-xl flex flex-col items-center py-2 sm:py-4">
               {/* Browser Window Chrome Wrapper */}
               <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">
@@ -2360,11 +2296,11 @@ export function DropClockStudio({
                         </div>
                       </div>
 
-                      {/* PRODUCT IMAGE CONTAINER (Compact 16/9 ratio, min-h-[160px], w-28 h-28 SVG) */}
-                      <div className="relative w-full aspect-[16/9] min-h-[160px] max-h-[180px] bg-zinc-100 dark:bg-zinc-800/40 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-3 select-none mb-3">
+                      {/* PRODUCT IMAGE CONTAINER (Compact presentation: h-40 w-full with object-contain) */}
+                      <div className="relative w-full h-40 bg-zinc-100 dark:bg-zinc-800/40 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-2 select-none mb-2">
                         <svg 
                           viewBox="0 0 120 120" 
-                          className="w-28 h-28 text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                          className="w-24 h-24 object-contain text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
                           fill="currentColor"
                           xmlns="http://www.w3.org/2000/svg"
                         >
@@ -2377,8 +2313,8 @@ export function DropClockStudio({
                         </span>
                       </div>
 
-                      {/* Stock Status & Title */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      {/* Stock Status & SKU */}
+                      <div className="my-1 flex items-center justify-between">
                         <span
                           style={{
                             fontSize: "0.6875rem",
@@ -2394,12 +2330,9 @@ export function DropClockStudio({
                       </div>
 
                       <h2
-                        className="text-base font-semibold tracking-tight text-zinc-900"
+                        className="my-1 text-base font-semibold tracking-tight text-zinc-900"
                         style={{
                           fontSize: "0.9375rem",
-                          fontWeight: "600",
-                          margin: "0 0 2px 0",
-                          color: "#18181b",
                           letterSpacing: "-0.025em",
                         }}
                       >
@@ -2407,23 +2340,21 @@ export function DropClockStudio({
                       </h2>
 
                       <div
+                        className="my-1 text-base font-bold text-zinc-900"
                         style={{
                           fontSize: "1.0625rem",
-                          fontWeight: "700",
-                          color: "#09090b",
-                          marginBottom: "8px",
                         }}
                       >
                         $42.00
                       </div>
 
                       {/* Shopify Dawn Variant Selector */}
-                      <div style={{ marginBottom: "10px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <div style={{ marginBottom: "8px" }}>
+                        <div className="flex items-center justify-between mb-1.5">
                           <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#3f3f46", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                             Size: <span style={{ color: "#09090b" }}>{selectedSize}</span>
                           </span>
-                          <span style={{ fontSize: "0.6875rem", color: "#71717a", textDecoration: "underline", cursor: "pointer" }}>
+                          <span className="text-xs text-zinc-500 hover:underline cursor-pointer ml-auto">
                             Size Guide
                           </span>
                         </div>
@@ -2519,21 +2450,15 @@ export function DropClockStudio({
                           )}
                         </div>
 
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                        <div className="flex flex-wrap gap-1.5">
                           <button
                             type="button"
                             onClick={() => setActiveSimulatedTag("none")}
-                            style={{
-                              padding: "3px 8px",
-                              borderRadius: "6px",
-                              border: activeSimulatedTag === "none" ? "1.5px solid #0f172a" : "1px solid #cbd5e1",
-                              backgroundColor: activeSimulatedTag === "none" ? "#0f172a" : "#ffffff",
-                              color: activeSimulatedTag === "none" ? "#ffffff" : "#475569",
-                              fontSize: "0.6875rem",
-                              fontWeight: "600",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                            }}
+                            className={`px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all ${
+                              activeSimulatedTag === "none"
+                                ? "bg-[#008060] text-white shadow-2xs border border-[#008060]"
+                                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200/80"
+                            }`}
                           >
                             Tag: none
                           </button>
@@ -2541,23 +2466,14 @@ export function DropClockStudio({
                           <button
                             type="button"
                             onClick={() => setActiveSimulatedTag("pre-order")}
-                            style={{
-                              padding: "3px 8px",
-                              borderRadius: "6px",
-                              border: activeSimulatedTag.toLowerCase() === "pre-order" ? "1.5px solid #008060" : "1px solid #cbd5e1",
-                              backgroundColor: activeSimulatedTag.toLowerCase() === "pre-order" ? "#008060" : "#ffffff",
-                              color: activeSimulatedTag.toLowerCase() === "pre-order" ? "#ffffff" : "#334155",
-                              fontSize: "0.6875rem",
-                              fontWeight: "600",
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "3px",
-                              transition: "all 0.15s ease",
-                            }}
+                            className={`px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer inline-flex items-center gap-1 transition-all ${
+                              activeSimulatedTag.toLowerCase() === "pre-order"
+                                ? "bg-[#008060] text-white shadow-2xs border border-[#008060]"
+                                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200/80"
+                            }`}
                           >
                             <span>Tag: pre-order</span>
-                            <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
+                            <span className="opacity-80 text-[10px]">
                               (+{tagRules.find((r) => r.tag.trim().toLowerCase() === "pre-order")?.leadDays || 14}d)
                             </span>
                           </button>
@@ -2565,23 +2481,14 @@ export function DropClockStudio({
                           <button
                             type="button"
                             onClick={() => setActiveSimulatedTag("freight")}
-                            style={{
-                              padding: "3px 8px",
-                              borderRadius: "6px",
-                              border: activeSimulatedTag.toLowerCase() === "freight" ? "1.5px solid #008060" : "1px solid #cbd5e1",
-                              backgroundColor: activeSimulatedTag.toLowerCase() === "freight" ? "#008060" : "#ffffff",
-                              color: activeSimulatedTag.toLowerCase() === "freight" ? "#ffffff" : "#334155",
-                              fontSize: "0.6875rem",
-                              fontWeight: "600",
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "3px",
-                              transition: "all 0.15s ease",
-                            }}
+                            className={`px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer inline-flex items-center gap-1 transition-all ${
+                              activeSimulatedTag.toLowerCase() === "freight"
+                                ? "bg-[#008060] text-white shadow-2xs border border-[#008060]"
+                                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200/80"
+                            }`}
                           >
                             <span>Tag: freight</span>
-                            <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
+                            <span className="opacity-80 text-[10px]">
                               (+{tagRules.find((r) => r.tag.trim().toLowerCase() === "freight")?.leadDays || 5}d)
                             </span>
                           </button>
@@ -2601,24 +2508,14 @@ export function DropClockStudio({
                                   key={rule.tag}
                                   type="button"
                                   onClick={() => setActiveSimulatedTag(rule.tag.trim())}
-                                  style={{
-                                    padding: "3px 8px",
-                                    borderRadius: "6px",
-                                    border: isSelected ? "1.5px solid #008060" : "1px solid #cbd5e1",
-                                    backgroundColor: isSelected ? "#008060" : "#ffffff",
-                                    color: isSelected ? "#ffffff" : "#334155",
-                                    fontSize: "0.6875rem",
-                                    fontWeight: "600",
-                                    cursor: "pointer",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: "3px",
-                                    transition: "all 0.15s ease",
-                                    boxShadow: isSelected ? "0 1px 2px rgba(0,128,96,0.2)" : "none",
-                                  }}
+                                  className={`px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer inline-flex items-center gap-1 transition-all ${
+                                    isSelected
+                                      ? "bg-[#008060] text-white shadow-2xs border border-[#008060]"
+                                      : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200/80"
+                                  }`}
                                 >
                                   <span>Tag: {rule.tag.trim()}</span>
-                                  <span style={{ opacity: 0.85, fontSize: "0.625rem" }}>
+                                  <span className="opacity-80 text-[10px]">
                                     (+{rule.leadDays}d)
                                   </span>
                                 </button>
@@ -3255,6 +3152,7 @@ export function DropClockStudio({
             </div>
           </div>
         </div>
-      </div>
+      </Page>
+    </div>
   );
 }
