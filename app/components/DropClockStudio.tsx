@@ -453,6 +453,10 @@ export function DropClockStudio({
   const [cartThreshold, setCartThreshold] = useState<number>(75);
   const [cartSubtotal, setCartSubtotal] = useState<number>(60.95);
 
+  // BFS Compliance State: Conditional Empty State for Fresh Installs
+  const [previewSampleData, setPreviewSampleData] = useState<boolean>(false);
+  const totalRecordedViews = 0; // Fresh install baseline (no vanity analytics)
+
   // Save feedback states
   const [isSaving, setIsSaving] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
@@ -914,106 +918,79 @@ export function DropClockStudio({
       <div className="grid grid-cols-12 flex-1 min-h-0">
         {/* Left Sidebar Container */}
         <div className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-4 space-y-4 border-r border-zinc-200 dark:border-zinc-800 bg-[#f1f2f4] pr-3 pb-24 text-zinc-900">
-          {/* 0. ROI & Dispatch Velocity Analytics Card */}
+          {/* 0. BFS-Compliant Storefront Fulfillment Analytics Card */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ActivityIcon />
                 <span className="text-sm font-semibold text-zinc-900">
-                  Analytics &amp; Dispatch Velocity
+                  Storefront Fulfillment Analytics
                 </span>
               </div>
-              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                Live 30d ROI
-              </span>
+              {previewSampleData ? (
+                <button
+                  type="button"
+                  onClick={() => setPreviewSampleData(false)}
+                  className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-300 px-2.5 py-0.5 rounded-full hover:bg-amber-100 transition-colors cursor-pointer flex items-center gap-1"
+                  title="Click to reset to live empty state"
+                >
+                  <span>[ Previewing Sample Data ]</span>
+                  <span className="text-[10px] text-amber-600 underline ml-0.5">Reset</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPreviewSampleData(true)}
+                  className="text-[11px] font-semibold text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200/80 border border-zinc-200 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer"
+                  title="Preview sample sandbox metrics"
+                >
+                  Preview Sample Data
+                </button>
+              )}
             </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
-                <span className="text-[11px] text-zinc-500 font-medium">Storefront Views</span>
-                <span className="text-base font-bold text-zinc-900 mt-0.5">42,850</span>
-                <span className="text-[10px] text-emerald-600 font-semibold mt-0.5">↑ 14.2% MoM</span>
+            {totalRecordedViews === 0 && !previewSampleData ? (
+              <div className="rounded-lg border border-dashed border-zinc-200 bg-[#f8fafc] p-3.5 text-center space-y-1">
+                <div className="text-xs font-semibold text-zinc-700">
+                  Tracking will begin as soon as DropClock is enabled in your live theme.
+                </div>
+                <div className="text-[11px] text-zinc-500">
+                  0 storefront views recorded. Live metrics and dispatch velocity will appear here once customers view your product pages.
+                </div>
               </div>
+            ) : (
+              <>
+                <p className="text-[11px] text-zinc-500 m-0">
+                  Tracking will begin as soon as DropClock is enabled in your live theme. (Illustrative sample data shown below)
+                </p>
 
-              <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
-                <span className="text-[11px] text-zinc-500 font-medium">Urgency Adds</span>
-                <span className="text-base font-bold text-emerald-700 mt-0.5">3,412</span>
-                <span className="text-[10px] text-emerald-600 font-semibold mt-0.5">&lt; 2h to cutoff</span>
-              </div>
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
+                    <span className="text-[11px] text-zinc-500 font-medium">Storefront Views</span>
+                    <span className="text-base font-bold text-zinc-900 mt-0.5">42,850</span>
+                    <span className="text-[10px] text-emerald-600 font-semibold mt-0.5">↑ 14.2% MoM</span>
+                  </div>
 
-              <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
-                <span className="text-[11px] text-zinc-500 font-medium">WISMO Deflection</span>
-                <span className="text-base font-bold text-indigo-700 mt-0.5">~28.5%</span>
-                <span className="text-[10px] text-zinc-500 font-medium mt-0.5">$1,840 saved</span>
-              </div>
-            </div>
+                  <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
+                    <span className="text-[11px] text-zinc-500 font-medium">Urgency Adds</span>
+                    <span className="text-base font-bold text-emerald-700 mt-0.5">3,412</span>
+                    <span className="text-[10px] text-emerald-600 font-semibold mt-0.5">&lt; 2h to cutoff</span>
+                  </div>
+
+                  <div className="bg-[#f8fafc] border border-zinc-200/80 rounded-lg p-2.5 flex flex-col">
+                    <span className="text-[11px] text-zinc-500 font-medium">WISMO Deflection</span>
+                    <span className="text-base font-bold text-indigo-700 mt-0.5">~28.5%</span>
+                    <span className="text-[10px] text-zinc-500 font-medium mt-0.5">$1,840 saved</span>
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-              <span>On-Time Dispatch SLA:</span>
-              <span className="font-semibold text-zinc-900">99.4% On-Track</span>
-            </div>
-          </div>
-
-          {/* 0.5 Surface Target Switcher */}
-          <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-900 flex items-center gap-2">
-                <LayoutIcon />
-                <span>Storefront Surface Target</span>
+              <span>Fulfillment SLA:</span>
+              <span className="font-semibold text-zinc-900">
+                {previewSampleData ? "99.4% On-Track (Sample)" : "Awaiting Theme Activation"}
               </span>
-              <span className="text-[11px] font-semibold text-zinc-500 font-mono">
-                {activeSurface === "product" ? "Product Page" : activeSurface === "cart" ? "Cart Drawer" : "Order Status"}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveSurface("product");
-                }}
-                className={`py-2 px-1.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                  activeSurface === "product"
-                    ? "bg-emerald-50 border-2 border-emerald-600 text-emerald-800 shadow-2xs"
-                    : "bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-                }`}
-              >
-                <ShoppingBagIcon />
-                <span>Product</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveSurface("cart");
-                }}
-                className={`py-2 px-1.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                  activeSurface === "cart"
-                    ? "bg-emerald-50 border-2 border-emerald-600 text-emerald-800 shadow-2xs"
-                    : "bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-                }`}
-              >
-                <SidebarCloseIcon />
-                <span>Cart Drawer</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveSurface("thankyou");
-                }}
-                className={`py-2 px-1.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                  activeSurface === "thankyou"
-                    ? "bg-emerald-50 border-2 border-emerald-600 text-emerald-800 shadow-2xs"
-                    : "bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-                }`}
-              >
-                <PackageCheckIcon />
-                <span>Order Status</span>
-              </button>
             </div>
           </div>
 
@@ -2229,8 +2206,8 @@ export function DropClockStudio({
           </div>
 
           {/* RIGHT PANE: Realistic DTC Storefront Canvas */}
-          <div className="col-span-12 lg:col-span-7 xl:col-span-8 h-full overflow-y-auto overscroll-contain flex flex-col items-center p-6 py-10 bg-[#f7f8fa]">
-            <div className="m-auto py-6 w-full max-w-xl flex flex-col items-center mb-16">
+          <div className="col-span-12 lg:col-span-7 xl:col-span-8 h-full overflow-y-auto overscroll-contain flex flex-col items-center p-4 sm:p-6 py-4 pb-16 bg-[#f7f8fa]">
+            <div className="w-full max-w-xl flex flex-col items-center py-2 sm:py-4">
               {/* Browser Window Chrome Wrapper */}
               <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">
                 {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
@@ -2333,7 +2310,7 @@ export function DropClockStudio({
 
                 {/* Canvas Surface with Refined Light Neutral Dot Grid */}
                 <div
-                  className="p-8 bg-[#f8fafc] flex justify-center items-center min-h-[520px]"
+                  className="p-4 sm:p-5 bg-[#f8fafc] flex justify-center items-center"
                   style={{
                     backgroundImage: "radial-gradient(#e5e7eb 1.5px, transparent 1.5px)",
                     backgroundSize: "16px 16px",
@@ -2344,10 +2321,10 @@ export function DropClockStudio({
                     <div
                       className={`transition-all duration-300 ease-in-out mx-auto ${
                         viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
-                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-6 mb-16`}
+                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-4 sm:p-5 mb-6`}
                     >
                       {/* Stock State Quick Switcher */}
-                      <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
+                      <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                         <span className="text-xs font-semibold text-zinc-500">
                           Stock Simulation:
                         </span>
@@ -2383,11 +2360,11 @@ export function DropClockStudio({
                         </div>
                       </div>
 
-                      {/* PRODUCT IMAGE CONTAINER */}
-                      <div className="relative w-full aspect-[4/3] bg-zinc-100 dark:bg-zinc-800/40 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-6 select-none mb-4">
+                      {/* PRODUCT IMAGE CONTAINER (Compact 16/9 ratio, min-h-[160px], w-28 h-28 SVG) */}
+                      <div className="relative w-full aspect-[16/9] min-h-[160px] max-h-[180px] bg-zinc-100 dark:bg-zinc-800/40 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-3 select-none mb-3">
                         <svg 
                           viewBox="0 0 120 120" 
-                          className="w-36 h-36 text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                          className="w-28 h-28 text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
                           fill="currentColor"
                           xmlns="http://www.w3.org/2000/svg"
                         >
@@ -2395,13 +2372,13 @@ export function DropClockStudio({
                           <path d="M 40 16 C 46 25 74 25 80 16 C 74 21 46 21 40 16 Z" fill="rgba(255,255,255,0.25)" />
                         </svg>
                         
-                        <span className="absolute bottom-2.5 right-2.5 text-[10px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 shadow-xs">
+                        <span className="absolute bottom-2 right-2 text-[9px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 shadow-xs">
                           Heavyweight 280 GSM
                         </span>
                       </div>
 
                       {/* Stock Status & Title */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                         <span
                           style={{
                             fontSize: "0.6875rem",
@@ -2419,9 +2396,9 @@ export function DropClockStudio({
                       <h2
                         className="text-base font-semibold tracking-tight text-zinc-900"
                         style={{
-                          fontSize: "1rem",
+                          fontSize: "0.9375rem",
                           fontWeight: "600",
-                          margin: "0 0 6px 0",
+                          margin: "0 0 2px 0",
                           color: "#18181b",
                           letterSpacing: "-0.025em",
                         }}
@@ -2431,18 +2408,18 @@ export function DropClockStudio({
 
                       <div
                         style={{
-                          fontSize: "1.125rem",
+                          fontSize: "1.0625rem",
                           fontWeight: "700",
                           color: "#09090b",
-                          marginBottom: "14px",
+                          marginBottom: "8px",
                         }}
                       >
                         $42.00
                       </div>
 
                       {/* Shopify Dawn Variant Selector */}
-                      <div style={{ marginBottom: "16px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                      <div style={{ marginBottom: "10px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                           <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#3f3f46", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                             Size: <span style={{ color: "#09090b" }}>{selectedSize}</span>
                           </span>
@@ -2468,7 +2445,7 @@ export function DropClockStudio({
                                 }}
                                 style={{
                                   flex: 1,
-                                  padding: "8px 4px",
+                                  padding: "6px 4px",
                                   borderRadius: "6px",
                                   border: isSelected ? "1.5px solid #09090b" : "1px solid #e4e4e7",
                                   backgroundColor: isSelected ? "#09090b" : "#ffffff",
@@ -2498,8 +2475,8 @@ export function DropClockStudio({
                           backgroundColor: "#f8fafc",
                           border: "1px solid #e2e8f0",
                           borderRadius: "8px",
-                          padding: "8px 10px",
-                          marginBottom: "14px",
+                          padding: "6px 8px",
+                          marginBottom: "10px",
                         }}
                       >
                         <div
@@ -2997,7 +2974,7 @@ export function DropClockStudio({
                     <div
                       className={`transition-all duration-300 ease-in-out mx-auto ${
                         viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
-                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-16 flex flex-col`}
+                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-6 flex flex-col`}
                     >
                       {/* Cart Drawer Header with Close Button */}
                       <div className="p-4 border-b border-zinc-200/80 bg-zinc-50/70 flex items-center justify-between">
@@ -3166,7 +3143,7 @@ export function DropClockStudio({
                     <div
                       className={`transition-all duration-300 ease-in-out mx-auto ${
                         viewportMode === "mobile" ? "max-w-[375px]" : "max-w-xl"
-                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-16 p-6 space-y-4`}
+                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-6 p-6 space-y-4`}
                     >
                       {/* Order Confirmation Header */}
                       <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
