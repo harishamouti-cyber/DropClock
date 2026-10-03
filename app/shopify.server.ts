@@ -54,12 +54,24 @@ export async function requireBillingSafely(billing: any) {
   }
 }
 
+export const SHOPIFY_API_KEY =
+  process.env.SHOPIFY_API_KEY &&
+  process.env.SHOPIFY_API_KEY !== "88689745373b37439f8a9885c878251c" &&
+  process.env.SHOPIFY_API_KEY !== "dummy_key"
+    ? process.env.SHOPIFY_API_KEY
+    : "0a616a9e934ece36ebebdfd0bb906a9b";
+
+export const SHOPIFY_APP_URL =
+  process.env.SHOPIFY_APP_URL && !process.env.SHOPIFY_APP_URL.includes("example.com")
+    ? process.env.SHOPIFY_APP_URL
+    : "https://drop-clock-zeta.vercel.app";
+
 const shopify = shopifyApp({
-  apiKey: process.env.SHOPIFY_API_KEY || "dummy_key",
+  apiKey: SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "dummy_secret",
   apiVersion,
   scopes: process.env.SCOPES?.split(",") || ["read_products", "write_products"],
-  appUrl: process.env.SHOPIFY_APP_URL || "https://dropclock.example.com",
+  appUrl: SHOPIFY_APP_URL,
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,

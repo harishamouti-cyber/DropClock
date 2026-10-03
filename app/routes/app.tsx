@@ -6,7 +6,7 @@ import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import tailwindStyles from "~/tailwind.css?url";
-import { authenticate } from "~/shopify.server";
+import { authenticate, SHOPIFY_API_KEY } from "~/shopify.server";
 
 export const links = () => [
   { rel: "stylesheet", href: polarisStyles },
@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   await authenticate.admin(request);
 
   return json({
-    apiKey: process.env.SHOPIFY_API_KEY || "",
+    apiKey: SHOPIFY_API_KEY,
   });
 }
 

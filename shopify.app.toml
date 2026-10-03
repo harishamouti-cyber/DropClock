@@ -6,7 +6,7 @@ application_url = "https://drop-clock-zeta.vercel.app"
 embedded = true
 
 [build]
-automatically_update_urls_on_dev = true
+automatically_update_urls_on_dev = false
 dev_store_url = "rankpilot-xk8wrvgu.myshopify.com"
 
 [access_scopes]
