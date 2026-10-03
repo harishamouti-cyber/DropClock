@@ -7,3 +7,9 @@ name = "DropClock Cutoff & ETA"
 target = "section"
 template = "product"
 file = "dropclock_pill.liquid"
+
+[[blocks]]
+name = "DropClock Cart Upsell"
+target = "section"
+template = "cart"
+file = "dropclock_cart_pill.liquid"

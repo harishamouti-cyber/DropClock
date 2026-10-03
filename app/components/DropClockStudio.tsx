@@ -286,26 +286,28 @@ export function DropClockStudio({
   const submit = useSubmit();
   const navigation = useNavigation();
 
-  let appBridge: any = null;
+  let shopify: any = null;
   try {
-    appBridge = useAppBridge();
+    shopify = useAppBridge();
   } catch {
     // Graceful fallback when outside App Bridge context
   }
 
   const shopDomain = shop || "my-store.myshopify.com";
-  const themeEditorDeepLink = `https://${shopDomain}/admin/themes/current/editor?template=product`;
 
   const handleAddToTheme = () => {
     const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
     const currentShop = params.get("shop") || shop || (typeof window !== "undefined" ? window.location.hostname : "my-store.myshopify.com");
-    const themeEditorUrl = `https://${currentShop}/admin/themes/current/editor?template=product`;
+    const cleanShop = currentShop.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const extId = propExtensionId || "6ccfac9a-9e01-8c6b-a21e-2c7474d1188e729b0378";
+    const blockParam = extId ? `&addAppBlockId=${extId}/dropclock_pill&target=mainSection` : "";
+    const themeEditorUrl = `https://${cleanShop}/admin/themes/current/editor?template=product${blockParam}`;
 
-    if (appBridge && typeof appBridge.open === "function") {
-      appBridge.open(themeEditorUrl, "_blank");
+    if (shopify && typeof shopify.open === "function") {
+      shopify.open(themeEditorUrl, "_top");
     } else if (typeof window !== "undefined" && window.shopify && typeof window.shopify.open === "function") {
-      window.shopify.open(themeEditorUrl, "_blank");
-    } else {
+      window.shopify.open(themeEditorUrl, "_top");
+    } else if (typeof window !== "undefined") {
       window.open(themeEditorUrl, "_blank", "noopener,noreferrer");
     }
   };
@@ -780,7 +782,7 @@ export function DropClockStudio({
   ]);
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden bg-[#f1f2f4] text-zinc-900 font-sans">
+    <div className="h-screen w-full flex flex-col overflow-hidden bg-[#f1f2f4] text-zinc-900 font-sans">
       {/* App Bridge Contextual TitleBar & Native SaveBar */}
       {!isStandalone && isEmbedded && (
         <>
@@ -815,50 +817,51 @@ export function DropClockStudio({
         </>
       )}
 
-      <style>{`
-        .Polaris-Page, .Polaris-Page--fullWidth {
-          max-width: 100% !important;
-          padding: 0 !important;
-        }
-        .Polaris-Page__Content {
-          padding: 0 !important;
-          margin: 0 !important;
-        }
-      `}</style>
-
-      {/* Polaris BFS Compliant Page Header */}
-      <Page
-        title="DropClock Studio"
-        subtitle="Configure storefront fulfillment rules and preview live countdown delivery ETAs"
-        titleMetadata={
-          <div className="inline-flex items-center gap-2">
-            <Badge tone="success">Dawn 15.0 (Active)</Badge>
-            <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
-              {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-            </Badge>
+      {/* Fixed Header (No shrink) */}
+      <header className="flex-none px-6 py-3.5 bg-white border-b border-zinc-200">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-base font-bold tracking-tight text-zinc-900 m-0">
+                DropClock Studio
+              </h1>
+              <Badge tone="success">Dawn 15.0 (Active)</Badge>
+              <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
+                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
+              </Badge>
+            </div>
+            <p className="text-xs text-zinc-500 m-0">
+              Configure storefront fulfillment rules and preview live countdown delivery ETAs
+            </p>
           </div>
-        }
-        primaryAction={{
-          content: "Add to Theme Editor",
-          onAction: handleAddToTheme,
-        }}
-        secondaryActions={
-          isDirty
-            ? [
-                {
-                  content: "Reset Changes",
-                  onAction: handleDiscard,
-                },
-              ]
-            : []
-        }
-        fullWidth
-      >
 
-      {/* Studio Grid */}
-      <div className="grid grid-cols-12 flex-1 min-h-0">
-        {/* Left Sidebar Container */}
-        <div className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-4 space-y-4 border-r border-zinc-200 dark:border-zinc-800 bg-[#f1f2f4] pr-3 pb-24 text-zinc-900">
+          <div className="flex items-center gap-2.5">
+            {isDirty && (
+              <button
+                type="button"
+                onClick={handleDiscard}
+                className="bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-300 rounded-lg px-3.5 py-1.5 text-xs font-medium transition cursor-pointer shadow-2xs"
+              >
+                Reset Changes
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleAddToTheme}
+              className="bg-[#008060] hover:bg-[#006e52] text-white border border-[#008060] rounded-lg px-4 py-1.5 text-xs font-semibold inline-flex items-center gap-2 transition shadow-xs cursor-pointer"
+            >
+              <span>Add to Theme Editor</span>
+              <ExternalLinkIcon />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Body */}
+      <main className="flex-1 min-h-0 grid grid-cols-12 overflow-hidden">
+        {/* Left Settings Panel */}
+        <aside className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-5 space-y-4 border-r border-zinc-200 bg-white pb-36">
           {/* 0. BFS-Compliant Storefront Fulfillment Analytics Card */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
@@ -2139,10 +2142,10 @@ export function DropClockStudio({
                 </div>
               </div>
             )}
-          </div>
+        </aside>
 
-          {/* RIGHT PANE: Realistic DTC Storefront Canvas */}
-          <div className="col-span-12 lg:col-span-7 xl:col-span-8 h-full max-h-[calc(100vh-100px)] overflow-y-auto overscroll-contain flex flex-col items-center p-4 sm:p-6 py-4 pb-24 bg-[#f7f8fa]">
+        {/* Right Preview Canvas */}
+        <section className="col-span-12 lg:col-span-7 xl:col-span-8 h-full overflow-y-auto overscroll-contain flex flex-col items-center p-6 bg-[#f7f8fa] pb-36">
             <div className="w-full max-w-xl flex flex-col items-center py-2 sm:py-4">
               {/* Browser Window Chrome Wrapper */}
               <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">
@@ -2163,7 +2166,7 @@ export function DropClockStudio({
 
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* Multi-Surface Switcher (21st.dev Segmented Pill) */}
-                    <div className="bg-zinc-200/60 dark:bg-zinc-800/60 p-1 rounded-xl flex items-center gap-1 border border-zinc-200/80 dark:border-zinc-700/60">
+                    <div className="bg-zinc-200/60 p-1 rounded-xl flex items-center gap-1 border border-zinc-200/80">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -2173,7 +2176,7 @@ export function DropClockStudio({
                         }}
                         className={
                           activeSurface === "product"
-                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
+                            ? "bg-white text-zinc-900 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
                             : "text-zinc-500 hover:text-zinc-800 text-xs py-1.5 px-3 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                         }
                       >
@@ -2190,7 +2193,7 @@ export function DropClockStudio({
                         }}
                         className={
                           activeSurface === "cart"
-                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
+                            ? "bg-white text-zinc-900 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
                             : "text-zinc-500 hover:text-zinc-800 text-xs py-1.5 px-3 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                         }
                       >
@@ -2207,7 +2210,7 @@ export function DropClockStudio({
                         }}
                         className={
                           activeSurface === "thankyou"
-                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
+                            ? "bg-white text-zinc-900 shadow-xs font-medium text-xs py-1.5 px-3 rounded-lg border border-zinc-200/80 inline-flex items-center gap-1.5 cursor-pointer transition-all"
                             : "text-zinc-500 hover:text-zinc-800 text-xs py-1.5 px-3 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                         }
                       >
@@ -2260,11 +2263,11 @@ export function DropClockStudio({
                       } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-4 sm:p-5 mb-6`}
                     >
                       {/* Stock State Quick Switcher */}
-                      <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                      <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-zinc-100">
                         <span className="text-xs font-semibold text-zinc-500">
                           Stock Simulation:
                         </span>
-                        <div className="flex bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200/80 dark:border-zinc-700/60">
+                        <div className="flex bg-zinc-100 p-0.5 rounded-lg border border-zinc-200/80">
                           <button
                             type="button"
                             onClick={() => {
@@ -2273,8 +2276,8 @@ export function DropClockStudio({
                             }}
                             className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
                               mockStockState === "in_stock"
-                                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
-                                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                                ? "bg-white text-zinc-900 shadow-xs"
+                                : "text-zinc-500 hover:text-zinc-700"
                             }`}
                           >
                             In Stock
@@ -2287,8 +2290,8 @@ export function DropClockStudio({
                             }}
                             className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
                               mockStockState === "backorder"
-                                ? "bg-white dark:bg-zinc-900 text-amber-700 dark:text-amber-400 shadow-xs"
-                                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                                ? "bg-white text-amber-700 shadow-xs"
+                                : "text-zinc-500 hover:text-zinc-700"
                             }`}
                           >
                             Sold Out / Backorder
@@ -2297,10 +2300,10 @@ export function DropClockStudio({
                       </div>
 
                       {/* PRODUCT IMAGE CONTAINER (Compact presentation: h-40 w-full with object-contain) */}
-                      <div className="relative w-full h-40 bg-zinc-100 dark:bg-zinc-800/40 rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-700/50 flex items-center justify-center p-2 select-none mb-2">
+                      <div className="relative w-full h-40 bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80 flex items-center justify-center p-2 select-none mb-2">
                         <svg 
                           viewBox="0 0 120 120" 
-                          className="w-24 h-24 object-contain text-zinc-800 dark:text-zinc-200 drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                          className="w-24 h-24 object-contain text-zinc-800 drop-shadow-sm transition-transform duration-300 hover:scale-105"
                           fill="currentColor"
                           xmlns="http://www.w3.org/2000/svg"
                         >
@@ -2308,7 +2311,7 @@ export function DropClockStudio({
                           <path d="M 40 16 C 46 25 74 25 80 16 C 74 21 46 21 40 16 Z" fill="rgba(255,255,255,0.25)" />
                         </svg>
                         
-                        <span className="absolute bottom-2 right-2 text-[9px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 shadow-xs">
+                        <span className="absolute bottom-2 right-2 text-[9px] font-mono tracking-wider uppercase text-zinc-500 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded border border-zinc-200 shadow-xs">
                           Heavyweight 280 GSM
                         </span>
                       </div>
@@ -3150,9 +3153,8 @@ export function DropClockStudio({
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </Page>
-    </div>
+          </section>
+        </main>
+      </div>
   );
 }
