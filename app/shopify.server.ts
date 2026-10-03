@@ -5,7 +5,7 @@ import {
   LATEST_API_VERSION,
   BillingInterval,
 } from "@shopify/shopify-app-remix/server";
-import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
+import { resilientSessionStorage } from "./session.server";
 import prisma from "./db.server";
 
 export const apiVersion = LATEST_API_VERSION;
@@ -73,7 +73,7 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(",") || ["read_products", "write_products"],
   appUrl: SHOPIFY_APP_URL,
   authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
+  sessionStorage: resilientSessionStorage,
   distribution: AppDistribution.AppStore,
   billing: {
     [DROPCLOCK_PRO_MONTHLY]: {
