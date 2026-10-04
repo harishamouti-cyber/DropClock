@@ -49,7 +49,7 @@ interface DropClockStudioProps {
   extensionId?: string;
 }
 
-// Official DropClock Geometric Brand Mark
+// Official DropClock Cutoff Capsule Brand Mark (Option 5)
 export const DropClockLogo = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg
     viewBox="0 0 24 24"
@@ -58,47 +58,27 @@ export const DropClockLogo = ({ className = "w-5 h-5" }: { className?: string })
     className={className}
     style={{ pointerEvents: "none", flexShrink: 0 }}
   >
-    {/* Falling drop / precision notch at top in emerald-600 */}
-    <path
-      d="M12 1.5C12 1.5 10.3 3.4 10.3 4.5a1.7 1.7 0 0 0 3.4 0C13.7 3.4 12 1.5 12 1.5Z"
-      fill="#008060"
+    {/* Capsule Pill Base */}
+    <rect
+      x="1.5"
+      y="4"
+      width="21"
+      height="16"
+      rx="8"
+      fill="#ffffff"
       stroke="#008060"
-      strokeWidth="0.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth="1.25"
     />
-    {/* Geometric timer/clock circular dial in dark slate (zinc-900) */}
-    <circle
-      cx="12"
-      cy="14"
-      r="7.5"
-      stroke="#18181b"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    {/* 2-minute offset indicator tick in emerald */}
-    <path
-      d="M13.65 10.32L13.95 9.58"
-      stroke="#008060"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    {/* Clock hands */}
-    <path
-      d="M12 14V10.8"
-      stroke="#18181b"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    <path
-      d="M12 14L14.6 15.9"
-      stroke="#18181b"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    {/* Center pivot dot in emerald */}
-    <circle cx="12" cy="14" r="1" fill="#008060" />
+    {/* Embedded Stopwatch Dial */}
+    <circle cx="7.5" cy="12" r="4.25" stroke="#18181b" strokeWidth="1.2" />
+    <line x1="7.5" y1="6.8" x2="7.5" y2="5.8" stroke="#18181b" strokeWidth="1" strokeLinecap="round" />
+    {/* Hands */}
+    <line x1="7.5" y1="12" x2="7.5" y2="9.8" stroke="#008060" strokeWidth="1.1" strokeLinecap="round" />
+    <line x1="7.5" y1="12" x2="9.4" y2="12.9" stroke="#18181b" strokeWidth="1.1" strokeLinecap="round" />
+    <circle cx="7.5" cy="12" r="0.75" fill="#008060" />
+    {/* Dynamic Countdown Text Indicators */}
+    <rect x="13.5" y="10.25" width="6.5" height="1.5" rx="0.75" fill="#008060" />
+    <rect x="13.5" y="12.75" width="4.5" height="1.25" rx="0.625" fill="#94a3b8" />
   </svg>
 );
 
