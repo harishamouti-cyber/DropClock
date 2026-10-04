@@ -516,6 +516,10 @@ export function DropClockStudio({
     return 75;
   });
   const [cartSubtotal, setCartSubtotal] = useState<number>(60.95);
+  const [enableCartProgressBar, setEnableCartProgressBar] = useState<boolean>(() => {
+    const cached = safeStorage.getItem("dc_enable_cart_progress_bar");
+    return cached !== null ? cached === "true" : true;
+  });
 
   // BFS Compliance State: Dismissible Storefront Onboarding Banner
   const [isOnboardingDismissed, setIsOnboardingDismissed] = useState<boolean>(() => {
@@ -909,38 +913,21 @@ export function DropClockStudio({
         </>
       )}
 
-      {/* Consolidated Single Bar in Embedded Mode; Full Header in Standalone */}
-      {isEmbedded ? (
-        <header className="flex-none px-6 py-2.5 bg-white border-b border-zinc-200">
-          <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="font-semibold text-zinc-700">Active Theme:</span>
-              <Badge tone="success">Dawn 15.0 (Active)</Badge>
-              <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
-                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2 text-zinc-500 font-mono text-[11px]">
-              <span>Store: {shop || "Connected"}</span>
-              <span className="text-zinc-300">•</span>
-              <span>Shopify OS 2.0</span>
-            </div>
+      {/* Consolidated Single Compact Header Line */}
+      <header className="flex-none px-6 py-3 bg-white border-b border-zinc-200">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <DropClockLogo className="w-5 h-5 text-emerald-600 inline-block" />
+            <h1 className="text-base font-bold tracking-tight text-zinc-900 m-0">
+              DropClock Studio
+            </h1>
+            <Badge tone="success">Dawn 15.0 (Active)</Badge>
+            <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
+              {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
+            </Badge>
           </div>
-        </header>
-      ) : (
-        <header className="flex-none px-6 py-3 bg-white border-b border-zinc-200">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <DropClockLogo className="w-5 h-5" />
-              <h1 className="text-base font-bold tracking-tight text-zinc-900 m-0">
-                DropClock Studio
-              </h1>
-              <Badge tone="success">Dawn 15.0 (Active)</Badge>
-              <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
-                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-              </Badge>
-            </div>
 
+          {!isEmbedded && (
             <div className="flex items-center gap-2.5">
               {isDirty && (
                 <button
@@ -961,14 +948,14 @@ export function DropClockStudio({
                 <ExternalLinkIcon />
               </button>
             </div>
-          </div>
-        </header>
-      )}
+          )}
+        </div>
+      </header>
 
-      {/* Main Body: single scroll on narrow iframes, independent column scroll on lg+ */}
-      <main className="grid grid-cols-1 lg:grid-cols-12 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
+      {/* Main Body */}
+      <main className="grid grid-cols-12 flex-1 min-h-0 overflow-hidden">
         {/* Left Settings Panel */}
-        <aside className="col-span-1 lg:col-span-5 xl:col-span-4 h-auto lg:h-full overflow-y-visible lg:overflow-y-auto p-4 lg:p-5 space-y-4 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white pb-12 lg:pb-36">
+        <aside className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-4 lg:p-5 space-y-4 border-r border-zinc-200 bg-white pb-36">
           {/* Guided Onboarding Banner (Dismissible per BFS guidelines) */}
           {!isOnboardingDismissed && (
             <Banner
@@ -1600,7 +1587,7 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 4b. Cart Upsell Free Express Threshold (Configurable Tier Control) */}
+            {/* 4b. Cart Free Shipping Goal */}
             <div
               style={{
                 backgroundColor: "#ffffff",
@@ -1621,7 +1608,7 @@ export function DropClockStudio({
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <ShoppingCartIcon />
                   <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
-                    Cart Upsell Free Express Goal
+                    Cart Free Shipping Goal
                   </span>
                 </div>
                 <span
@@ -1642,74 +1629,149 @@ export function DropClockStudio({
               <p style={{ margin: "0 0 12px 0", fontSize: "0.75rem", color: "#64748b", lineHeight: "1.4" }}>
                 Define the cart subtotal threshold required for shoppers to unlock expedited same-day dispatch and free delivery in the drawer upsell bar.
               </p>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ position: "relative", flex: 1 }}>
+
+              {/* Toggle: Enable Cart Urgency Progress Bar */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 10px",
+                  backgroundColor: "#f8fafc",
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                  marginBottom: "12px",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "0.75rem", fontWeight: "600", color: "#0f172a" }}>
+                    Enable Cart Urgency Progress Bar
+                  </div>
+                  <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>
+                    Show dynamic threshold delivery goal in the cart drawer
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={enableCartProgressBar}
+                  onClick={() => {
+                    setEnableCartProgressBar((prev) => {
+                      const next = !prev;
+                      safeStorage.setItem("dc_enable_cart_progress_bar", next.toString());
+                      return next;
+                    });
+                  }}
+                  style={{
+                    width: "36px",
+                    height: "20px",
+                    borderRadius: "9999px",
+                    backgroundColor: enableCartProgressBar ? "#008060" : "#cbd5e1",
+                    border: "none",
+                    position: "relative",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s ease",
+                    padding: 0,
+                  }}
+                >
                   <span
                     style={{
                       position: "absolute",
-                      left: "10px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "#94a3b8",
-                      fontSize: "0.875rem",
-                      fontWeight: "600",
-                    }}
-                  >
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={1000}
-                    value={cartThreshold}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value);
-                      if (!isNaN(val) && val >= 0) {
-                        setCartThreshold(val);
-                        safeStorage.setItem("dc_free_shipping_threshold", val.toString());
-                      }
-                    }}
-                    style={{
-                      width: "100%",
-                      paddingLeft: "24px",
-                      paddingRight: "10px",
-                      paddingTop: "6px",
-                      paddingBottom: "6px",
-                      fontSize: "0.875rem",
-                      fontFamily: "monospace",
-                      fontWeight: "600",
-                      border: "1px solid #cbd5e1",
-                      borderRadius: "6px",
-                      color: "#0f172a",
+                      top: "2px",
+                      left: enableCartProgressBar ? "18px" : "2px",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "50%",
                       backgroundColor: "#ffffff",
-                      boxSizing: "border-box",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                      transition: "left 0.2s ease",
                     }}
                   />
-                </div>
-                <div style={{ display: "flex", gap: "4px" }}>
-                  {[50, 75, 100].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => {
-                        setCartThreshold(preset);
-                        safeStorage.setItem("dc_free_shipping_threshold", preset.toString());
-                      }}
+                </button>
+              </div>
+
+              {/* Number Input: Threshold Amount ($) */}
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    color: "#334155",
+                    marginBottom: "4px",
+                  }}
+                >
+                  Threshold Amount ($)
+                </label>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ position: "relative", flex: 1 }}>
+                    <span
                       style={{
-                        padding: "6px 10px",
-                        fontSize: "0.75rem",
+                        position: "absolute",
+                        left: "10px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#94a3b8",
+                        fontSize: "0.875rem",
                         fontWeight: "600",
-                        borderRadius: "6px",
-                        border: cartThreshold === preset ? "1px solid #0f172a" : "1px solid #cbd5e1",
-                        backgroundColor: cartThreshold === preset ? "#0f172a" : "#f8fafc",
-                        color: cartThreshold === preset ? "#ffffff" : "#334155",
-                        cursor: "pointer",
-                        transition: "all 0.15s ease",
                       }}
                     >
-                      ${preset}
-                    </button>
-                  ))}
+                      $
+                    </span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={cartThreshold}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (!isNaN(val) && val >= 0) {
+                          setCartThreshold(val);
+                          safeStorage.setItem("dc_free_shipping_threshold", val.toString());
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        paddingLeft: "24px",
+                        paddingRight: "10px",
+                        paddingTop: "6px",
+                        paddingBottom: "6px",
+                        fontSize: "0.875rem",
+                        fontFamily: "monospace",
+                        fontWeight: "600",
+                        border: "1px solid #cbd5e1",
+                        borderRadius: "6px",
+                        color: "#0f172a",
+                        backgroundColor: "#ffffff",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: "flex", gap: "4px" }}>
+                    {[50, 75, 100].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          setCartThreshold(preset);
+                          safeStorage.setItem("dc_free_shipping_threshold", preset.toString());
+                        }}
+                        style={{
+                          padding: "6px 10px",
+                          fontSize: "0.75rem",
+                          fontWeight: "600",
+                          borderRadius: "6px",
+                          border: cartThreshold === preset ? "1px solid #0f172a" : "1px solid #cbd5e1",
+                          backgroundColor: cartThreshold === preset ? "#0f172a" : "#f8fafc",
+                          color: cartThreshold === preset ? "#ffffff" : "#334155",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        ${preset}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2418,10 +2480,10 @@ export function DropClockStudio({
         </aside>
 
         {/* Right Preview Canvas */}
-        <section className="col-span-1 lg:col-span-7 xl:col-span-8 min-h-[500px] lg:h-full overflow-y-visible lg:overflow-y-auto flex flex-col items-center p-4 lg:p-6 bg-[#f7f8fa] pb-24 lg:pb-36">
-            <div className="w-full max-w-3xl flex flex-col items-center py-2 sm:py-4">
+        <section className="col-span-12 lg:col-span-7 xl:col-span-8 h-full overflow-y-auto overscroll-contain flex flex-col items-center justify-start p-8 bg-[#f7f8fa] pb-36">
+            <div className="w-full max-w-3xl flex flex-col items-center mx-auto">
               {/* Browser Window Chrome Wrapper */}
-              <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">
+              <div className="w-full bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-sm">
                 {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
                 <div className="bg-zinc-100/90 border-b border-zinc-200 px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-1.5">
@@ -3219,7 +3281,7 @@ export function DropClockStudio({
 
                       {/* The DropClock Live Cart Pill Component */}
                       <div className="p-4 bg-white space-y-4">
-                        {(() => {
+                        {enableCartProgressBar && (() => {
                           const diff = Math.max(0, cartThreshold - cartSubtotal);
                           const isQualified = diff <= 0;
                           const progress = Math.min(100, Math.round((cartSubtotal / cartThreshold) * 100));
