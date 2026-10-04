@@ -316,7 +316,14 @@ export function DropClockStudio({
   const [isEmbedded, setIsEmbedded] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && Boolean(window.shopify?.saveBar)) {
+    if (typeof window === "undefined") return;
+    let inIframe = false;
+    try {
+      inIframe = window.self !== window.top;
+    } catch {
+      inIframe = true;
+    }
+    if (inIframe || Boolean(window.shopify?.saveBar)) {
       setIsEmbedded(true);
     }
   }, []);
@@ -836,7 +843,7 @@ export function DropClockStudio({
           </div>
 
           <div className="flex items-center gap-2.5">
-            {isDirty && (
+            {isDirty && !isEmbedded && (
               <button
                 type="button"
                 onClick={handleDiscard}
@@ -846,22 +853,24 @@ export function DropClockStudio({
               </button>
             )}
 
-            <button
-              type="button"
-              onClick={handleAddToTheme}
-              className="bg-[#008060] hover:bg-[#006e52] text-white border border-[#008060] rounded-lg px-4 py-1.5 text-xs font-semibold inline-flex items-center gap-2 transition shadow-xs cursor-pointer"
-            >
-              <span>Add to Theme Editor</span>
-              <ExternalLinkIcon />
-            </button>
+            {isStandalone && (
+              <button
+                type="button"
+                onClick={handleAddToTheme}
+                className="bg-[#008060] hover:bg-[#006e52] text-white border border-[#008060] rounded-lg px-4 py-1.5 text-xs font-semibold inline-flex items-center gap-2 transition shadow-xs cursor-pointer"
+              >
+                <span>Add to Theme Editor</span>
+                <ExternalLinkIcon />
+              </button>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Body */}
-      <main className="flex-1 min-h-0 grid grid-cols-12 overflow-hidden">
+      {/* Main Body: single scroll on narrow iframes, independent column scroll on lg+ */}
+      <main className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden overscroll-contain">
         {/* Left Settings Panel */}
-        <aside className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-5 space-y-4 border-r border-zinc-200 bg-white pb-36">
+        <aside className="flex-none w-full lg:w-[42%] xl:w-[36%] lg:h-full lg:min-h-0 lg:overflow-y-auto overscroll-contain p-5 pb-8 lg:pb-40 space-y-4 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white">
           {/* 0. BFS-Compliant Storefront Fulfillment Analytics Card */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
@@ -1398,7 +1407,10 @@ export function DropClockStudio({
                 </span>
               </div>
 
-              <div style={{ display: "flex", gap: "6px", maxWidth: "340px", width: "100%" }}>
+              <div
+                className="min-h-[48px]"
+                style={{ display: "flex", alignItems: "center", gap: "6px", maxWidth: "340px", width: "100%", flexShrink: 0 }}
+              >
                 {[
                   { label: "M", day: 1 },
                   { label: "T", day: 2 },
@@ -2145,8 +2157,8 @@ export function DropClockStudio({
         </aside>
 
         {/* Right Preview Canvas */}
-        <section className="col-span-12 lg:col-span-7 xl:col-span-8 h-full overflow-y-auto overscroll-contain flex flex-col items-center p-6 bg-[#f7f8fa] pb-36">
-            <div className="w-full max-w-xl flex flex-col items-center py-2 sm:py-4">
+        <section className="flex-none lg:flex-1 min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto overscroll-contain flex flex-col items-center p-4 sm:p-6 bg-[#f7f8fa] pb-40">
+            <div className="w-full max-w-3xl flex flex-col items-center py-2 sm:py-4">
               {/* Browser Window Chrome Wrapper */}
               <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">
                 {/* Top Window Chrome with Two-Way Device Viewport Toggle */}
@@ -2259,11 +2271,11 @@ export function DropClockStudio({
                   {activeSurface === "product" && (
                     <div
                       className={`transition-all duration-300 ease-in-out mx-auto ${
-                        viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
+                        viewportMode === "mobile" ? "max-w-[375px]" : "max-w-2xl"
                       } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden p-4 sm:p-5 mb-6`}
                     >
                       {/* Stock State Quick Switcher */}
-                      <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-zinc-100">
+                      <div className="flex items-center justify-between flex-wrap gap-2 mb-2.5 pb-2 border-b border-zinc-100">
                         <span className="text-xs font-semibold text-zinc-500">
                           Stock Simulation:
                         </span>
@@ -2361,7 +2373,7 @@ export function DropClockStudio({
                             Size Guide
                           </span>
                         </div>
-                        <div style={{ display: "flex", gap: "8px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: viewportMode === "mobile" ? "6px" : "8px" }}>
                           {(["S", "M", "L", "XL"] as const).map((size) => {
                             const isSoldOut = size === "L";
                             const isSelected = selectedSize === size;
@@ -2577,8 +2589,9 @@ export function DropClockStudio({
                                   lineHeight: "1.4",
                                   color: textColor,
                                   display: "flex",
-                                  alignItems: "center",
+                                  alignItems: "flex-start",
                                   gap: "6px",
+                                  minWidth: 0,
                                 }}
                               >
                                 <span
@@ -2589,15 +2602,17 @@ export function DropClockStudio({
                                     backgroundColor: primaryColor,
                                     display: "inline-block",
                                     flexShrink: 0,
+                                    marginTop: "0.45em",
                                   }}
                                 />
-                                <span>
+                                <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>
                                   {leadText}{" "}
                                   <span
                                     style={{
                                       color: primaryColor,
                                       fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                                       fontWeight: "600",
+                                      whiteSpace: "nowrap",
                                     }}
                                   >
                                     {preview.hours}h {preview.minutes}m {preview.seconds}s
@@ -2609,18 +2624,19 @@ export function DropClockStudio({
                               <div
                                 style={{
                                   display: "flex",
-                                  alignItems: "center",
+                                  alignItems: "flex-start",
                                   gap: "6px",
                                   fontSize: "0.75rem",
                                   color: textColor,
                                   opacity: 0.88,
                                   paddingLeft: "12px",
+                                  minWidth: 0,
                                 }}
                               >
-                                <span style={{ color: primaryColor, display: "inline-flex", flexShrink: 0 }}>
+                                <span style={{ color: primaryColor, display: "inline-flex", flexShrink: 0, marginTop: "1px" }}>
                                   <TruckIcon />
                                 </span>
-                                <span>
+                                <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>
                                   {etaText} <strong style={{ color: textColor, fontWeight: "600" }}>{preview.formattedArrival}</strong>
                                 </span>
                               </div>
@@ -2690,6 +2706,8 @@ export function DropClockStudio({
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "space-between",
+                                  flexWrap: "wrap",
+                                  gap: "6px",
                                   fontSize: "0.8125rem",
                                 }}
                               >
@@ -2773,6 +2791,8 @@ export function DropClockStudio({
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "space-between",
+                                  flexWrap: "wrap",
+                                  gap: "4px 8px",
                                   fontSize: "0.75rem",
                                   opacity: 0.88,
                                 }}
