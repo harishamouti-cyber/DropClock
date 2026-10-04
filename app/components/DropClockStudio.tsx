@@ -27,7 +27,40 @@ export interface StudioSettings {
   nextDayText?: string | null;
   etaText?: string | null;
   translations?: string | null;
+  freeShippingThreshold?: number | null;
 }
+
+// Resilient Client-Side Storage Guard (Safari Private Browsing / iOS WebView SecurityError Defense)
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+    } catch {
+      // Handled silently
+    }
+    return null;
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        window.localStorage.setItem(key, value);
+      }
+    } catch {
+      // Handled silently
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        window.localStorage.removeItem(key);
+      }
+    } catch {
+      // Handled silently
+    }
+  },
+};
 
 declare global {
   interface Window {
@@ -217,6 +250,15 @@ const TrashIcon = () => (
   </svg>
 );
 
+const RefreshCwIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+    <path d="M21 3v5h-5" />
+    <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+    <path d="M3 21v-5h5" />
+  </svg>
+);
+
 const XIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="18" y1="6" x2="6" y2="18" />
@@ -302,7 +344,7 @@ export function DropClockStudio({
     const currentShop = params.get("shop") || shop || (typeof window !== "undefined" ? window.location.hostname : "my-store.myshopify.com");
     const cleanShop = currentShop.replace(/^https?:\/\//, "").replace(/\/$/, "");
     const extId = propExtensionId || "6ccfac9a-9e01-8c6b-a21e-2c7474d1188e729b0378";
-    const blockParam = extId ? `&addAppBlockId=${extId}/dropclock_pill&target=mainSection` : "";
+    const blockParam = extId ? `&addAppBlockId=${extId}/dropclock_pill&target=mainProduct` : "";
     const themeEditorUrl = `https://${cleanShop}/admin/themes/current/editor?template=product${blockParam}`;
 
     if (shopify && typeof shopify.open === "function") {
@@ -461,9 +503,29 @@ export function DropClockStudio({
   // Multi-Surface Preview Mode Switcher (Product Page vs Cart Drawer vs Thank You Page)
   const [activeSurface, setActiveSurface] = useState<"product" | "cart" | "thankyou">("product");
 
-  // Simulated Cart State for Cart Drawer Preview
-  const [cartThreshold, setCartThreshold] = useState<number>(75);
+  // Simulated Cart State for Cart Drawer Preview & Configurable Threshold
+  const [cartThreshold, setCartThreshold] = useState<number>(() => {
+    if (typeof settings.freeShippingThreshold === "number" && settings.freeShippingThreshold > 0) {
+      return settings.freeShippingThreshold;
+    }
+    const saved = safeStorage.getItem("dc_free_shipping_threshold");
+    if (saved) {
+      const parsed = parseFloat(saved);
+      if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
+    return 75;
+  });
   const [cartSubtotal, setCartSubtotal] = useState<number>(60.95);
+
+  // BFS Compliance State: Dismissible Storefront Onboarding Banner
+  const [isOnboardingDismissed, setIsOnboardingDismissed] = useState<boolean>(() => {
+    return safeStorage.getItem("dc_onboarding_dismissed") === "true";
+  });
+
+  const handleDismissOnboarding = () => {
+    setIsOnboardingDismissed(true);
+    safeStorage.setItem("dc_onboarding_dismissed", "true");
+  };
 
   // BFS Compliance State: Conditional Empty State for Fresh Installs
   const [previewSampleData, setPreviewSampleData] = useState<boolean>(false);
@@ -499,6 +561,7 @@ export function DropClockStudio({
       cutoffHour !== baselineSettings.cutoffHour ||
       cutoffMinute !== baselineSettings.cutoffMinute ||
       leadDays !== baselineSettings.leadDays ||
+      cartThreshold !== (baselineSettings.freeShippingThreshold || 75) ||
       presetStyle !== (baselineSettings.presetStyle || "capsule") ||
       primaryColor.toLowerCase() !== (baselineSettings.primaryColor || "#008060").toLowerCase() ||
       bgColor.toLowerCase() !== (baselineSettings.bgColor || "#f4f6f8").toLowerCase() ||
@@ -515,6 +578,7 @@ export function DropClockStudio({
     cutoffHour,
     cutoffMinute,
     leadDays,
+    cartThreshold,
     presetStyle,
     primaryColor,
     bgColor,
@@ -536,6 +600,7 @@ export function DropClockStudio({
     setHourInput(baselineSettings.cutoffHour.toString().padStart(2, "0"));
     setMinuteInput(baselineSettings.cutoffMinute.toString().padStart(2, "0"));
     setLeadDays(baselineSettings.leadDays);
+    setCartThreshold(baselineSettings.freeShippingThreshold || 75);
     setIsCustomLeadDays(baselineSettings.leadDays > 2);
     setPresetStyle(baselineSettings.presetStyle || "capsule");
     setPrimaryColor(baselineSettings.primaryColor || "#008060");
@@ -587,6 +652,7 @@ export function DropClockStudio({
           cutoffHour,
           cutoffMinute,
           leadDays,
+          freeShippingThreshold: cartThreshold,
           presetStyle,
           primaryColor,
           bgColor,
@@ -610,6 +676,7 @@ export function DropClockStudio({
     formData.append("cutoffHour", cutoffHour.toString());
     formData.append("cutoffMinute", cutoffMinute.toString());
     formData.append("leadDays", leadDays.toString());
+    formData.append("freeShippingThreshold", cartThreshold.toString());
     formData.append("widgetStyle", presetStyle);
     formData.append("presetStyle", presetStyle);
     formData.append("accentColor", primaryColor);
@@ -826,32 +893,49 @@ export function DropClockStudio({
         </>
       )}
 
-      {/* Fixed Header (No shrink) */}
-      <header className="flex-none px-6 py-3 bg-white border-b border-zinc-200">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <DropClockLogo className="w-5 h-5" />
-            <h1 className="text-base font-bold tracking-tight text-zinc-900 m-0">
-              DropClock Studio
-            </h1>
-            <Badge tone="success">Dawn 15.0 (Active)</Badge>
-            <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
-              {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-            </Badge>
+      {/* Consolidated Single Bar in Embedded Mode; Full Header in Standalone */}
+      {isEmbedded ? (
+        <header className="flex-none px-6 py-2.5 bg-white border-b border-zinc-200">
+          <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="font-semibold text-zinc-700">Active Theme:</span>
+              <Badge tone="success">Dawn 15.0 (Active)</Badge>
+              <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
+                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-zinc-500 font-mono text-[11px]">
+              <span>Store: {shop || "Connected"}</span>
+              <span className="text-zinc-300">•</span>
+              <span>Shopify OS 2.0</span>
+            </div>
           </div>
+        </header>
+      ) : (
+        <header className="flex-none px-6 py-3 bg-white border-b border-zinc-200">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <DropClockLogo className="w-5 h-5" />
+              <h1 className="text-base font-bold tracking-tight text-zinc-900 m-0">
+                DropClock Studio
+              </h1>
+              <Badge tone="success">Dawn 15.0 (Active)</Badge>
+              <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
+                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
+              </Badge>
+            </div>
 
-          <div className="flex items-center gap-2.5">
-            {isDirty && !isEmbedded && (
-              <button
-                type="button"
-                onClick={handleDiscard}
-                className="bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-300 rounded-lg px-3.5 py-1.5 text-xs font-medium transition cursor-pointer shadow-2xs"
-              >
-                Reset Changes
-              </button>
-            )}
+            <div className="flex items-center gap-2.5">
+              {isDirty && (
+                <button
+                  type="button"
+                  onClick={handleDiscard}
+                  className="bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-300 rounded-lg px-3.5 py-1.5 text-xs font-medium transition cursor-pointer shadow-2xs"
+                >
+                  Reset Changes
+                </button>
+              )}
 
-            {isStandalone && (
               <button
                 type="button"
                 onClick={handleAddToTheme}
@@ -860,33 +944,34 @@ export function DropClockStudio({
                 <span>Add to Theme Editor</span>
                 <ExternalLinkIcon />
               </button>
-            )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Main Body: single scroll on narrow iframes, independent column scroll on lg+ */}
       <main className="grid grid-cols-1 lg:grid-cols-12 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
         {/* Left Settings Panel */}
         <aside className="col-span-1 lg:col-span-5 xl:col-span-4 h-auto lg:h-full overflow-y-visible lg:overflow-y-auto p-4 lg:p-5 space-y-4 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white pb-12 lg:pb-36">
-          {/* Guided Onboarding Banner */}
-          <Banner
-            title="Complete Storefront Setup"
-            tone="info"
-            action={{
-              content: "Add to Theme Editor",
-              onAction: handleAddToTheme,
-            }}
-          >
-            <p className="mb-2 text-xs text-zinc-600">
-              Enable the DropClock dynamic countdown block in your active Shopify theme in 3 quick steps:
-            </p>
-            <ol className="list-decimal pl-4 space-y-1 text-xs text-zinc-600">
-              <li>Click <strong>Add to Theme Editor</strong> above to open the theme customizer.</li>
-              <li>Position the DropClock capsule pill directly above or below your product buy buttons.</li>
-              <li>Click <strong>Save</strong> in the Shopify theme editor to publish live delivery ETAs.</li>
-            </ol>
-          </Banner>
+          {/* Guided Onboarding Banner (Dismissible per BFS guidelines) */}
+          {!isOnboardingDismissed && (
+            <Banner
+              title="Complete Storefront Setup"
+              tone="info"
+              onDismiss={handleDismissOnboarding}
+            >
+              <p className="mb-2 text-xs text-zinc-600">
+                Enable the DropClock dynamic countdown block in your active Shopify theme in 3 quick steps:
+              </p>
+              <ol className="list-decimal pl-4 space-y-1 text-xs text-zinc-600">
+                <li>
+                  Click <strong>Add to Theme Editor</strong> in the header bar above to open the theme customizer.
+                </li>
+                <li>Position the DropClock capsule pill directly above or below your product buy buttons.</li>
+                <li>Click <strong>Save</strong> in the Shopify theme editor to publish live delivery ETAs.</li>
+              </ol>
+            </Banner>
+          )}
 
           {/* 0. BFS-Compliant Storefront Fulfillment Analytics Card */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
@@ -952,10 +1037,39 @@ export function DropClockStudio({
             )}
 
             <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-              <span>Fulfillment SLA:</span>
-              <span className="font-semibold text-zinc-900">
-                {previewSampleData ? "99.4% On-Track (Sample)" : "Awaiting Theme Activation"}
+              <span className="flex items-center gap-1.5">
+                <span>Fulfillment SLA:</span>
+                <span className="relative flex h-2 w-2">
+                  <span
+                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                      previewSampleData ? "bg-emerald-400" : "bg-amber-400"
+                    }`}
+                  />
+                  <span
+                    className={`relative inline-flex rounded-full h-2 w-2 ${
+                      previewSampleData ? "bg-emerald-500" : "bg-amber-500"
+                    }`}
+                  />
+                </span>
               </span>
+              {previewSampleData ? (
+                <Badge tone="success">99.4% On-Track (Sample)</Badge>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <Badge tone="attention">Awaiting Theme Activation</Badge>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHasSaved(true);
+                      setTimeout(() => setHasSaved(false), 2000);
+                    }}
+                    className="text-zinc-400 hover:text-zinc-700 transition-colors p-0.5 rounded cursor-pointer"
+                    title="Click to re-verify app block detection on active theme"
+                  >
+                    <RefreshCwIcon />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1467,6 +1581,120 @@ export function DropClockStudio({
                     </button>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* 4b. Cart Upsell Free Express Threshold (Configurable Tier Control) */}
+            <div
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                borderRadius: "12px",
+                padding: "16px",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <ShoppingCartIcon />
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
+                    Cart Upsell Free Express Goal
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontSize: "0.6875rem",
+                    fontWeight: "600",
+                    color: "#047857",
+                    backgroundColor: "#ecfdf5",
+                    border: "1px solid #a7f3d0",
+                    padding: "2px 8px",
+                    borderRadius: "9999px",
+                    fontFamily: "monospace",
+                  }}
+                >
+                  ${cartThreshold} Goal
+                </span>
+              </div>
+              <p style={{ margin: "0 0 12px 0", fontSize: "0.75rem", color: "#64748b", lineHeight: "1.4" }}>
+                Define the cart subtotal threshold required for shoppers to unlock expedited same-day dispatch and free delivery in the drawer upsell bar.
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: "10px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "#94a3b8",
+                      fontSize: "0.875rem",
+                      fontWeight: "600",
+                    }}
+                  >
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={1000}
+                    value={cartThreshold}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val) && val >= 0) {
+                        setCartThreshold(val);
+                        safeStorage.setItem("dc_free_shipping_threshold", val.toString());
+                      }
+                    }}
+                    style={{
+                      width: "100%",
+                      paddingLeft: "24px",
+                      paddingRight: "10px",
+                      paddingTop: "6px",
+                      paddingBottom: "6px",
+                      fontSize: "0.875rem",
+                      fontFamily: "monospace",
+                      fontWeight: "600",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: "6px",
+                      color: "#0f172a",
+                      backgroundColor: "#ffffff",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+                <div style={{ display: "flex", gap: "4px" }}>
+                  {[50, 75, 100].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        setCartThreshold(preset);
+                        safeStorage.setItem("dc_free_shipping_threshold", preset.toString());
+                      }}
+                      style={{
+                        padding: "6px 10px",
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        borderRadius: "6px",
+                        border: cartThreshold === preset ? "1px solid #0f172a" : "1px solid #cbd5e1",
+                        backgroundColor: cartThreshold === preset ? "#0f172a" : "#f8fafc",
+                        color: cartThreshold === preset ? "#ffffff" : "#334155",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      ${preset}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -2910,20 +3138,22 @@ export function DropClockStudio({
                   {activeSurface === "cart" && (
                     <div
                       className={`transition-all duration-300 ease-in-out mx-auto ${
-                        viewportMode === "mobile" ? "max-w-[375px]" : "max-w-md"
-                      } w-full bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-6 flex flex-col`}
+                        viewportMode === "mobile" ? "w-full max-w-full" : "max-w-md w-full"
+                      } bg-white rounded-2xl border border-zinc-200/90 shadow-xl overflow-hidden mb-6 flex flex-col`}
                     >
                       {/* Cart Drawer Header with Close Button */}
                       <div className="p-4 border-b border-zinc-200/80 bg-zinc-50/70 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <SidebarCloseIcon />
                           <h3 className="text-sm font-semibold text-zinc-900 m-0">
-                            Your Cart (1 Item)
+                            Your Cart ({cartSubtotal > 42 ? 2 : 1} {cartSubtotal > 42 ? "Items" : "Item"})
                           </h3>
                         </div>
                         <button
                           type="button"
+                          onClick={() => setActiveSurface("product")}
                           className="w-7 h-7 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200/60 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Close Cart Drawer"
                         >
                           <XIcon />
                         </button>
@@ -3014,17 +3244,18 @@ export function DropClockStudio({
                               {/* Progress bar */}
                               <div className="w-full bg-zinc-200/90 h-1.5 rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full transition-all duration-500 ease-out rounded-full ${
-                                    isQualified ? "bg-emerald-600" : "bg-emerald-500"
-                                  }`}
-                                  style={{ width: `${progress}%` }}
+                                  className="h-full transition-all duration-500 ease-out rounded-full"
+                                  style={{
+                                    width: `${progress}%`,
+                                    backgroundColor: primaryColor || "#008060",
+                                  }}
                                 />
                               </div>
                             </div>
                           );
                         })()}
 
-                        {/* Realistic Cart Item Row with Mini Thumbnail */}
+                        {/* Realistic Cart Item Rows with Exact Matching Arithmetic */}
                         <div className="space-y-3 pt-1">
                           <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
                             <div className="flex items-center gap-3">
@@ -3044,6 +3275,50 @@ export function DropClockStudio({
                             </div>
                             <span className="text-xs font-bold text-zinc-900">$42.00</span>
                           </div>
+
+                          {/* Extra Line Item 2 if subtotal is $60.95 (Near threshold) */}
+                          {cartSubtotal === 60.95 && (
+                            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-lg bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 p-2 shrink-0">
+                                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.75">
+                                    <path d="M9 2v6c0 1.66 1.34 3 3 3h2a3 3 0 0 1 3 3v4a4 4 0 0 1-8 0v-4" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <div className="text-xs font-semibold text-zinc-900">
+                                    Merino Wool Ribbed Socks
+                                  </div>
+                                  <div className="text-[11px] text-zinc-500">
+                                    Color: Charcoal · Qty: 1
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-xs font-bold text-zinc-900">$18.95</span>
+                            </div>
+                          )}
+
+                          {/* Extra Line Item 2 if subtotal is $84.00 (Qualified) */}
+                          {cartSubtotal === 84.00 && (
+                            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-lg bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-700 p-2 shrink-0">
+                                  <svg viewBox="0 0 120 120" className="w-8 h-8" fill="currentColor">
+                                    <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <div className="text-xs font-semibold text-zinc-900">
+                                    Classic Boxy Crewneck
+                                  </div>
+                                  <div className="text-[11px] text-zinc-500">
+                                    Size: L (Oversized) · Qty: 1
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-xs font-bold text-zinc-900">$42.00</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Cart Summary and Checkout Button */}

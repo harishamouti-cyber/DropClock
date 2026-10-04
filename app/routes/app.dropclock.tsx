@@ -30,6 +30,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     nextDayText: "for tomorrow's dispatch",
     etaText: "Estimated Delivery:",
     translations: "{}",
+    freeShippingThreshold: 75,
   };
 
   let isNewInstall = false;
@@ -179,6 +180,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       sameDayText: activeSameDayText,
       nextDayText: activeNextDayText,
       etaText: activeEtaText,
+      freeShippingThreshold: typeof settings.freeShippingThreshold === "number" ? settings.freeShippingThreshold : 75,
     },
     shop: session.shop,
     ianaTimezone,
@@ -197,6 +199,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const cutoffHour = parseInt(formData.get("cutoffHour") as string, 10) || 14;
   const cutoffMinute = parseInt(formData.get("cutoffMinute") as string, 10) || 0;
   const leadDays = parseInt(formData.get("leadDays") as string, 10) || 2;
+  const freeShippingThreshold = parseFloat(formData.get("freeShippingThreshold") as string) || 75;
   const widgetStyle = (formData.get("widgetStyle") as string) || (formData.get("presetStyle") as string) || "capsule";
   const accentColor = (formData.get("accentColor") as string) || (formData.get("primaryColor") as string) || "#008060";
   const cardBg = (formData.get("cardBg") as string) || (formData.get("bgColor") as string) || "#F4F6F8";
@@ -322,6 +325,7 @@ export async function action({ request }: ActionFunctionArgs) {
     sameDayText: updated.sameDayText || sameDayText,
     nextDayText: updated.nextDayText || nextDayText,
     etaText: updated.etaText || etaText,
+    freeShippingThreshold,
   };
 
   if (shopGid) {
@@ -353,7 +357,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
   return json({
     success: true,
-    settings: updated,
+    settings: {
+      ...updated,
+      freeShippingThreshold,
+    },
   });
 }
 
