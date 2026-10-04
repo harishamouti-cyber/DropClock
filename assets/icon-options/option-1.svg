@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+      <defs>
+        <radialGradient id="bg1" cx="50%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#009973"/>
+          <stop offset="100%" stop-color="#004d3a"/>
+        </radialGradient>
+        <linearGradient id="drop1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#a7f3d0"/>
+          <stop offset="100%" stop-color="#34d399"/>
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="110" fill="url(#bg1)"/>
+      <!-- Outer Dial -->
+      <circle cx="256" cy="275" r="145" stroke="#ffffff" stroke-width="26" stroke-linecap="round"/>
+      <!-- Top Crown Drop -->
+      <path d="M256 55 C256 55 205 118 205 152 C205 180 228 202 256 202 C284 202 307 180 307 152 C307 118 256 55 256 55 Z" fill="url(#drop1)"/>
+      <!-- Cutoff Tick Indicator at 2 o'clock -->
+      <line x1="335" y1="196" x2="355" y2="176" stroke="#a7f3d0" stroke-width="20" stroke-linecap="round"/>
+      <!-- Clock Hands -->
+      <line x1="256" y1="275" x2="256" y2="190" stroke="#ffffff" stroke-width="24" stroke-linecap="round"/>
+      <line x1="256" y1="275" x2="320" y2="312" stroke="#ffffff" stroke-width="24" stroke-linecap="round"/>
+      <!-- Pivot Center -->
+      <circle cx="256" cy="275" r="16" fill="#a7f3d0"/>
+    </svg>

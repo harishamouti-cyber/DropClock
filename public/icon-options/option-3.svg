@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+      <defs>
+        <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#008060"/>
+          <stop offset="100%" stop-color="#005e46"/>
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="110" fill="url(#bg3)"/>
+      <!-- Iconic 'D' Monogram Clock -->
+      <!-- Vertical Timer Stem (Droplet shape integrated) -->
+      <rect x="110" y="116" width="46" height="280" rx="23" fill="#ffffff"/>
+      <!-- Top Droplet Notch on the D -->
+      <path d="M133 72 C133 72 110 98 110 114 C110 126 120 136 133 136 C146 136 156 126 156 114 C156 98 133 72 133 72 Z" fill="#6ee7b7"/>
+      <!-- Curved D Semi-Circle Arc acting as Clock Dial -->
+      <path d="M 140 136 C 290 136 376 186 376 256 C 376 326 290 376 140 376" stroke="#ffffff" stroke-width="44" stroke-linecap="round"/>
+      <!-- Clock Hands inside the D -->
+      <line x1="230" y1="256" x2="230" y2="195" stroke="#6ee7b7" stroke-width="26" stroke-linecap="round"/>
+      <line x1="230" y1="256" x2="295" y2="256" stroke="#ffffff" stroke-width="26" stroke-linecap="round"/>
+      <circle cx="230" cy="256" r="16" fill="#6ee7b7"/>
+    </svg>

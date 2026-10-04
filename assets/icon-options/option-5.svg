@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+      <defs>
+        <linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#008060"/>
+          <stop offset="100%" stop-color="#00664d"/>
+        </linearGradient>
+        <linearGradient id="pill5" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#f4f4f5"/>
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="110" fill="url(#bg5)"/>
+      <!-- Central Horizontal Pill / Capsule (Storefront widget shape) -->
+      <rect x="76" y="166" width="360" height="180" rx="90" fill="url(#pill5)" filter="drop-shadow(0 14px 28px rgba(0,0,0,0.22))"/>
+      <!-- Circular Stopwatch Embedded on Left of Pill -->
+      <circle cx="166" cy="256" r="58" stroke="#18181b" stroke-width="14"/>
+      <!-- Stopwatch Top Push-button -->
+      <line x1="166" y1="184" x2="166" y2="174" stroke="#18181b" stroke-width="12" stroke-linecap="round"/>
+      <!-- Mini Hands -->
+      <line x1="166" y1="256" x2="166" y2="222" stroke="#008060" stroke-width="12" stroke-linecap="round"/>
+      <line x1="166" y1="256" x2="194" y2="268" stroke="#18181b" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="166" cy="256" r="9" fill="#008060"/>
+      <!-- Urgency Delivery Wave / Cutoff Dash on Right of Pill -->
+      <rect x="250" y="234" width="130" height="16" rx="8" fill="#008060"/>
+      <rect x="250" y="262" width="85" height="14" rx="7" fill="#a1a1aa"/>
+      <circle cx="395" cy="242" r="8" fill="#10b981"/>
+    </svg>

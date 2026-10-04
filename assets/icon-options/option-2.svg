@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+      <defs>
+        <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#18181b"/>
+          <stop offset="100%" stop-color="#09090b"/>
+        </linearGradient>
+        <linearGradient id="arc2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#10b981"/>
+          <stop offset="100%" stop-color="#008060"/>
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="110" fill="url(#bg2)"/>
+      <!-- Glowing Background Halo -->
+      <circle cx="256" cy="256" r="170" fill="#008060" opacity="0.15"/>
+      <!-- Background track -->
+      <circle cx="256" cy="256" r="145" stroke="#27272a" stroke-width="28"/>
+      <!-- Countdown Progress Arc (approx 75% complete) -->
+      <path d="M 256 111 A 145 145 0 1 1 153 153" stroke="url(#arc2)" stroke-width="28" stroke-linecap="round"/>
+      <!-- Cutoff Pulse Marker -->
+      <circle cx="256" cy="111" r="22" fill="#10b981"/>
+      <circle cx="256" cy="111" r="12" fill="#ffffff"/>
+      <!-- Fast Forward / Velocity Arrow Hands -->
+      <path d="M 230 200 L 295 256 L 230 312" stroke="#ffffff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 180 216 L 235 256 L 180 296" stroke="#10b981" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+    </svg>
