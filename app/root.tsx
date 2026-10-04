@@ -9,6 +9,10 @@ import type { LinksFunction } from "@remix-run/node";
 import tailwindStyles from "./tailwind.css?url";
 
 export const links: LinksFunction = () => [
+  { rel: "icon", type: "image/svg+xml", href: "/app-icon.svg" },
+  { rel: "icon", type: "image/png", sizes: "512x512", href: "/app-icon-512.png" },
+  { rel: "icon", type: "image/png", href: "/app-icon.png" },
+  { rel: "apple-touch-icon", href: "/app-icon-512.png" },
   { rel: "stylesheet", href: tailwindStyles },
   { rel: "preconnect", href: "https://cdn.shopify.com/" },
   {
