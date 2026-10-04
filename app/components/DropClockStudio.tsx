@@ -49,6 +49,59 @@ interface DropClockStudioProps {
   extensionId?: string;
 }
 
+// Official DropClock Geometric Brand Mark
+export const DropClockLogo = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    style={{ pointerEvents: "none", flexShrink: 0 }}
+  >
+    {/* Falling drop / precision notch at top in emerald-600 */}
+    <path
+      d="M12 1.5C12 1.5 10.3 3.4 10.3 4.5a1.7 1.7 0 0 0 3.4 0C13.7 3.4 12 1.5 12 1.5Z"
+      fill="#008060"
+      stroke="#008060"
+      strokeWidth="0.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    {/* Geometric timer/clock circular dial in dark slate (zinc-900) */}
+    <circle
+      cx="12"
+      cy="14"
+      r="7.5"
+      stroke="#18181b"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    {/* 2-minute offset indicator tick in emerald */}
+    <path
+      d="M13.65 10.32L13.95 9.58"
+      stroke="#008060"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    {/* Clock hands */}
+    <path
+      d="M12 14V10.8"
+      stroke="#18181b"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M12 14L14.6 15.9"
+      stroke="#18181b"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    {/* Center pivot dot in emerald */}
+    <circle cx="12" cy="14" r="1" fill="#008060" />
+  </svg>
+);
+
 // Crisp Monochrome Lucide-style SVG Icons
 const ActivityIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
@@ -825,21 +878,17 @@ export function DropClockStudio({
       )}
 
       {/* Fixed Header (No shrink) */}
-      <header className="flex-none px-6 py-3.5 bg-white border-b border-zinc-200">
+      <header className="flex-none px-6 py-3 bg-white border-b border-zinc-200">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-base font-bold tracking-tight text-zinc-900 m-0">
-                DropClock Studio
-              </h1>
-              <Badge tone="success">Dawn 15.0 (Active)</Badge>
-              <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
-                {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-              </Badge>
-            </div>
-            <p className="text-xs text-zinc-500 m-0">
-              Configure storefront fulfillment rules and preview live countdown delivery ETAs
-            </p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <DropClockLogo className="w-5 h-5" />
+            <h1 className="text-base font-bold tracking-tight text-zinc-900 m-0">
+              DropClock Studio
+            </h1>
+            <Badge tone="success">Dawn 15.0 (Active)</Badge>
+            <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
+              {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
+            </Badge>
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -870,7 +919,7 @@ export function DropClockStudio({
       {/* Main Body: single scroll on narrow iframes, independent column scroll on lg+ */}
       <main className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden overscroll-contain">
         {/* Left Settings Panel */}
-        <aside className="flex-none w-full lg:w-[42%] xl:w-[36%] lg:h-full lg:min-h-0 lg:overflow-y-auto overscroll-contain p-5 pb-8 lg:pb-40 space-y-4 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white">
+        <aside className="flex-none w-full lg:w-[42%] xl:w-[36%] lg:h-full lg:min-h-0 lg:overflow-y-auto overscroll-contain p-5 pb-44 space-y-4 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white">
           {/* 0. BFS-Compliant Storefront Fulfillment Analytics Card */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
@@ -2157,7 +2206,7 @@ export function DropClockStudio({
         </aside>
 
         {/* Right Preview Canvas */}
-        <section className="flex-none lg:flex-1 min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto overscroll-contain flex flex-col items-center p-4 sm:p-6 bg-[#f7f8fa] pb-40">
+        <section className="flex-none lg:flex-1 min-w-0 w-full lg:h-full lg:min-h-0 lg:overflow-y-auto overscroll-contain flex flex-col items-center p-4 sm:p-6 bg-[#f7f8fa] pb-44">
             <div className="w-full max-w-3xl flex flex-col items-center py-2 sm:py-4">
               {/* Browser Window Chrome Wrapper */}
               <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">
@@ -2261,7 +2310,7 @@ export function DropClockStudio({
 
                 {/* Canvas Surface with Refined Light Neutral Dot Grid */}
                 <div
-                  className="p-4 sm:p-5 bg-[#f8fafc] flex justify-center items-center"
+                  className="p-4 sm:p-6 bg-[#f8fafc] flex justify-center items-center w-full overflow-hidden"
                   style={{
                     backgroundImage: "radial-gradient(#e5e7eb 1.5px, transparent 1.5px)",
                     backgroundSize: "16px 16px",
@@ -2981,11 +3030,11 @@ export function DropClockStudio({
                                       )}
                                     </div>
                                     <div className="text-[11px] text-zinc-500 mt-0.5">
-                                      Order within{" "}
+                                      🔥 Order within{" "}
                                       <span className="font-mono font-semibold text-emerald-700">
                                         {preview.hours}h {preview.minutes}m {preview.seconds}s
                                       </span>{" "}
-                                      {preview.isPastCutoff ? "for tomorrow's dispatch" : "for today's dispatch"}
+                                      {preview.isPastCutoff ? "for tomorrow's dispatch!" : "for today's dispatch!"}
                                     </div>
                                   </div>
                                 </div>

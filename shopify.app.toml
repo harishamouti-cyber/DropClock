@@ -2,8 +2,12 @@
 
 client_id = "0a616a9e934ece36ebebdfd0bb906a9b"
 name = "DropClock"
+handle = "dropclock"
 application_url = "https://drop-clock-zeta.vercel.app"
 embedded = true
+
+# Official App Icon Asset: assets/app-icon.png (1200x1200px / 512x512px)
+# Accessible via https://drop-clock-zeta.vercel.app/app-icon.png
 
 [build]
 automatically_update_urls_on_dev = false
