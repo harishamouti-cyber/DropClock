@@ -377,3 +377,24 @@ export default function AppIndex() {
     />
   );
 }
+
+export function ErrorBoundary() {
+  return (
+    <div className="p-8 max-w-xl mx-auto my-12">
+      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-4">
+        <h2 className="text-base font-semibold text-zinc-900">DropClock Studio</h2>
+        <p className="text-sm text-zinc-600">
+          A temporary error occurred while rendering the studio interface. Please click below to refresh and resume editing.
+        </p>
+        <button
+          onClick={() => {
+            if (typeof window !== "undefined") window.location.reload();
+          }}
+          className="px-4 py-2 bg-[#008060] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#006e52] transition-colors"
+        >
+          Reload Studio
+        </button>
+      </div>
+    </div>
+  );
+}

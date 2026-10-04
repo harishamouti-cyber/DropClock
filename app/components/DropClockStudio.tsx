@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSubmit, useNavigation } from "@remix-run/react";
-import { SaveBar, TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { Page, Badge, Banner } from "@shopify/polaris";
 import { DropClockLogo } from "./DropClockLogo";
 
@@ -63,6 +62,12 @@ const safeStorage = {
 };
 
 declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "ui-title-bar": any;
+      "ui-save-bar": any;
+    }
+  }
   interface Window {
     shopify?: {
       open?: (url: string, target?: string) => void;
@@ -330,12 +335,7 @@ export function DropClockStudio({
   const submit = useSubmit();
   const navigation = useNavigation();
 
-  let shopify: any = null;
-  try {
-    shopify = useAppBridge();
-  } catch {
-    // Graceful fallback when outside App Bridge context
-  }
+  const shopify = typeof window !== "undefined" ? window.shopify : undefined;
 
   const shopDomain = shop || "my-store.myshopify.com";
 
@@ -593,6 +593,22 @@ export function DropClockStudio({
     etaText,
     baselineSettings,
   ]);
+
+  // Synchronize Form Dirty State to Shopify App Bridge Native SaveBar
+  useEffect(() => {
+    if (!isEmbedded) return;
+    if (isDirty) {
+      safeShowSaveBar();
+    } else {
+      safeHideSaveBar();
+    }
+  }, [isDirty, isEmbedded]);
+
+  useEffect(() => {
+    return () => {
+      safeHideSaveBar();
+    };
+  }, []);
 
   const handleDiscard = () => {
     setCutoffHour(baselineSettings.cutoffHour);
@@ -862,7 +878,7 @@ export function DropClockStudio({
       {/* App Bridge Contextual TitleBar & Native SaveBar */}
       {!isStandalone && isEmbedded && (
         <>
-          <TitleBar title="DropClock Studio">
+          <ui-title-bar title="DropClock Studio">
             <button
               variant="primary"
               onClick={handleAddToTheme}
@@ -876,9 +892,9 @@ export function DropClockStudio({
             >
               Documentation
             </button>
-          </TitleBar>
+          </ui-title-bar>
 
-          <SaveBar id="dropclock-save-bar" open={isDirty}>
+          <ui-save-bar id="dropclock-save-bar">
             <button
               variant="primary"
               onClick={handleSave}
@@ -889,7 +905,7 @@ export function DropClockStudio({
             <button onClick={handleDiscard} disabled={navigation.state === "submitting"}>
               Discard
             </button>
-          </SaveBar>
+          </ui-save-bar>
         </>
       )}
 
