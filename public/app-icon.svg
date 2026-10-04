@@ -1,37 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" fill="none">
-  <defs>
-    <linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#008060"/>
-      <stop offset="100%" stop-color="#00664d"/>
-    </linearGradient>
-    <linearGradient id="pill5" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#f8fafc"/>
-    </linearGradient>
-    <filter id="shadow" x="0" y="200" width="1200" height="800" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="32" stdDeviation="36" flood-color="#00382b" flood-opacity="0.35"/>
-    </filter>
-  </defs>
-  <!-- Full square background so Shopify's native rounding applies cleanly -->
-  <rect width="1200" height="1200" fill="url(#bg5)"/>
-
-  <!-- Elevated Capsule Widget Container -->
-  <g filter="url(#shadow)">
-    <rect x="180" y="390" width="840" height="420" rx="210" fill="url(#pill5)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="100" fill="#008060" />
+  <g transform="translate(76.8, 76.8) scale(14.9333)">
+    <circle cx="12" cy="12" r="9" stroke="#ffffff" stroke-width="1.75" stroke-linecap="round" />
+    <path d="M12 7V12L15 14" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="12" cy="3" r="1.5" fill="#ffffff" />
   </g>
-
-  <!-- Circular Stopwatch Dial Embedded on Left -->
-  <circle cx="390" cy="600" r="135" stroke="#18181b" stroke-width="32"/>
-  <!-- Stopwatch Crown Pusher -->
-  <line x1="390" y1="432" x2="390" y2="408" stroke="#18181b" stroke-width="28" stroke-linecap="round"/>
-
-  <!-- Hands -->
-  <line x1="390" y1="600" x2="390" y2="520" stroke="#008060" stroke-width="28" stroke-linecap="round"/>
-  <line x1="390" y1="600" x2="456" y2="628" stroke="#18181b" stroke-width="28" stroke-linecap="round"/>
-  <circle cx="390" cy="600" r="21" fill="#008060"/>
-
-  <!-- Dynamic Countdown Lines on Right -->
-  <rect x="585" y="550" width="300" height="38" rx="19" fill="#008060"/>
-  <rect x="585" y="614" width="200" height="32" rx="16" fill="#94a3b8"/>
-  <circle cx="925" cy="569" r="19" fill="#10b981"/>
 </svg>

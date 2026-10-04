@@ -13,6 +13,15 @@ export const apiVersion = LATEST_API_VERSION;
 // Standardized Recurring Billing Plan Constant
 export const DROPCLOCK_PRO_MONTHLY = "DropClock Pro";
 
+export const BILLING_CONFIG = {
+  [DROPCLOCK_PRO_MONTHLY]: {
+    amount: 8.99,
+    currencyCode: "USD",
+    interval: BillingInterval.Every30Days,
+    trialDays: 7,
+  },
+};
+
 export async function requireBillingSafely(billing: any) {
   if (process.env.DISABLE_BILLING === "true") {
     return null;

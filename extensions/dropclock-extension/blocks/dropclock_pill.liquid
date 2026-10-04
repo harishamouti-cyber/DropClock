@@ -36,8 +36,9 @@
 {% assign is_available = product.selected_or_first_available_variant.available %}
 
 <div 
-  class="dropclock-widget-root dc-w"
+  class="dropclock-root-wrapper dropclock-widget-root dc-w"
   id="dropclock-{{ block.id }}"
+  data-dropclock-container
   data-cutoff-hour="{{ active_cutoff_hour }}"
   data-cutoff-min="{{ active_cutoff_minute }}"
   data-cutoff-minute="{{ active_cutoff_minute }}"
@@ -63,9 +64,10 @@
     --dc-text: {{ block.settings.text_color | default: config.textColor | default: '#0f172a' }};
     --dc-radius: {{ block.settings.border_radius | default: 12 }}px;
     min-height: 48px;
+    display: flex;
+    align-items: center;
     width: 100%;
-    margin-top: {{ block.settings.margin_top | default: 12 }}px;
-    margin-bottom: {{ block.settings.margin_bottom | default: 12 }}px;
+    margin: {{ block.settings.margin_top | default: 12 }}px 0 {{ block.settings.margin_bottom | default: 12 }}px 0;
   "
 >
   <div 

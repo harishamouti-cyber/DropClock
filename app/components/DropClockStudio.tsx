@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useSubmit, useNavigation } from "@remix-run/react";
 import { SaveBar, TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { Page, Badge, Banner } from "@shopify/polaris";
+import { DropClockLogo } from "./DropClockLogo";
 
 export interface StudioSettings {
   id?: string | null;
@@ -49,38 +50,6 @@ interface DropClockStudioProps {
   extensionId?: string;
 }
 
-// Official DropClock Cutoff Capsule Brand Mark (Option 5)
-export const DropClockLogo = ({ className = "w-5 h-5" }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    style={{ pointerEvents: "none", flexShrink: 0 }}
-  >
-    {/* Capsule Pill Base */}
-    <rect
-      x="1.5"
-      y="4"
-      width="21"
-      height="16"
-      rx="8"
-      fill="#ffffff"
-      stroke="#008060"
-      strokeWidth="1.25"
-    />
-    {/* Embedded Stopwatch Dial */}
-    <circle cx="7.5" cy="12" r="4.25" stroke="#18181b" strokeWidth="1.2" />
-    <line x1="7.5" y1="6.8" x2="7.5" y2="5.8" stroke="#18181b" strokeWidth="1" strokeLinecap="round" />
-    {/* Hands */}
-    <line x1="7.5" y1="12" x2="7.5" y2="9.8" stroke="#008060" strokeWidth="1.1" strokeLinecap="round" />
-    <line x1="7.5" y1="12" x2="9.4" y2="12.9" stroke="#18181b" strokeWidth="1.1" strokeLinecap="round" />
-    <circle cx="7.5" cy="12" r="0.75" fill="#008060" />
-    {/* Dynamic Countdown Text Indicators */}
-    <rect x="13.5" y="10.25" width="6.5" height="1.5" rx="0.75" fill="#008060" />
-    <rect x="13.5" y="12.75" width="4.5" height="1.25" rx="0.625" fill="#94a3b8" />
-  </svg>
-);
 
 // Crisp Monochrome Lucide-style SVG Icons
 const ActivityIcon = () => (
@@ -337,9 +306,9 @@ export function DropClockStudio({
     const themeEditorUrl = `https://${cleanShop}/admin/themes/current/editor?template=product${blockParam}`;
 
     if (shopify && typeof shopify.open === "function") {
-      shopify.open(themeEditorUrl, "_top");
+      shopify.open(themeEditorUrl, "_blank");
     } else if (typeof window !== "undefined" && window.shopify && typeof window.shopify.open === "function") {
-      window.shopify.open(themeEditorUrl, "_top");
+      window.shopify.open(themeEditorUrl, "_blank");
     } else if (typeof window !== "undefined") {
       window.open(themeEditorUrl, "_blank", "noopener,noreferrer");
     }
@@ -897,9 +866,28 @@ export function DropClockStudio({
       </header>
 
       {/* Main Body: single scroll on narrow iframes, independent column scroll on lg+ */}
-      <main className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden overscroll-contain">
+      <main className="grid grid-cols-1 lg:grid-cols-12 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
         {/* Left Settings Panel */}
-        <aside className="flex-none w-full lg:w-[42%] xl:w-[36%] lg:h-full lg:min-h-0 lg:overflow-y-auto overscroll-contain p-5 pb-44 space-y-4 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white">
+        <aside className="col-span-1 lg:col-span-5 xl:col-span-4 h-auto lg:h-full overflow-y-visible lg:overflow-y-auto p-4 lg:p-5 space-y-4 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white pb-12 lg:pb-36">
+          {/* Guided Onboarding Banner */}
+          <Banner
+            title="Complete Storefront Setup"
+            tone="info"
+            action={{
+              content: "Add to Theme Editor",
+              onAction: handleAddToTheme,
+            }}
+          >
+            <p className="mb-2 text-xs text-zinc-600">
+              Enable the DropClock dynamic countdown block in your active Shopify theme in 3 quick steps:
+            </p>
+            <ol className="list-decimal pl-4 space-y-1 text-xs text-zinc-600">
+              <li>Click <strong>Add to Theme Editor</strong> above to open the theme customizer.</li>
+              <li>Position the DropClock capsule pill directly above or below your product buy buttons.</li>
+              <li>Click <strong>Save</strong> in the Shopify theme editor to publish live delivery ETAs.</li>
+            </ol>
+          </Banner>
+
           {/* 0. BFS-Compliant Storefront Fulfillment Analytics Card */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
@@ -2186,7 +2174,7 @@ export function DropClockStudio({
         </aside>
 
         {/* Right Preview Canvas */}
-        <section className="flex-none lg:flex-1 min-w-0 w-full lg:h-full lg:min-h-0 lg:overflow-y-auto overscroll-contain flex flex-col items-center p-4 sm:p-6 bg-[#f7f8fa] pb-44">
+        <section className="col-span-1 lg:col-span-7 xl:col-span-8 min-h-[500px] lg:h-full overflow-y-visible lg:overflow-y-auto flex flex-col items-center p-4 lg:p-6 bg-[#f7f8fa] pb-24 lg:pb-36">
             <div className="w-full max-w-3xl flex flex-col items-center py-2 sm:py-4">
               {/* Browser Window Chrome Wrapper */}
               <div className="w-full bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xl">

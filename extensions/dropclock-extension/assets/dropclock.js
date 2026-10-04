@@ -207,6 +207,56 @@
     };
   }
 
+  function handleVariantShift(variantOrId) {
+    var roots = document.querySelectorAll(".dropclock-widget-root, .dropclock-wrapper");
+    if (!roots.length) return;
+
+    var variantId = typeof variantOrId === "object" ? variantOrId.id : variantOrId;
+    var isAvailable = typeof variantOrId === "object" ? variantOrId.available !== false : true;
+
+    if (typeof variantOrId !== "object" && window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAnalytics.meta.product && Array.isArray(window.ShopifyAnalytics.meta.product.variants)) {
+      var found = window.ShopifyAnalytics.meta.product.variants.find(function (v) {
+        return String(v.id) === String(variantId);
+      });
+      if (found && typeof found.available === "boolean") {
+        isAvailable = found.available;
+      }
+    }
+
+    roots.forEach(function (root) {
+      var pillCard = root.querySelector(".dc-pill-card");
+      var backorderNotice = root.querySelector(".dc-backorder-notice");
+
+      if (!isAvailable) {
+        root.setAttribute("data-available", "false");
+        if (pillCard) pillCard.style.display = "none";
+        if (backorderNotice) {
+          backorderNotice.style.display = "flex";
+          var noticeText = backorderNotice.querySelector("span");
+          if (noticeText) {
+            noticeText.textContent = "⚠️ Backorder Item: Ships as soon as restocked (Estimated dispatch in 5-7 days)";
+          }
+        }
+      } else {
+        root.setAttribute("data-available", "true");
+        if (pillCard) pillCard.style.display = "flex";
+        if (backorderNotice) backorderNotice.style.display = "none";
+      }
+    });
+  }
+
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.matches && e.target.matches('form[action*="/cart/add"] [name="id"], select[name="id"]')) {
+      handleVariantShift(e.target.value);
+    }
+  });
+
+  document.addEventListener("theme:variant:change", function (e) {
+    if (e.detail && e.detail.variant) {
+      handleVariantShift(e.detail.variant);
+    }
+  });
+
   document.addEventListener("DOMContentLoaded", function () {
     initProductPills();
     initCartPills();
@@ -222,6 +272,7 @@
       initProductPills();
       initCartPills();
     },
-    refreshCart: syncCartState
+    refreshCart: syncCartState,
+    handleVariantShift: handleVariantShift
   };
 })();

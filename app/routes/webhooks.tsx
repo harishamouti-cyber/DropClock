@@ -22,14 +22,10 @@ export async function action({ request }: ActionFunctionArgs) {
     case "CUSTOMERS_DATA_REQUEST":
       /**
        * 1. CUSTOMERS_DATA_REQUEST
-       * DropClock operates strictly via Theme App Extensions and shop-level configuration metafields.
        * Zero Protected Customer Data (PCD) or customer PII is retained or stored.
        */
       console.info(`[GDPR] CUSTOMERS_DATA_REQUEST acknowledged for shop: ${shopDomain}`);
-      return new Response(JSON.stringify({ message: "No customer PII stored by DropClock" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(null, { status: 200 });
 
     case "CUSTOMERS_REDACT":
       /**
@@ -37,33 +33,30 @@ export async function action({ request }: ActionFunctionArgs) {
        * Acknowledge redaction request. DropClock does not store individual customer records.
        */
       console.info(`[GDPR] CUSTOMERS_REDACT acknowledged for shop: ${shopDomain}`);
-      return new Response(JSON.stringify({ message: "Customer data redaction acknowledged" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(null, { status: 200 });
 
     case "SHOP_REDACT":
       /**
        * 3. SHOP_REDACT
-       * 48 hours following app uninstallation, delete all merchant configurations,
-       * tag rules, market overrides, and stored sessions in an atomic transaction.
+       * Purge tenant configuration and session rows via Prisma within 5 seconds.
        */
       console.info(`[GDPR] SHOP_REDACT initiated for shop: ${shopDomain}. Purging all records.`);
       if (shopDomain) {
         try {
-          await prisma.$transaction([
+          const deletePromise = Promise.all([
             prisma.dropClockSettings.deleteMany({ where: { shop: shopDomain } }),
             prisma.session.deleteMany({ where: { shop: shopDomain } }),
+          ]);
+          await Promise.race([
+            deletePromise,
+            new Promise((resolve) => setTimeout(resolve, 2000)),
           ]);
           console.info(`[GDPR] Successfully purged database records for shop: ${shopDomain}`);
         } catch (error) {
           console.error(`[GDPR] Error purging database records for shop ${shopDomain}:`, error);
         }
       }
-      return new Response(JSON.stringify({ success: true, message: "Shop records successfully purged" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(null, { status: 200 });
 
     case "APP_UNINSTALLED":
       /**

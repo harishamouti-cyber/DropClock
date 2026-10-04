@@ -28,11 +28,14 @@ export default function App() {
     <AppProvider isEmbeddedApp apiKey={apiKey}>
       <NavMenu>
         <Link to="/app" rel="home">
-          Overview
+          Studio
         </Link>
-        <Link to="/app/dropclock">
-          Cutoff & ETA Settings
-        </Link>
+        <a href="https://dropclock.app/docs" target="_blank" rel="noreferrer">
+          Documentation
+        </a>
+        <a href="https://dropclock.app/support" target="_blank" rel="noreferrer">
+          Support
+        </a>
       </NavMenu>
       <Outlet />
     </AppProvider>
