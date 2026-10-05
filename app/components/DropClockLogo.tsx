@@ -1,6 +1,6 @@
 import React from "react";
 
-export function DropClockLogo({ className = "w-5 h-5 text-emerald-600 inline-block" }: { className?: string }) {
+export function DropClockLogo({ className = "w-5 h-5 text-zinc-900 inline-block" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"

@@ -324,6 +324,37 @@ const BRAND_PRESETS = [
   },
 ];
 
+/**
+ * Dynamically computes delivery arrival date based on dispatch date, transit lead days,
+ * active operating days, and warehouse blackout dates.
+ */
+export function calculateArrival(
+  dispatchDate: Date,
+  leadDays: number,
+  workingDays: number[],
+  blackoutDates: string[] = []
+): Date {
+  const isBlackout = (d: Date) => {
+    const y = d.getFullYear();
+    const m = (d.getMonth() + 1).toString().padStart(2, "0");
+    const day = d.getDate().toString().padStart(2, "0");
+    const isoStr = `${y}-${m}-${day}`;
+    return blackoutDates.includes(isoStr);
+  };
+
+  const delivery = new Date(dispatchDate);
+  let transitLeft = leadDays;
+  while (transitLeft > 0 || !workingDays.includes(delivery.getDay()) || isBlackout(delivery)) {
+    delivery.setDate(delivery.getDate() + 1);
+    if (workingDays.includes(delivery.getDay()) && !isBlackout(delivery)) {
+      if (transitLeft > 0) {
+        transitLeft--;
+      }
+    }
+  }
+  return delivery;
+}
+
 export function DropClockStudio({
   settings,
   shop,
@@ -838,20 +869,14 @@ export function DropClockStudio({
     };
 
     // Calculate Delivery Arrival Date
-    let delivery = new Date(warehouseNow);
+    let dispatchDate = new Date(warehouseNow);
     if (isPastCutoff) {
-      delivery.setDate(delivery.getDate() + 1);
+      dispatchDate.setDate(dispatchDate.getDate() + 1);
     }
-    let transitLeft = effectiveLeadDays;
-    while (transitLeft > 0 || !workingDays.includes(delivery.getDay()) || isBlackout(delivery)) {
-      delivery.setDate(delivery.getDate() + 1);
-      if (workingDays.includes(delivery.getDay()) && !isBlackout(delivery)) {
-        if (transitLeft > 0) {
-          transitLeft--;
-        }
-      }
+    while (!workingDays.includes(dispatchDate.getDay()) || isBlackout(dispatchDate)) {
+      dispatchDate.setDate(dispatchDate.getDate() + 1);
     }
-
+    const delivery = calculateArrival(dispatchDate, effectiveLeadDays, workingDays, blackoutDates);
     const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "short", day: "numeric" };
     const formattedArrival = delivery.toLocaleDateString("en-US", options);
 
@@ -876,6 +901,17 @@ export function DropClockStudio({
     activeSimulatedTag,
     resolvedOffsetMinutes,
   ]);
+
+  // Dynamically compute Order Status mock arrival date from base dispatch date (Today)
+  const orderStatusArrival = useMemo(() => {
+    const dispatchDate = new Date(); // e.g. Monday Oct 5
+    // Ensure dispatchDate falls on an active working day
+    while (!workingDays.includes(dispatchDate.getDay())) {
+      dispatchDate.setDate(dispatchDate.getDate() + 1);
+    }
+    const arrivalDate = calculateArrival(dispatchDate, leadDays, workingDays, blackoutDates);
+    return arrivalDate.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+  }, [leadDays, workingDays, blackoutDates]);
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-[#f1f2f4] text-zinc-900 font-sans">
@@ -913,42 +949,35 @@ export function DropClockStudio({
         </>
       )}
 
-      {/* Consolidated Single Compact Header Line */}
-      <header className="flex-none px-6 py-3 bg-white border-b border-zinc-200">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <DropClockLogo className="w-5 h-5 text-emerald-600 inline-block" />
-            <h1 className="text-base font-bold tracking-tight text-zinc-900 m-0">
-              DropClock Studio
-            </h1>
-            <Badge tone="success">Dawn 15.0 (Active)</Badge>
-            <Badge tone={hasSaved ? "success" : isDirty ? "attention" : "success"}>
-              {hasSaved ? "Settings Saved" : isDirty ? "Unsaved Changes" : "Settings Synced"}
-            </Badge>
+      {/* Single Consolidated Header Bar */}
+      <header className="flex-none px-6 py-3.5 bg-white border-b border-zinc-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <DropClockLogo className="w-5 h-5 text-zinc-900" />
+            <h1 className="text-base font-semibold text-zinc-900">DropClock Studio</h1>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Dawn 15.0 (Active)
+            </span>
+            {isDirty ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                Unsaved Changes
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
+                Settings Synced
+              </span>
+            )}
           </div>
-
-          {!isEmbedded && (
-            <div className="flex items-center gap-2.5">
-              {isDirty && (
-                <button
-                  type="button"
-                  onClick={handleDiscard}
-                  className="bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-300 rounded-lg px-3.5 py-1.5 text-xs font-medium transition cursor-pointer shadow-2xs"
-                >
-                  Reset Changes
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={handleAddToTheme}
-                className="bg-[#008060] hover:bg-[#006e52] text-white border border-[#008060] rounded-lg px-4 py-1.5 text-xs font-semibold inline-flex items-center gap-2 transition shadow-xs cursor-pointer"
-              >
-                <span>Add to Theme Editor</span>
-                <ExternalLinkIcon />
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            <a
+              href="https://dropclock.app/docs"
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-zinc-600 hover:text-zinc-900 transition-colors"
+            >
+              Documentation
+            </a>
+          </div>
         </div>
       </header>
 
@@ -3479,20 +3508,20 @@ export function DropClockStudio({
                           <div className="absolute top-[17px] left-[50%] right-[18%] h-[2px] bg-zinc-200 z-0" />
 
                           <div className="grid grid-cols-3 gap-2 text-center relative z-10">
-                            {/* Step 1: Order Placed */}
+                            {/* Step 1: Order Placed (Completed State) */}
                             <div className="flex flex-col items-center">
-                              <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shadow-2xs">
+                              <div className="w-7 h-7 rounded-full bg-emerald-600 text-white border border-emerald-600 flex items-center justify-center shadow-xs">
                                 <CheckIcon />
                               </div>
                               <span className="text-xs font-medium text-zinc-900 mt-2">Order Placed</span>
                               <span className="text-[10px] text-zinc-400 mt-0.5">Today, 10:24 AM</span>
                             </div>
 
-                            {/* Step 2: Dispatched */}
+                            {/* Step 2: Dispatched (In-Progress State) */}
                             <div className="flex flex-col items-center">
                               <div className="relative flex items-center justify-center">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-40"></span>
-                                <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-400 text-emerald-600 flex items-center justify-center shadow-2xs relative">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40"></span>
+                                <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-500 text-emerald-700 flex items-center justify-center shadow-xs relative">
                                   <Clock3Icon />
                                 </div>
                               </div>
@@ -3502,14 +3531,14 @@ export function DropClockStudio({
                               </span>
                             </div>
 
-                            {/* Step 3: Arrival */}
+                            {/* Step 3: Arrival (Pending State) */}
                             <div className="flex flex-col items-center">
-                              <div className="w-7 h-7 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 flex items-center justify-center shadow-2xs">
+                              <div className="w-7 h-7 rounded-full bg-zinc-100 text-zinc-400 border border-zinc-200 flex items-center justify-center shadow-2xs">
                                 <TruckIcon />
                               </div>
                               <span className="text-xs font-medium text-zinc-600 mt-2">Estimated Arrival</span>
                               <span className="text-[10px] text-zinc-500 font-medium mt-0.5">
-                                {preview.formattedArrival}
+                                {orderStatusArrival}
                               </span>
                             </div>
                           </div>
@@ -3535,7 +3564,7 @@ export function DropClockStudio({
                         </div>
                         <div className="flex justify-between">
                           <span className="text-zinc-500">Fulfillment Method:</span>
-                          <span className="font-semibold text-emerald-700">Express Delivery (ETA: {preview.formattedArrival})</span>
+                          <span className="font-semibold text-emerald-700">Express Delivery (ETA: {orderStatusArrival})</span>
                         </div>
                       </div>
                     </div>
