@@ -448,6 +448,17 @@ export function calculateArrival(
 }
 
 /**
+ * Canonical currency formatter per BFS guidelines.
+ */
+export function formatCurrency(amount: number, currency = "USD") {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+    minimumFractionDigits: ["JPY", "KRW"].includes(currency.toUpperCase()) ? 0 : 2,
+  }).format(amount);
+}
+
+/**
  * Formats monetary amounts using the store's currency and customer locale.
  * Supports numbers in full units or cents, with graceful fallback.
  */
@@ -462,12 +473,7 @@ export function formatStoreCurrency(
   const isCents = Number.isInteger(num) && num >= 1000;
   const amount = isCents ? num / 100 : num;
   try {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: currencyCode.toUpperCase(),
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
+    return formatCurrency(amount, currencyCode);
   } catch {
     return `${fallbackSymbol}${amount.toFixed(2)}`;
   }
@@ -501,6 +507,18 @@ export function DropClockStudio({
       window.shopify.open(themeEditorUrl, "_blank");
     } else if (typeof window !== "undefined") {
       window.open(themeEditorUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleManageBilling = () => {
+    const cleanShop = shopDomain.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const billingUrl = `https://${cleanShop}/admin/charges/dropclock/pricing_plans`;
+    if (typeof window !== "undefined") {
+      if (window.shopify && typeof window.shopify.open === "function") {
+        window.shopify.open(billingUrl, "_blank");
+      } else {
+        window.open(billingUrl, "_blank", "noopener,noreferrer");
+      }
     }
   };
 
@@ -673,28 +691,17 @@ export function DropClockStudio({
   const cartGoalAmount = cartThreshold;
   const cartGoalEnabled = enableCartProgressBar;
 
-  // BFS Compliance State: Dismissible Storefront Onboarding Banner
-  const [isOnboardingDismissed, setIsOnboardingDismissed] = useState<boolean>(() => {
-    return safeStorage.getItem("dc_onboarding_dismissed") === "true";
+  // BFS Compliance State: Consolidated Setup & Reviewer Guide Card
+  const [isSetupDismissed, setIsSetupDismissed] = useState<boolean>(() => {
+    return (
+      safeStorage.getItem("dropclock_setup_dismissed") === "true" ||
+      safeStorage.getItem("dc_onboarding_dismissed") === "true"
+    );
   });
 
-  const handleDismissOnboarding = () => {
-    setIsOnboardingDismissed(true);
-    safeStorage.setItem("dc_onboarding_dismissed", "true");
-  };
-
-  // Multi-Currency & Locale Simulation
-  const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
-  const [selectedLocale, setSelectedLocale] = useState<string>("en-US");
-
-  // BFS Reviewer Guide Dismissible State (Test / Dev / Review Store Mode)
-  const [isReviewerGuideDismissed, setIsReviewerGuideDismissed] = useState<boolean>(() => {
-    return safeStorage.getItem("dc_reviewer_guide_dismissed") === "true";
-  });
-
-  const handleDismissReviewerGuide = () => {
-    setIsReviewerGuideDismissed(true);
-    safeStorage.setItem("dc_reviewer_guide_dismissed", "true");
+  const handleDismissSetup = () => {
+    setIsSetupDismissed(true);
+    safeStorage.setItem("dropclock_setup_dismissed", "true");
   };
 
   const isReviewerMode =
@@ -703,6 +710,20 @@ export function DropClockStudio({
     shopDomain.includes("review") ||
     shopDomain.includes("demo") ||
     shopDomain.includes("myshopify.com");
+
+  const [activeBannerTab, setActiveBannerTab] = useState<"setup" | "reviewer">(
+    isReviewerMode ? "reviewer" : "setup"
+  );
+
+  // Multi-Currency & Locale Simulation
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
+  const [selectedLocale, setSelectedLocale] = useState<string>("en-US");
+
+  // Order Status SLA Milestone Toggle
+  const [showOrderSla, setShowOrderSla] = useState<boolean>(() => {
+    const cached = safeStorage.getItem("dc_show_order_sla");
+    return cached !== null ? cached === "true" : true;
+  });
 
   // BFS Compliance State: Conditional Empty State for Fresh Installs
   const [previewSampleData, setPreviewSampleData] = useState<boolean>(false);
@@ -1115,46 +1136,95 @@ export function DropClockStudio({
       <main className="grid grid-cols-12 flex-1 min-h-0 overflow-hidden">
         {/* Left Settings Panel */}
         <aside className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-4 lg:p-5 space-y-4 border-r border-zinc-200 bg-white pb-36">
-          {/* App Reviewer Quick Start Guide (Test Mode / Review Store Exemption) */}
-          {!isReviewerGuideDismissed && isReviewerMode && (
-            <Banner
-              title="App Reviewer Quick Start Guide"
-              tone="success"
-              onDismiss={handleDismissReviewerGuide}
-            >
-              <div className="space-y-1.5 text-xs text-zinc-700">
-                <p>
-                  Welcome Shopify App Review Team! DropClock is running in test mode with automated billing bypass:
-                </p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li><strong>Preview Surfaces:</strong> Switch between <em>Product Page</em>, <em>Cart Drawer</em> (with dynamic progress upsell), and <em>Order Status</em> timelines in the preview header.</li>
-                  <li><strong>Live Dispatch Math:</strong> Adjust the cutoff hour or lead days in the left panel to watch real-time recalculation of same-day cutoffs and delivery dates.</li>
-                  <li><strong>Multi-Currency:</strong> Select different currencies (USD, EUR, GBP, CAD) in the preview toolbar to verify localized formatting.</li>
-                  <li><strong>Theme Extension:</strong> DropClock uses 100% Theme App Extension app blocks with zero residual code upon uninstall.</li>
-                </ul>
+          {/* Consolidated Setup & Reviewer Guide Card */}
+          {!isSetupDismissed && (
+            <div className="bg-white border border-zinc-200/90 rounded-xl p-3.5 shadow-xs space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 bg-zinc-100 p-0.5 rounded-lg border border-zinc-200">
+                  <button
+                    type="button"
+                    onClick={() => setActiveBannerTab("setup")}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+                      activeBannerTab === "setup"
+                        ? "bg-white text-zinc-900 shadow-2xs"
+                        : "text-zinc-500 hover:text-zinc-800"
+                    }`}
+                  >
+                    Storefront Setup
+                  </button>
+                  {isReviewerMode && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveBannerTab("reviewer")}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+                        activeBannerTab === "reviewer"
+                          ? "bg-emerald-700 text-white shadow-2xs"
+                          : "text-zinc-500 hover:text-zinc-800"
+                      }`}
+                    >
+                      Reviewer Guide
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDismissSetup}
+                  className="w-6 h-6 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 flex items-center justify-center transition-colors cursor-pointer text-xs font-bold"
+                  title="Dismiss guide"
+                >
+                  ✕
+                </button>
               </div>
-            </Banner>
+
+              {activeBannerTab === "setup" ? (
+                <div className="text-xs text-zinc-600 space-y-1.5">
+                  <p className="font-medium text-zinc-800">
+                    Enable the DropClock dynamic countdown block in your active theme in 3 quick steps:
+                  </p>
+                  <ol className="list-decimal pl-4 space-y-0.5">
+                    <li>Click <strong>Add to Theme Editor</strong> in the header bar above.</li>
+                    <li>Position the DropClock capsule pill directly above or below your product buy buttons.</li>
+                    <li>Click <strong>Save</strong> in the Shopify theme editor to publish live delivery ETAs.</li>
+                  </ol>
+                </div>
+              ) : (
+                <div className="text-xs text-zinc-600 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                    <span>✓</span>
+                    <span>Reviewer Test Mode Active (Zero Billing Required)</span>
+                  </div>
+                  <ul className="list-disc pl-4 space-y-0.5">
+                    <li><strong>Surfaces:</strong> Switch between Product Page, Cart Drawer, and Order Status in preview header.</li>
+                    <li><strong>Live Math:</strong> Adjust cutoff hour or lead days on the left to watch real-time recalculation.</li>
+                    <li><strong>Multi-Currency:</strong> Select different currencies (USD, EUR, GBP, CAD) in the preview toolbar.</li>
+                  </ul>
+                </div>
+              )}
+            </div>
           )}
 
-          {/* Guided Onboarding Banner (Dismissible per BFS guidelines) */}
-          {!isOnboardingDismissed && (
-            <Banner
-              title="Complete Storefront Setup"
-              tone="info"
-              onDismiss={handleDismissOnboarding}
-            >
-              <p className="mb-2 text-xs text-zinc-600">
-                Enable the DropClock dynamic countdown block in your active Shopify theme in 3 quick steps:
-              </p>
-              <ol className="list-decimal pl-4 space-y-1 text-xs text-zinc-600">
-                <li>
-                  Click <strong>Add to Theme Editor</strong> in the header bar above to open the theme customizer.
-                </li>
-                <li>Position the DropClock capsule pill directly above or below your product buy buttons.</li>
-                <li>Click <strong>Save</strong> in the Shopify theme editor to publish live delivery ETAs.</li>
-              </ol>
-            </Banner>
-          )}
+          {/* Dedicated Subscription & Plan Card */}
+          <div className="p-4 bg-white border border-zinc-200/80 rounded-xl shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Subscription & Plan</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                7-Day Free Trial
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-zinc-900">DropClock Pro</div>
+                <div className="text-xs text-zinc-500">$8.99 / month after trial</div>
+              </div>
+              <button
+                type="button"
+                onClick={handleManageBilling}
+                className="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors border border-zinc-200 cursor-pointer"
+              >
+                Manage Subscription
+              </button>
+            </div>
+          </div>
 
           {/* 0. BFS-Compliant Storefront Fulfillment Analytics Card */}
           <div className="bg-white border border-zinc-200/90 rounded-xl p-4 shadow-xs space-y-3">
@@ -1942,6 +2012,108 @@ export function DropClockStudio({
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* 4c. Order Status & Post-Purchase Checkout */}
+            <div
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                borderRadius: "12px",
+                padding: "16px",
+                boxShadow: "0 1px 2px 0 rgba(0,0,0,0.03)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <PackageCheckIcon />
+                  <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#0f172a" }}>
+                    Order Status & Post-Purchase
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontSize: "0.6875rem",
+                    fontWeight: "600",
+                    color: "#047857",
+                    backgroundColor: "#ecfdf5",
+                    border: "1px solid #a7f3d0",
+                    padding: "2px 8px",
+                    borderRadius: "9999px",
+                  }}
+                >
+                  {showOrderSla ? "Active SLA" : "Hidden"}
+                </span>
+              </div>
+              <p style={{ margin: "0 0 12px 0", fontSize: "0.75rem", color: "#64748b", lineHeight: "1.4" }}>
+                Reassure shoppers on the thank-you and order confirmation page with automated dispatch tracking promises.
+              </p>
+
+              {/* Toggle: Show Delivery SLA on Order Confirmation */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 10px",
+                  backgroundColor: "#f8fafc",
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "0.75rem", fontWeight: "600", color: "#0f172a" }}>
+                    Show Delivery SLA on Order Confirmation
+                  </div>
+                  <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>
+                    Render live dispatch & arrival milestone tracker on thank-you page
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showOrderSla}
+                  onClick={() => {
+                    setShowOrderSla((prev) => {
+                      const next = !prev;
+                      safeStorage.setItem("dc_show_order_sla", next.toString());
+                      return next;
+                    });
+                  }}
+                  style={{
+                    width: "36px",
+                    height: "20px",
+                    borderRadius: "9999px",
+                    backgroundColor: showOrderSla ? "#008060" : "#cbd5e1",
+                    border: "none",
+                    position: "relative",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s ease",
+                    padding: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "2px",
+                      left: showOrderSla ? "18px" : "2px",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "50%",
+                      backgroundColor: "#ffffff",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                      transition: "left 0.2s ease",
+                    }}
+                  />
+                </button>
               </div>
             </div>
 
@@ -3634,72 +3806,78 @@ export function DropClockStudio({
                       </div>
 
                       {/* DropClock 3-Step Milestone Fulfillment Timeline Card */}
-                      <div className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/50 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                            </span>
-                            <span className="text-xs font-semibold text-zinc-900">
-                              Live Fulfillment Promise
+                      {showOrderSla ? (
+                        <div className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/50 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                              </span>
+                              <span className="text-xs font-semibold text-zinc-900">
+                                Live Fulfillment Promise
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-medium text-zinc-500 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
+                              Priority Dispatch
                             </span>
                           </div>
-                          <span className="text-[10px] font-medium text-zinc-500 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
-                            Priority Dispatch
-                          </span>
-                        </div>
 
-                        {/* 3-Step Timeline Track */}
-                        <div className="relative pt-2 pb-1">
-                          {/* Connecting Track Lines */}
-                          <div className="absolute top-[17px] left-[18%] right-[50%] h-[2px] bg-emerald-500 z-0" />
-                          <div className="absolute top-[17px] left-[50%] right-[18%] h-[2px] bg-zinc-200 z-0" />
+                          {/* 3-Step Timeline Track */}
+                          <div className="relative pt-2 pb-1">
+                            {/* Connecting Track Lines */}
+                            <div className="absolute top-[17px] left-[18%] right-[50%] h-[2px] bg-emerald-500 z-0" />
+                            <div className="absolute top-[17px] left-[50%] right-[18%] h-[2px] bg-zinc-200 z-0" />
 
-                          <div className="grid grid-cols-3 gap-2 text-center relative z-10">
-                            {/* Step 1: Order Placed (Completed State) */}
-                            <div className="flex flex-col items-center">
-                              <div className="w-7 h-7 rounded-full bg-emerald-600 text-white border border-emerald-600 flex items-center justify-center shadow-xs">
-                                <CheckIcon />
-                              </div>
-                              <span className="text-xs font-medium text-zinc-900 mt-2">Order Placed</span>
-                              <span className="text-[10px] text-zinc-400 mt-0.5">Today, 10:24 AM</span>
-                            </div>
-
-                            {/* Step 2: Dispatched (In-Progress State) */}
-                            <div className="flex flex-col items-center">
-                              <div className="relative flex items-center justify-center">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40"></span>
-                                <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-500 text-emerald-700 flex items-center justify-center shadow-xs relative">
-                                  <Clock3Icon />
+                            <div className="grid grid-cols-3 gap-2 text-center relative z-10">
+                              {/* Step 1: Order Placed (Completed State) */}
+                              <div className="flex flex-col items-center">
+                                <div className="w-7 h-7 rounded-full bg-emerald-600 text-white border border-emerald-600 flex items-center justify-center shadow-xs">
+                                  <CheckIcon />
                                 </div>
+                                <span className="text-xs font-medium text-zinc-900 mt-2">Order Placed</span>
+                                <span className="text-[10px] text-zinc-400 mt-0.5">Today, 10:24 AM</span>
                               </div>
-                              <span className="text-xs font-semibold text-emerald-700 mt-2">Dispatched</span>
-                              <span className="text-[10px] text-emerald-600 font-medium mt-0.5">
-                                Today by {cutoffHour.toString().padStart(2, "0")}:{cutoffMinute.toString().padStart(2, "0")}
-                              </span>
-                            </div>
 
-                            {/* Step 3: Arrival (Pending State) */}
-                            <div className="flex flex-col items-center">
-                              <div className="w-7 h-7 rounded-full bg-zinc-100 text-zinc-400 border border-zinc-200 flex items-center justify-center shadow-2xs">
-                                <TruckIcon />
+                              {/* Step 2: Dispatched (In-Progress State) */}
+                              <div className="flex flex-col items-center">
+                                <div className="relative flex items-center justify-center">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40"></span>
+                                  <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-500 text-emerald-700 flex items-center justify-center shadow-xs relative">
+                                    <Clock3Icon />
+                                  </div>
+                                </div>
+                                <span className="text-xs font-semibold text-emerald-700 mt-2">Dispatched</span>
+                                <span className="text-[10px] text-emerald-600 font-medium mt-0.5">
+                                  Today by {cutoffHour.toString().padStart(2, "0")}:{cutoffMinute.toString().padStart(2, "0")}
+                                </span>
                               </div>
-                              <span className="text-xs font-medium text-zinc-600 mt-2">Estimated Arrival</span>
-                              <span className="text-[10px] text-zinc-500 font-medium mt-0.5">
-                                {orderStatusArrival}
-                              </span>
+
+                              {/* Step 3: Arrival (Pending State) */}
+                              <div className="flex flex-col items-center">
+                                <div className="w-7 h-7 rounded-full bg-zinc-100 text-zinc-400 border border-zinc-200 flex items-center justify-center shadow-2xs">
+                                  <TruckIcon />
+                                </div>
+                                <span className="text-xs font-medium text-zinc-600 mt-2">Estimated Arrival</span>
+                                <span className="text-[10px] text-zinc-500 font-medium mt-0.5">
+                                  {orderStatusArrival}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="pt-2.5 border-t border-zinc-200/60 text-[11px] text-zinc-500 leading-relaxed flex items-start gap-2">
-                          <span className="text-emerald-600 font-bold shrink-0">✓</span>
-                          <span>
-                            Automated warehouse dispatch SLA active. Carrier tracking will be emailed the moment the parcel is scanned by express courier.
-                          </span>
+                          <div className="pt-2.5 border-t border-zinc-200/60 text-[11px] text-zinc-500 leading-relaxed flex items-start gap-2">
+                            <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                            <span>
+                              Automated warehouse dispatch SLA active. Carrier tracking will be emailed the moment the parcel is scanned by express courier.
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs text-zinc-500 text-center">
+                          Order Confirmation SLA milestone timeline is currently disabled in settings.
+                        </div>
+                      )}
 
                       {/* Customer & Shipping Summary */}
                       <div className="text-xs space-y-2 pt-2 border-t border-zinc-100">
@@ -3721,6 +3899,38 @@ export function DropClockStudio({
                 </div>
               </div>
             </div>
+
+            {/* Discreet BFS Footer Links */}
+            <footer className="mt-8 mb-4 text-center text-xs text-zinc-400 space-x-2">
+              <a
+                href="https://dropclock.app/docs"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-zinc-600 underline"
+              >
+                Documentation
+              </a>
+              <span>·</span>
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-zinc-600 underline"
+              >
+                Privacy Policy
+              </a>
+              <span>·</span>
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-zinc-600 underline"
+              >
+                Terms of Service
+              </a>
+              <span>·</span>
+              <span>DropClock Pro v1.0</span>
+            </footer>
           </section>
         </main>
       </div>

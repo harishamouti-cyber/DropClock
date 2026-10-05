@@ -7,7 +7,7 @@ import { DropClockStudio } from "~/components/DropClockStudio";
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session, admin, billing } = await authenticate.admin(request);
 
-  await requireBillingSafely(billing);
+  await requireBillingSafely(billing, session.shop);
 
   const defaultSettings = {
     cutoffHour: 14,

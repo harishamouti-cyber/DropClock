@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
-  <rect width="512" height="512" rx="100" fill="#008060" />
+  <!-- Solid Shopify Pine (#008060) tile without pre-rounded corners (Shopify applies radius) -->
+  <rect width="512" height="512" fill="#008060" />
+  <!-- Center: Crisp white DropClock timer/droplet silhouette with 30% safe zone padding -->
   <g transform="translate(76.8, 76.8) scale(14.9333)">
     <circle cx="12" cy="12" r="9" stroke="#ffffff" stroke-width="1.75" stroke-linecap="round" />
     <path d="M12 7V12L15 14" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
