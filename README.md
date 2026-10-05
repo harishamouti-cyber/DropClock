@@ -198,20 +198,34 @@ DropClock installs in 30 seconds with 1-click theme customizer integration. No c
 
 ## 🔍 App Reviewer Test Credentials & Verification Guide
 
-For Shopify App Store Reviewers evaluating DropClock:
+```text
+Welcome Shopify App Review Team!
 
-1. **Automated Reviewer Billing Exemption**:
-   - Any test store or store domain containing `myshopify.com`, `test`, `review`, or `demo` automatically bypasses billing charges in `app/shopify.server.ts`.
-   - The app launches directly into **DropClock Studio** with complete administrative and preview functionality.
-2. **Reviewer Quick Start Guide**:
-   - An in-app informational banner (`App Reviewer Quick Start Guide`) is prominently displayed on the Studio dashboard.
-   - Click the preview surface tabs (**Product Page**, **Cart Drawer**, **Order Status**) in the header to evaluate all three customer touchpoints.
-   - Adjust the cutoff hour or lead days in the left configuration panel to watch immediate live recalculation of the countdown clock and ETA date strings.
-   - Toggle between **USD**, **EUR**, **GBP**, **CAD**, and **JPY** in the preview toolbar to verify multi-currency localization.
-3. **Database Seeder**:
-   - Run `npm run prisma:seed` to populate standard default configurations for automated headless testing.
-4. **Clean Unmount Guarantee**:
-   - DropClock leaves **zero residual code** in your merchant theme. Uninstalling the app deactivates the Theme App Extension blocks cleanly without any manual cleanup.
+Here is how to test and verify DropClock in under 2 minutes:
+
+1. Installation & Studio Setup:
+   - On install, you will land directly in DropClock Studio.
+   - The app is operating under Shopify Managed Billing test mode (7-day free trial).
+   - In the Studio panel, adjust the fulfillment cutoff time (e.g., 14:00) or change the Transit Lead Time (e.g., 2 Days). Notice the preview canvas immediately calculates the dynamic dispatch window and delivery ETA in real-time.
+
+2. Theme App Extension Verification:
+   - Click the "Add to Theme Editor" button in the top-right App Bridge title bar.
+   - This opens the Dawn theme customizer with the DropClock countdown pill app block pre-selected.
+   - Click "Save" in the top-right corner of the Shopify theme editor.
+   - Visit any storefront product page (/products/classic-boxy-crewneck) to confirm the zero-CLS countdown pill renders cleanly above the Add to Cart button.
+
+3. Surface & Feature Previews:
+   - In the DropClock Studio preview mockup, switch between the "Product Page", "Cart Drawer", and "Order Status" tabs to review multi-surface fulfillment promises and free delivery tier upsell logic.
+   - Toggle "Mobile (375px)" to inspect responsive mobile scaling.
+
+4. Clean Uninstallation:
+   - DropClock exclusively uses Theme App Extensions (no asset files or Liquid code are injected into theme.liquid).
+   - Upon uninstalling, the block unmounts automatically with zero residual storefront code, and our APP_UNINSTALLED webhook purges all session keys.
+```
+
+### Additional Automated Reviewer Capabilities:
+- **Test Store Billing Exemption**: Any store containing `myshopify.com`, `test`, `review`, or `demo` automatically runs in test mode (`isTest: true`) with zero charges.
+- **Database Seeder**: Run `npm run prisma:seed` to populate standard default configurations for headless testing.
 
 ---
 

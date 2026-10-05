@@ -1188,16 +1188,25 @@ export function DropClockStudio({
                   </ol>
                 </div>
               ) : (
-                <div className="text-xs text-zinc-600 space-y-1.5">
+                <div className="text-xs text-zinc-600 space-y-2">
                   <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
                     <span>✓</span>
-                    <span>Reviewer Test Mode Active (Zero Billing Required)</span>
+                    <span>Reviewer Test Mode Active (Managed Billing 7-Day Trial Test Bypass)</span>
                   </div>
-                  <ul className="list-disc pl-4 space-y-0.5">
-                    <li><strong>Surfaces:</strong> Switch between Product Page, Cart Drawer, and Order Status in preview header.</li>
-                    <li><strong>Live Math:</strong> Adjust cutoff hour or lead days on the left to watch real-time recalculation.</li>
-                    <li><strong>Multi-Currency:</strong> Select different currencies (USD, EUR, GBP, CAD) in the preview toolbar.</li>
-                  </ul>
+                  <div className="space-y-1.5 pl-1">
+                    <div>
+                      <span className="font-semibold text-zinc-900">1. Studio Setup:</span> Adjust cutoff time (e.g. 14:00) or transit lead time (e.g. 2 Days) on the left to see live dispatch and arrival calculations.
+                    </div>
+                    <div>
+                      <span className="font-semibold text-zinc-900">2. Theme App Extension:</span> Click <em>&ldquo;Add to Theme Editor&rdquo;</em> in the title bar to open Dawn with DropClock pre-selected, then save and view any PDP.
+                    </div>
+                    <div>
+                      <span className="font-semibold text-zinc-900">3. Surface Previews:</span> Switch between <em>Product Page</em>, <em>Cart Drawer</em> (free delivery upsell), and <em>Order Status</em>; toggle <em>Mobile (375px)</em>.
+                    </div>
+                    <div>
+                      <span className="font-semibold text-zinc-900">4. Clean Uninstallation:</span> 100% Theme App Extension architecture (zero `theme.liquid` code). `APP_UNINSTALLED` webhook purges session records.
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
