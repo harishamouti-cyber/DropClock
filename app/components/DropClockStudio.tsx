@@ -30,14 +30,14 @@ export interface StudioSettings {
 }
 
 // Resilient Client-Side Storage Guard (Safari Private Browsing / iOS WebView SecurityError Defense)
-const safeStorage = {
+export const safeStorage = {
   getItem: (key: string): string | null => {
     try {
       if (typeof window !== "undefined" && window.localStorage) {
         return window.localStorage.getItem(key);
       }
     } catch {
-      // Handled silently
+      return null;
     }
     return null;
   },
@@ -46,8 +46,8 @@ const safeStorage = {
       if (typeof window !== "undefined" && window.localStorage) {
         window.localStorage.setItem(key, value);
       }
-    } catch {
-      // Handled silently
+    } catch (e) {
+      console.warn("Storage restricted", e);
     }
   },
   removeItem: (key: string): void => {
@@ -55,8 +55,8 @@ const safeStorage = {
       if (typeof window !== "undefined" && window.localStorage) {
         window.localStorage.removeItem(key);
       }
-    } catch {
-      // Handled silently
+    } catch (e) {
+      console.warn("Storage restricted", e);
     }
   },
 };
@@ -325,6 +325,98 @@ const BRAND_PRESETS = [
 ];
 
 /**
+ * Definitive delivery fulfillment ETA calculation engine per Built for Shopify (BFS) standards.
+ * Dynamically computes dispatch date and arrival date honoring operational schedule and blackout dates.
+ */
+export function computeFulfillmentETA({
+  cutoffHour = 14,
+  cutoffMinute = 0,
+  leadDays = 2,
+  workingDays = [1, 2, 3, 4, 5], // Monday - Friday
+  blackoutDates = [],
+  ianaTimezone = "America/New_York",
+  tagLeadDays = 0,
+}: {
+  cutoffHour?: number;
+  cutoffMinute?: number;
+  leadDays?: number;
+  workingDays?: number[];
+  blackoutDates?: string[];
+  ianaTimezone?: string;
+  tagLeadDays?: number;
+}) {
+  const now = new Date();
+  const storeTimeString = now.toLocaleString("en-US", { timeZone: ianaTimezone });
+  const storeDate = new Date(storeTimeString);
+
+  const cutoff = new Date(storeDate);
+  cutoff.setHours(cutoffHour, cutoffMinute, 0, 0);
+
+  const isOperatingDay = (d: Date) => {
+    const dayOfWeek = d.getDay();
+    const iso = d.toISOString().split("T")[0];
+    return workingDays.includes(dayOfWeek) && !blackoutDates.includes(iso);
+  };
+
+  let isSameDay = false;
+  let dispatchDate = new Date(storeDate);
+
+  if (storeDate < cutoff && isOperatingDay(storeDate)) {
+    isSameDay = true;
+    dispatchDate = new Date(storeDate);
+  } else {
+    do {
+      dispatchDate.setDate(dispatchDate.getDate() + 1);
+    } while (!isOperatingDay(dispatchDate));
+  }
+
+  let arrivalDate = new Date(dispatchDate);
+  let totalTransitDays = Number(leadDays) + Number(tagLeadDays);
+
+  while (totalTransitDays > 0) {
+    arrivalDate.setDate(arrivalDate.getDate() + 1);
+    if (isOperatingDay(arrivalDate)) {
+      totalTransitDays--;
+    }
+  }
+
+  const weekday = arrivalDate.toLocaleDateString("en-US", { weekday: "long" });
+  const month = arrivalDate.toLocaleDateString("en-US", { month: "short" });
+  const day = arrivalDate.getDate();
+
+  return {
+    isSameDay,
+    dispatchLabel: isSameDay ? "for same-day dispatch" : "for tomorrow's dispatch",
+    arrivalFormatted: `${weekday}, ${month} ${day}`,
+  };
+}
+
+export const cartPresets = {
+  below: {
+    subtotal: 42.00,
+    shipping: 5.99,
+    items: [
+      { name: "Classic Boxy Crewneck", size: "M", qty: 1, price: 42.00, image: "tshirt" }
+    ]
+  },
+  near: {
+    subtotal: 60.95,
+    shipping: 5.99,
+    items: [
+      { name: "Classic Boxy Crewneck", size: "M", qty: 1, price: 42.00, image: "tshirt" },
+      { name: "Heavyweight Knit Beanie", size: "OS", qty: 1, price: 18.95, image: "beanie" }
+    ]
+  },
+  qualified: {
+    subtotal: 84.00,
+    shipping: 0.00,
+    items: [
+      { name: "Classic Boxy Crewneck", size: "M", qty: 2, price: 84.00, image: "tshirt" }
+    ]
+  }
+};
+
+/**
  * Dynamically computes delivery arrival date based on dispatch date, transit lead days,
  * active operating days, and warehouse blackout dates.
  */
@@ -374,9 +466,8 @@ export function DropClockStudio({
     const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
     const currentShop = params.get("shop") || shop || (typeof window !== "undefined" ? window.location.hostname : "my-store.myshopify.com");
     const cleanShop = currentShop.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    const extId = propExtensionId || "6ccfac9a-9e01-8c6b-a21e-2c7474d1188e729b0378";
-    const blockParam = extId ? `&addAppBlockId=${extId}/dropclock_pill&target=mainProduct` : "";
-    const themeEditorUrl = `https://${cleanShop}/admin/themes/current/editor?template=product${blockParam}`;
+    const extId = propExtensionId || process.env.SHOPIFY_DROPCLOCK_EXTENSION_ID || "dropclock-extension";
+    const themeEditorUrl = `https://${cleanShop}/admin/themes/current/editor?template=product&addAppBlockId=${extId}/dropclock_pill&target=mainProduct`;
 
     if (shopify && typeof shopify.open === "function") {
       shopify.open(themeEditorUrl, "_blank");
@@ -546,11 +637,15 @@ export function DropClockStudio({
     }
     return 75;
   });
+  const [selectedCartPreset, setSelectedCartPreset] = useState<"below" | "near" | "qualified">("near");
   const [cartSubtotal, setCartSubtotal] = useState<number>(60.95);
   const [enableCartProgressBar, setEnableCartProgressBar] = useState<boolean>(() => {
     const cached = safeStorage.getItem("dc_enable_cart_progress_bar");
     return cached !== null ? cached === "true" : true;
   });
+  // Canonical BFS state aliases per Mandate 7
+  const cartGoalAmount = cartThreshold;
+  const cartGoalEnabled = enableCartProgressBar;
 
   // BFS Compliance State: Dismissible Storefront Onboarding Banner
   const [isOnboardingDismissed, setIsOnboardingDismissed] = useState<boolean>(() => {
@@ -844,41 +939,32 @@ export function DropClockStudio({
       : Math.max(5, Math.min(100, Math.round((remainingMinutes / totalWindowMinutes) * 100)));
     const isUrgent = !isPastCutoff && hours === 0 && minutes <= 60;
 
-    // Tag Rule Resolution for Simulation
-    let effectiveLeadDays = leadDays;
+    // Tag Rule Lead Days Calculation
+    let tagLeadDays = 0;
     if (activeSimulatedTag !== "none") {
       const matched = tagRules.find(
         (r) => r.tag.trim().toLowerCase() === activeSimulatedTag.trim().toLowerCase()
       );
       if (matched) {
-        effectiveLeadDays = matched.leadDays;
+        tagLeadDays = Math.max(0, matched.leadDays - leadDays);
       } else if (activeSimulatedTag.toLowerCase() === "pre-order") {
-        effectiveLeadDays = 14;
+        tagLeadDays = 14;
       } else if (activeSimulatedTag.toLowerCase() === "freight") {
-        effectiveLeadDays = 5;
+        tagLeadDays = 5;
       }
     }
+    const effectiveLeadDays = leadDays + tagLeadDays;
 
-    // Helper to test if a candidate date is a blackout date (YYYY-MM-DD in warehouse time)
-    const isBlackout = (d: Date) => {
-      const y = d.getFullYear();
-      const m = (d.getMonth() + 1).toString().padStart(2, "0");
-      const day = d.getDate().toString().padStart(2, "0");
-      const isoStr = `${y}-${m}-${day}`;
-      return blackoutDates.includes(isoStr);
-    };
-
-    // Calculate Delivery Arrival Date
-    let dispatchDate = new Date(warehouseNow);
-    if (isPastCutoff) {
-      dispatchDate.setDate(dispatchDate.getDate() + 1);
-    }
-    while (!workingDays.includes(dispatchDate.getDay()) || isBlackout(dispatchDate)) {
-      dispatchDate.setDate(dispatchDate.getDate() + 1);
-    }
-    const delivery = calculateArrival(dispatchDate, effectiveLeadDays, workingDays, blackoutDates);
-    const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "short", day: "numeric" };
-    const formattedArrival = delivery.toLocaleDateString("en-US", options);
+    const eta = computeFulfillmentETA({
+      cutoffHour,
+      cutoffMinute,
+      leadDays,
+      workingDays,
+      blackoutDates,
+      ianaTimezone,
+      tagLeadDays,
+    });
+    const formattedArrival = eta.arrivalFormatted;
 
     return {
       hours,
@@ -900,18 +986,22 @@ export function DropClockStudio({
     tagRules,
     activeSimulatedTag,
     resolvedOffsetMinutes,
+    ianaTimezone,
   ]);
 
   // Dynamically compute Order Status mock arrival date from base dispatch date (Today)
   const orderStatusArrival = useMemo(() => {
-    const dispatchDate = new Date(); // e.g. Monday Oct 5
-    // Ensure dispatchDate falls on an active working day
-    while (!workingDays.includes(dispatchDate.getDay())) {
-      dispatchDate.setDate(dispatchDate.getDate() + 1);
-    }
-    const arrivalDate = calculateArrival(dispatchDate, leadDays, workingDays, blackoutDates);
-    return arrivalDate.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
-  }, [leadDays, workingDays, blackoutDates]);
+    const eta = computeFulfillmentETA({
+      cutoffHour,
+      cutoffMinute,
+      leadDays,
+      workingDays,
+      blackoutDates,
+      ianaTimezone,
+      tagLeadDays: 0,
+    });
+    return eta.arrivalFormatted;
+  }, [cutoffHour, cutoffMinute, leadDays, workingDays, blackoutDates, ianaTimezone]);
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-[#f1f2f4] text-zinc-900 font-sans">
@@ -924,13 +1014,6 @@ export function DropClockStudio({
               onClick={handleAddToTheme}
             >
               Add to Theme Editor
-            </button>
-            <button
-              onClick={() =>
-                window.open("https://github.com/harishamouti-cyber/DropClock#readme", "_blank")
-              }
-            >
-              Documentation
             </button>
           </ui-title-bar>
 
@@ -953,7 +1036,7 @@ export function DropClockStudio({
       <header className="flex-none px-6 py-3.5 bg-white border-b border-zinc-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <DropClockLogo className="w-5 h-5 text-zinc-900" />
+            <DropClockLogo className="w-5 h-5 text-emerald-600" />
             <h1 className="text-base font-semibold text-zinc-900">DropClock Studio</h1>
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
               Dawn 15.0 (Active)
@@ -1068,27 +1151,16 @@ export function DropClockStudio({
               </>
             )}
 
-            <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-              <span className="flex items-center gap-1.5">
-                <span>Fulfillment SLA:</span>
-                <span className="relative flex h-2 w-2">
-                  <span
-                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      previewSampleData ? "bg-emerald-400" : "bg-amber-400"
-                    }`}
-                  />
-                  <span
-                    className={`relative inline-flex rounded-full h-2 w-2 ${
-                      previewSampleData ? "bg-emerald-500" : "bg-amber-500"
-                    }`}
-                  />
-                </span>
-              </span>
+            <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
+              <span className="text-xs text-zinc-500 font-medium">Fulfillment SLA Tracking</span>
               {previewSampleData ? (
                 <Badge tone="success">99.4% On-Track (Sample)</Badge>
               ) : (
                 <div className="flex items-center gap-1.5">
-                  <Badge tone="attention">Awaiting Theme Activation</Badge>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    Awaiting Theme Activation
+                  </span>
                   <button
                     type="button"
                     onClick={() => {
@@ -1674,7 +1746,7 @@ export function DropClockStudio({
               >
                 <div>
                   <div style={{ fontSize: "0.75rem", fontWeight: "600", color: "#0f172a" }}>
-                    Enable Cart Urgency Progress Bar
+                    Enable Cart Progress Bar
                   </div>
                   <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>
                     Show dynamic threshold delivery goal in the cart drawer
@@ -1719,7 +1791,7 @@ export function DropClockStudio({
                 </button>
               </div>
 
-              {/* Number Input: Threshold Amount ($) */}
+              {/* Number Input: Threshold Goal ($) */}
               <div>
                 <label
                   style={{
@@ -1730,7 +1802,7 @@ export function DropClockStudio({
                     marginBottom: "4px",
                   }}
                 >
-                  Threshold Amount ($)
+                  Threshold Goal ($)
                 </label>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <div style={{ position: "relative", flex: 1 }}>
@@ -2663,11 +2735,11 @@ export function DropClockStudio({
                         </div>
                       </div>
 
-                      {/* PRODUCT IMAGE CONTAINER (Compact presentation: h-40 w-full with object-contain) */}
-                      <div className="relative w-full h-40 bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80 flex items-center justify-center p-2 select-none mb-2">
+                      {/* PRODUCT IMAGE CONTAINER (Compact presentation: h-36 w-full with object-contain) */}
+                      <div className="relative w-full h-36 bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80 flex items-center justify-center p-2 select-none mb-2">
                         <svg 
                           viewBox="0 0 120 120" 
-                          className="w-24 h-24 object-contain text-zinc-800 drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                          className="w-28 h-28 object-contain text-zinc-800 drop-shadow-sm transition-transform duration-300 hover:scale-105"
                           fill="currentColor"
                           xmlns="http://www.w3.org/2000/svg"
                         >
@@ -3274,9 +3346,12 @@ export function DropClockStudio({
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => setCartSubtotal(42.00)}
+                            onClick={() => {
+                              setSelectedCartPreset("below");
+                              setCartSubtotal(cartPresets.below.subtotal);
+                            }}
                             className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
-                              cartSubtotal === 42
+                              selectedCartPreset === "below"
                                 ? "bg-zinc-900 text-white shadow-2xs"
                                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
                             }`}
@@ -3285,9 +3360,12 @@ export function DropClockStudio({
                           </button>
                           <button
                             type="button"
-                            onClick={() => setCartSubtotal(60.95)}
+                            onClick={() => {
+                              setSelectedCartPreset("near");
+                              setCartSubtotal(cartPresets.near.subtotal);
+                            }}
                             className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
-                              cartSubtotal === 60.95
+                              selectedCartPreset === "near"
                                 ? "bg-zinc-900 text-white shadow-2xs"
                                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
                             }`}
@@ -3296,9 +3374,12 @@ export function DropClockStudio({
                           </button>
                           <button
                             type="button"
-                            onClick={() => setCartSubtotal(84.00)}
+                            onClick={() => {
+                              setSelectedCartPreset("qualified");
+                              setCartSubtotal(cartPresets.qualified.subtotal);
+                            }}
                             className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
-                              cartSubtotal === 84
+                              selectedCartPreset === "qualified"
                                 ? "bg-emerald-700 text-white shadow-2xs"
                                 : "bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50"
                             }`}
@@ -3362,97 +3443,71 @@ export function DropClockStudio({
                           );
                         })()}
 
-                        {/* Realistic Cart Item Rows with Exact Matching Arithmetic */}
+                        {/* Realistic Cart Item Rows with Exact Matching Arithmetic from cartPresets */}
                         <div className="space-y-3 pt-1">
-                          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-lg bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-700 p-2 shrink-0">
-                                <svg viewBox="0 0 120 120" className="w-8 h-8" fill="currentColor">
-                                  <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
-                                </svg>
-                              </div>
-                              <div>
-                                <div className="text-xs font-semibold text-zinc-900">
-                                  Classic Boxy Crewneck
-                                </div>
-                                <div className="text-[11px] text-zinc-500">
-                                  Size: M · Qty: 1
-                                </div>
-                              </div>
-                            </div>
-                            <span className="text-xs font-bold text-zinc-900">$42.00</span>
-                          </div>
-
-                          {/* Extra Line Item 2 if subtotal is $60.95 (Near threshold) */}
-                          {cartSubtotal === 60.95 && (
-                            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                              <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-lg bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 p-2 shrink-0">
-                                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.75">
-                                    <path d="M9 2v6c0 1.66 1.34 3 3 3h2a3 3 0 0 1 3 3v4a4 4 0 0 1-8 0v-4" />
-                                  </svg>
-                                </div>
-                                <div>
-                                  <div className="text-xs font-semibold text-zinc-900">
-                                    Merino Wool Ribbed Socks
-                                  </div>
-                                  <div className="text-[11px] text-zinc-500">
-                                    Color: Charcoal · Qty: 1
-                                  </div>
-                                </div>
-                              </div>
-                              <span className="text-xs font-bold text-zinc-900">$18.95</span>
-                            </div>
-                          )}
-
-                          {/* Extra Line Item 2 if subtotal is $84.00 (Qualified) */}
-                          {cartSubtotal === 84.00 && (
-                            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                          {cartPresets[selectedCartPreset].items.map((item, idx) => (
+                            <div key={idx} className="flex items-center justify-between pb-3 border-b border-zinc-100">
                               <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 rounded-lg bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-700 p-2 shrink-0">
-                                  <svg viewBox="0 0 120 120" className="w-8 h-8" fill="currentColor">
-                                    <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
-                                  </svg>
+                                  {item.image === "tshirt" ? (
+                                    <svg viewBox="0 0 120 120" className="w-8 h-8" fill="currentColor">
+                                      <path d="M 40 16 C 45 24 75 24 80 16 L 104 28 L 92 46 L 82 40 L 82 100 C 82 102 80 104 78 104 L 42 104 C 40 104 38 102 38 100 L 38 40 L 28 46 L 16 28 Z" />
+                                    </svg>
+                                  ) : (
+                                    <svg viewBox="0 0 24 24" className="w-6 h-6 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="1.75">
+                                      <path d="M4 14a8 8 0 0 1 16 0v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4z" />
+                                      <circle cx="12" cy="5" r="2" />
+                                      <line x1="4" y1="17" x2="20" y2="17" />
+                                    </svg>
+                                  )}
                                 </div>
                                 <div>
                                   <div className="text-xs font-semibold text-zinc-900">
-                                    Classic Boxy Crewneck
+                                    {item.name}
                                   </div>
                                   <div className="text-[11px] text-zinc-500">
-                                    Size: L (Oversized) · Qty: 1
+                                    Size: {item.size} · Qty: {item.qty}
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-xs font-bold text-zinc-900">$42.00</span>
+                              <span className="text-xs font-bold text-zinc-900">${item.price.toFixed(2)}</span>
                             </div>
-                          )}
+                          ))}
                         </div>
 
-                        {/* Cart Summary and Checkout Button */}
-                        <div className="pt-2 border-t border-zinc-200/90 space-y-2">
-                          <div className="flex justify-between text-xs text-zinc-600">
-                            <span>Subtotal</span>
-                            <span className="font-semibold text-zinc-900">${cartSubtotal.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs text-zinc-600">
-                            <span>Shipping</span>
-                            <span className="font-semibold text-emerald-700">
-                              {cartSubtotal >= cartThreshold ? "FREE Express" : "$5.99 Standard"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-zinc-100">
-                            <span>Total</span>
-                            <span>${(cartSubtotal + (cartSubtotal >= cartThreshold ? 0 : 5.99)).toFixed(2)}</span>
-                          </div>
+                        {/* Cart Summary and Checkout Button - Zero Arithmetic Desync */}
+                        {(() => {
+                          const isFree = cartSubtotal >= cartThreshold;
+                          const shippingCost = isFree ? 0.00 : cartPresets[selectedCartPreset].shipping;
+                          const calculatedTotal = (cartSubtotal + shippingCost).toFixed(2);
 
-                          <button
-                            type="button"
-                            disabled
-                            className="w-full mt-3 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-3 rounded-xl text-xs flex items-center justify-center gap-2 cursor-not-allowed"
-                          >
-                            <span>Checkout • ${(cartSubtotal + (cartSubtotal >= cartThreshold ? 0 : 5.99)).toFixed(2)}</span>
-                          </button>
-                        </div>
+                          return (
+                            <div className="pt-2 border-t border-zinc-200/90 space-y-2">
+                              <div className="flex justify-between text-xs text-zinc-600">
+                                <span>Subtotal</span>
+                                <span className="font-semibold text-zinc-900">${cartSubtotal.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-xs text-zinc-600">
+                                <span>Shipping</span>
+                                <span className="font-semibold text-emerald-700">
+                                  {isFree ? "FREE Express" : `$${shippingCost.toFixed(2)} Standard`}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-zinc-100">
+                                <span>Total</span>
+                                <span>${calculatedTotal}</span>
+                              </div>
+
+                              <button
+                                type="button"
+                                disabled
+                                className="w-full mt-3 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-3 rounded-xl text-xs flex items-center justify-center gap-2 cursor-not-allowed"
+                              >
+                                <span>Checkout • ${calculatedTotal}</span>
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}

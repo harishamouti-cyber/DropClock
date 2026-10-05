@@ -26,6 +26,7 @@ export async function loader() {
       sameDayText: "for same-day dispatch",
       nextDayText: "for tomorrow's dispatch",
       etaText: "Estimated Delivery:",
+      freeShippingThreshold: 75,
     },
     shop: "preview-store.myshopify.com",
     ianaTimezone: "America/New_York",
@@ -70,6 +71,7 @@ export default function StandalonePreviewRoute() {
           sameDayText: "for same-day dispatch",
           nextDayText: "for tomorrow's dispatch",
           etaText: "Estimated Delivery:",
+      freeShippingThreshold: 75,
         }}
         shop="demo-store.myshopify.com"
         ianaTimezone="America/New_York"
