@@ -52,6 +52,8 @@
   data-iana-tz="{{ iana_tz }}"
   data-current-country="{{ current_country }}"
   data-available="{{ is_available }}"
+  data-currency="{{ cart.currency.iso_code }}"
+  data-locale="{{ request.locale.iso_code }}"
   data-widget-style="{{ active_style }}"
   data-translations='{{ trans | json | escape }}'
   data-lead-text="{{ lead_text | escape }}"

@@ -1,1 +1,323 @@
-(function(){"use strict";function b(e,t){if(!e)return t;try{var a=JSON.parse(e);return a!=null?a:t}catch(o){return t}}function P(e,t){if(!e)return 0;var a=e.toUpperCase();return t&&typeof t[a]!="undefined"?parseInt(t[a],10)||0:a==="US"?0:a==="CA"||a==="MX"||a==="PR"?3:7}function _(e,t){return(t||"$")+(e/100).toFixed(2)}function x(){var e=document.querySelectorAll(".dropclock-widget-root, .dropclock-wrapper");e.length&&e.forEach(function(t){var a=t.dataset||{},o=t.querySelector("[data-dc-timer], .dc-timer-val, .dc-tc"),n=t.querySelector("[data-dc-eta], .dc-eta-date, .dc-et"),r=t.querySelector("[data-dc-subtext], .dc-subtext, .dc-dt"),s=t.querySelector("[data-dc-bar-fill], .dc-bar-fill, .dc-bf"),d=parseInt(a.cutoffHour||"14",10),u=parseInt(a.cutoffMin!=null?a.cutoffMin:a.cutoffMinute||"0",10),m=parseInt(a.leadDays||"2",10),D=parseInt(a.timezoneOffset!=null?a.timezoneOffset:a.tzOffset||0,10),k=a.samedayText||"for same-day dispatch",S=a.nextdayText||"for tomorrow's dispatch",f=b(a.workingDays,[1,2,3,4,5]),v=b(a.blackoutDates||a.blackouts,[]),A=b(a.marketOverrides,{}),U=a.currentCountry||"US";(!Array.isArray(f)||!f.length)&&(f=[1,2,3,4,5]),Array.isArray(v)||(v=[]);var p=m+P(U,A);function w(c){var g=c.getUTCFullYear(),y=String(c.getUTCMonth()+1).padStart(2,"0"),i=String(c.getUTCDate()).padStart(2,"0");return v.indexOf(g+"-"+y+"-"+i)!==-1}function C(){if(t.getAttribute("data-available")!=="false"){var c=new Date(Date.now()+D*6e4),g=c.getUTCHours()*3600+c.getUTCMinutes()*60+c.getUTCSeconds(),y=d*3600+u*60,i=y-g,h=i<=0;h&&(i+=86400);var E=String(Math.floor(i/3600)).padStart(2,"0"),q=String(Math.floor(i%3600/60)).padStart(2,"0"),z=String(Math.floor(i%60)).padStart(2,"0");if(o&&(o.textContent=E+"h "+q+"m "+z+"s"),r&&(r.textContent=h?S:k),s){var j=86400,F=Math.max(5,Math.min(100,Math.round(i/j*100)));s.style.width=F+"%"}var l=new Date(c);h&&l.setUTCDate(l.getUTCDate()+1);for(var I=p;I>0||f.indexOf(l.getUTCDay())===-1||w(l);)l.setUTCDate(l.getUTCDate()+1),f.indexOf(l.getUTCDay())!==-1&&!w(l)&&I>0&&I--;try{var L=l.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});n&&n.textContent!==L&&(n.textContent=L)}catch(N){}}}C(),t._dcInterval||(t._dcInterval=setInterval(C,1e3))})}function T(){var e=document.querySelectorAll(".dropclock-cart-pill-root");e.length&&e.forEach(function(t){var a=t.dataset||{},o=t.querySelector("[data-dc-cart-timer]"),n=t.querySelector("[data-dc-cart-msg]"),r=t.querySelector("[data-dc-cart-bar]"),s=parseInt(a.cutoffHour||"14",10),d=parseInt(a.cutoffMin||"0",10),u=parseInt(a.thresholdCents||"7500",10),m=parseInt(a.cartTotal||"0",10),D=a.currencySymbol||"$",k=parseInt(a.timezoneOffset||0,10);function S(f){typeof f=="number"&&(m=f,t.dataset.cartTotal=f);var v=new Date(Date.now()+k*6e4),A=v.getUTCHours()*3600+v.getUTCMinutes()*60+v.getUTCSeconds(),U=s*3600+d*60,p=U-A,w=p<=0;w&&(p+=86400);var C=String(Math.floor(p/3600)).padStart(2,"0"),c=String(Math.floor(p%3600/60)).padStart(2,"0"),g=String(Math.floor(p%60)).padStart(2,"0"),y=C+"h "+c+"m "+g+"s";o&&(o.textContent=y);var i=u-m,h=i<=0,E=Math.min(100,Math.max(0,Math.round(m/u*100)));if(r&&(r.style.width=E+"%",h&&(r.style.backgroundColor="var(--dc-primary, #008060)")),n)if(h)n.innerHTML='<span class="dc-qualified-badge font-bold">\u2713</span> <span class="dc-cart-title font-semibold">Free Express Delivery Qualified</span><div class="dc-cart-countdown text-xs opacity-80">\u26A1 Ships today if placed within <span class="dc-tabular font-mono">'+y+"</span></div>";else{var q=_(i,D);n.innerHTML='<span class="dc-cart-title">Add <strong class="dc-highlight">'+q+'</strong> more to unlock Free Express Delivery</span><div class="dc-cart-countdown text-xs opacity-80">Order within <span class="dc-tabular font-mono">'+y+"</span> for today's dispatch</div>"}}S(),t._dcCartInterval||(t._dcCartInterval=setInterval(S,1e3)),t._updateCartTotal=S})}function O(){fetch("/cart.js").then(function(e){return e.json()}).then(function(e){e&&typeof e.total_price=="number"&&document.querySelectorAll(".dropclock-cart-pill-root").forEach(function(t){typeof t._updateCartTotal=="function"&&t._updateCartTotal(e.total_price)})}).catch(function(){})}if(typeof window.fetch=="function"){var H=window.fetch;window.fetch=function(){var e=H.apply(this,arguments),t=arguments[0];return typeof t=="string"&&(t.indexOf("/cart/add")!==-1||t.indexOf("/cart/change")!==-1||t.indexOf("/cart/update")!==-1||t.indexOf("/cart/clear")!==-1)&&e.then(function(){setTimeout(O,250)}),e}}function M(e){var t=document.querySelectorAll(".dropclock-widget-root, .dropclock-wrapper");if(t.length){var a=typeof e=="object"?e.id:e,o=typeof e=="object"?e.available!==!1:!0;if(typeof e!="object"&&window.ShopifyAnalytics&&window.ShopifyAnalytics.meta&&window.ShopifyAnalytics.meta.product&&Array.isArray(window.ShopifyAnalytics.meta.product.variants)){var n=window.ShopifyAnalytics.meta.product.variants.find(function(r){return String(r.id)===String(a)});n&&typeof n.available=="boolean"&&(o=n.available)}t.forEach(function(r){var s=r.querySelector(".dc-pill-card"),d=r.querySelector(".dc-backorder-notice");if(o)r.setAttribute("data-available","true"),s&&(s.style.display="flex"),d&&(d.style.display="none");else if(r.setAttribute("data-available","false"),s&&(s.style.display="none"),d){d.style.display="flex";var u=d.querySelector("span");u&&(u.textContent="\u26A0\uFE0F Backorder Item: Ships as soon as restocked (Estimated dispatch in 5-7 days)")}})}}document.addEventListener("change",function(e){e.target&&e.target.matches&&e.target.matches('form[action*="/cart/add"] [name="id"], select[name="id"]')&&M(e.target.value)}),document.addEventListener("theme:variant:change",function(e){e.detail&&e.detail.variant&&M(e.detail.variant)}),document.addEventListener("DOMContentLoaded",function(){x(),T()}),window.addEventListener("shopify:section:load",function(){x(),T()}),window.DropClock={init:function(){x(),T()},refreshCart:O,handleVariantShift:M}})();
+(function () {
+  "use strict";
+
+  function parseJson(str, fallback) {
+    if (!str) return fallback;
+    try {
+      var val = JSON.parse(str);
+      return val != null ? val : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function getCountryLeadDays(country, marketOverrides) {
+    if (!country) return 0;
+    var c = country.toUpperCase();
+    if (marketOverrides && typeof marketOverrides[c] !== "undefined") {
+      return parseInt(marketOverrides[c], 10) || 0;
+    }
+    if (c === "US") return 0;
+    if (c === "CA" || c === "MX" || c === "PR") return 3;
+    return 7;
+  }
+
+  function formatStoreCurrency(centsOrAmount, currencyCode, locale, fallbackSymbol) {
+    var isCents = typeof centsOrAmount === "number" && (centsOrAmount >= 100 || Number.isInteger(centsOrAmount));
+    var amount = isCents ? centsOrAmount / 100 : Number(centsOrAmount) || 0;
+    var code = (currencyCode || "USD").toUpperCase();
+    var loc = locale || (typeof navigator !== "undefined" && navigator.language) || "en-US";
+    var sym = fallbackSymbol || "$";
+
+    try {
+      return new Intl.NumberFormat(loc, {
+        style: "currency",
+        currency: code,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(amount);
+    } catch (e) {
+      return sym + amount.toFixed(2);
+    }
+  }
+
+  function initProductWidgets() {
+    var widgets = document.querySelectorAll(".dropclock-widget-root, .dropclock-wrapper");
+    if (!widgets.length) return;
+
+    widgets.forEach(function (el) {
+      var ds = el.dataset || {};
+      var timerEl = el.querySelector("[data-dc-timer], .dc-timer-val, .dc-tc");
+      var etaEl = el.querySelector("[data-dc-eta], .dc-eta-date, .dc-et");
+      var subtextEl = el.querySelector("[data-dc-subtext], .dc-subtext, .dc-dt");
+      var barEl = el.querySelector("[data-dc-bar-fill], .dc-bar-fill, .dc-bf");
+
+      var cutoffH = parseInt(ds.cutoffHour || "14", 10);
+      var cutoffM = parseInt(ds.cutoffMin != null ? ds.cutoffMin : ds.cutoffMinute || "0", 10);
+      var leadDays = parseInt(ds.leadDays || "2", 10);
+      var tzOffset = parseInt(ds.timezoneOffset != null ? ds.timezoneOffset : ds.tzOffset || 0, 10);
+      var sameDay = ds.samedayText || "for same-day dispatch";
+      var nextDay = ds.nextdayText || "for tomorrow's dispatch";
+      var workingDays = parseJson(ds.workingDays, [1, 2, 3, 4, 5]);
+      var blackouts = parseJson(ds.blackoutDates || ds.blackouts, []);
+      var marketOverrides = parseJson(ds.marketOverrides, {});
+      var country = ds.currentCountry || "US";
+
+      if (!Array.isArray(workingDays) || !workingDays.length) workingDays = [1, 2, 3, 4, 5];
+      if (!Array.isArray(blackouts)) blackouts = [];
+
+      var totalLead = leadDays + getCountryLeadDays(country, marketOverrides);
+
+      function isBlackout(date) {
+        var y = date.getUTCFullYear();
+        var m = String(date.getUTCMonth() + 1).padStart(2, "0");
+        var d = String(date.getUTCDate()).padStart(2, "0");
+        return blackouts.indexOf(y + "-" + m + "-" + d) !== -1;
+      }
+
+      function updateClock() {
+        if (el.getAttribute("data-available") === "false") return;
+
+        var now = new Date(Date.now() + tzOffset * 60000);
+        var currentSecs = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+        var targetSecs = cutoffH * 3600 + cutoffM * 60;
+        var diff = targetSecs - currentSecs;
+        var passed = diff <= 0;
+
+        if (passed) diff += 86400;
+
+        var hh = String(Math.floor(diff / 3600)).padStart(2, "0");
+        var mm = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+        var ss = String(Math.floor(diff % 60)).padStart(2, "0");
+
+        if (timerEl) timerEl.textContent = hh + "h " + mm + "m " + ss + "s";
+        if (subtextEl) subtextEl.textContent = passed ? nextDay : sameDay;
+
+        if (barEl) {
+          var pct = Math.max(5, Math.min(100, Math.round((diff / 86400) * 100)));
+          barEl.style.width = pct + "%";
+        }
+
+        var eta = new Date(now);
+        if (passed) eta.setUTCDate(eta.getUTCDate() + 1);
+
+        var daysLeft = totalLead;
+        while (daysLeft > 0 || workingDays.indexOf(eta.getUTCDay()) === -1 || isBlackout(eta)) {
+          eta.setUTCDate(eta.getUTCDate() + 1);
+          if (workingDays.indexOf(eta.getUTCDay()) !== -1 && !isBlackout(eta) && daysLeft > 0) {
+            daysLeft--;
+          }
+        }
+
+        try {
+          var formattedEta = eta.toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "short",
+            day: "numeric",
+            timeZone: "UTC",
+          });
+          if (etaEl && etaEl.textContent !== formattedEta) {
+            etaEl.textContent = formattedEta;
+          }
+        } catch (e) {}
+      }
+
+      updateClock();
+      if (!el._dcInterval) {
+        el._dcInterval = setInterval(updateClock, 1000);
+      }
+    });
+  }
+
+  function initCartPills() {
+    var pills = document.querySelectorAll(".dropclock-cart-pill-root");
+    if (!pills.length) return;
+
+    pills.forEach(function (pill) {
+      var ds = pill.dataset || {};
+      var timerEl = pill.querySelector("[data-dc-cart-timer]");
+      var msgEl = pill.querySelector("[data-dc-cart-msg]");
+      var barEl = pill.querySelector("[data-dc-cart-bar]");
+
+      var cutoffH = parseInt(ds.cutoffHour || "14", 10);
+      var cutoffM = parseInt(ds.cutoffMin || "0", 10);
+      var thresholdCents = parseInt(ds.thresholdCents || "7500", 10);
+      var cartTotalCents = parseInt(ds.cartTotal || "0", 10);
+      var currencySym = ds.currencySymbol || "$";
+      var currencyCode = ds.currency || "USD";
+      var locale = ds.locale || "en";
+      var tzOffset = parseInt(ds.timezoneOffset || 0, 10);
+
+      function updatePill(newTotalCents) {
+        if (typeof newTotalCents === "number") {
+          cartTotalCents = newTotalCents;
+          pill.dataset.cartTotal = String(newTotalCents);
+        }
+
+        var now = new Date(Date.now() + tzOffset * 60000);
+        var curSec = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+        var cutSec = cutoffH * 3600 + cutoffM * 60;
+        var diff = cutSec - curSec;
+        var passed = diff <= 0;
+        if (passed) diff += 86400;
+
+        var hh = String(Math.floor(diff / 3600)).padStart(2, "0");
+        var mm = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+        var ss = String(Math.floor(diff % 60)).padStart(2, "0");
+        var timerStr = hh + "h " + mm + "m " + ss + "s";
+
+        if (timerEl) timerEl.textContent = timerStr;
+
+        var remainingCents = thresholdCents - cartTotalCents;
+        var isQualified = remainingCents <= 0;
+        var pct = Math.min(100, Math.max(0, Math.round((cartTotalCents / thresholdCents) * 100)));
+
+        if (barEl) {
+          barEl.style.width = pct + "%";
+          if (isQualified) {
+            barEl.style.backgroundColor = "var(--dc-primary, #008060)";
+          }
+        }
+
+        if (msgEl) {
+          if (isQualified) {
+            msgEl.innerHTML =
+              '<span class="dc-qualified-badge font-bold">✓</span> ' +
+              '<span class="dc-cart-title font-semibold">Free Express Delivery Qualified</span>' +
+              '<div class="dc-cart-countdown text-xs opacity-80">⚡ Ships today if placed within <span class="dc-tabular font-mono">' +
+              timerStr +
+              "</span></div>";
+          } else {
+            var formattedNeed = formatStoreCurrency(remainingCents, currencyCode, locale, currencySym);
+            msgEl.innerHTML =
+              '<span class="dc-cart-title">Add <strong class="dc-highlight">' +
+              formattedNeed +
+              "</strong> more to unlock Free Express Delivery</span>" +
+              '<div class="dc-cart-countdown text-xs opacity-80">Order within <span class="dc-tabular font-mono">' +
+              timerStr +
+              "</span> for today's dispatch</div>";
+          }
+        }
+      }
+
+      updatePill();
+      if (!pill._dcCartInterval) {
+        pill._dcCartInterval = setInterval(updatePill, 1000);
+      }
+      pill._updateCartTotal = updatePill;
+    });
+  }
+
+  function fetchLatestCart() {
+    fetch("/cart.js")
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (cart) {
+        if (cart && typeof cart.total_price === "number") {
+          document.querySelectorAll(".dropclock-cart-pill-root").forEach(function (p) {
+            if (typeof p._updateCartTotal === "function") {
+              p._updateCartTotal(cart.total_price);
+            }
+          });
+        }
+      })
+      .catch(function () {});
+  }
+
+  if (typeof window.fetch === "function") {
+    var nativeFetch = window.fetch;
+    window.fetch = function () {
+      var call = nativeFetch.apply(this, arguments);
+      var url = arguments[0];
+      if (
+        typeof url === "string" &&
+        (url.indexOf("/cart/add") !== -1 ||
+          url.indexOf("/cart/change") !== -1 ||
+          url.indexOf("/cart/update") !== -1 ||
+          url.indexOf("/cart/clear") !== -1)
+      ) {
+        call.then(function () {
+          setTimeout(fetchLatestCart, 250);
+        });
+      }
+      return call;
+    };
+  }
+
+  function handleVariantAvailability(variantOrId) {
+    var roots = document.querySelectorAll(".dropclock-widget-root, .dropclock-wrapper");
+    if (!roots.length) return;
+
+    var id = typeof variantOrId === "object" ? variantOrId.id : variantOrId;
+    var available = typeof variantOrId === "object" ? variantOrId.available !== false : true;
+
+    if (
+      typeof variantOrId !== "object" &&
+      window.ShopifyAnalytics &&
+      window.ShopifyAnalytics.meta &&
+      window.ShopifyAnalytics.meta.product &&
+      Array.isArray(window.ShopifyAnalytics.meta.product.variants)
+    ) {
+      var match = window.ShopifyAnalytics.meta.product.variants.find(function (v) {
+        return String(v.id) === String(id);
+      });
+      if (match && typeof match.available === "boolean") {
+        available = match.available;
+      }
+    }
+
+    roots.forEach(function (r) {
+      var pill = r.querySelector(".dc-pill-card");
+      var backorder = r.querySelector(".dc-backorder-notice");
+      if (available) {
+        r.setAttribute("data-available", "true");
+        if (pill) pill.style.display = "flex";
+        if (backorder) backorder.style.display = "none";
+      } else {
+        r.setAttribute("data-available", "false");
+        if (pill) pill.style.display = "none";
+        if (backorder) {
+          backorder.style.display = "flex";
+          var span = backorder.querySelector("span");
+          if (span) {
+            span.textContent =
+              "⚠️ Backorder Item: Ships as soon as restocked (Estimated dispatch in 5-7 days)";
+          }
+        }
+      }
+    });
+  }
+
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.matches && e.target.matches('form[action*="/cart/add"] [name="id"], select[name="id"]')) {
+      handleVariantAvailability(e.target.value);
+    }
+  });
+
+  document.addEventListener("theme:variant:change", function (e) {
+    if (e.detail && e.detail.variant) {
+      handleVariantAvailability(e.detail.variant);
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    initProductWidgets();
+    initCartPills();
+  });
+
+  window.addEventListener("shopify:section:load", function () {
+    initProductWidgets();
+    initCartPills();
+  });
+
+  window.DropClock = {
+    init: function () {
+      initProductWidgets();
+      initCartPills();
+    },
+    refreshCart: fetchLatestCart,
+    handleVariantShift: handleVariantAvailability,
+    formatStoreCurrency: formatStoreCurrency,
+  };
+})();

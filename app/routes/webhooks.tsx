@@ -61,15 +61,19 @@ export async function action({ request }: ActionFunctionArgs) {
     case "APP_UNINSTALLED":
       /**
        * 4. APP_UNINSTALLED
-       * Immediate cleanup upon uninstallation: Revoke active session tokens.
+       * Immediate clean unmount upon uninstallation: Purge active session tokens and mark tenant inactive.
        */
-      console.info(`[LIFECYCLE] APP_UNINSTALLED received for shop: ${shopDomain}. Revoking session tokens.`);
+      console.info(`[LIFECYCLE] APP_UNINSTALLED received for shop: ${shopDomain}. Revoking session tokens and marking tenant inactive.`);
       if (shopDomain) {
         try {
           await prisma.session.deleteMany({ where: { shop: shopDomain } });
-          console.info(`[LIFECYCLE] Revoked and purged active sessions for shop: ${shopDomain}`);
+          await prisma.dropClockSettings.updateMany({
+            where: { shop: shopDomain },
+            data: { isActive: false, uninstalledAt: new Date() },
+          });
+          console.info(`[LIFECYCLE] Revoked and purged active sessions and marked tenant inactive for shop: ${shopDomain}`);
         } catch (error) {
-          console.error(`[LIFECYCLE] Error removing session for shop ${shopDomain}:`, error);
+          console.error(`[LIFECYCLE] Error removing session and updating tenant for shop ${shopDomain}:`, error);
         }
       }
       return new Response(null, { status: 200 });

@@ -13,9 +13,14 @@
     "typecheck": "tsc",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "tsx prisma/seed.ts",
     "test:preflight": "tsx scripts/preflight-audit.ts",
     "test:audit": "node tests/audit-dropclock.js",
-    "generate:assets": "tsx scripts/generate-assets.ts"
+    "generate:assets": "tsx scripts/generate-assets.ts",
+    "generate:listing": "node scripts/generate-listing-assets.js"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

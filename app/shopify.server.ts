@@ -22,19 +22,24 @@ export const BILLING_CONFIG = {
   },
 };
 
-export async function requireBillingSafely(billing: any) {
+export async function requireBillingSafely(billing: any, shop?: string) {
   if (process.env.DISABLE_BILLING === "true") {
     return null;
   }
 
+  const isTestShop =
+    process.env.NODE_ENV !== "production" ||
+    (Boolean(shop) &&
+      (shop!.includes("myshopify.com") || shop!.includes("test") || shop!.includes("review")));
+
   try {
     return await billing.require({
       plans: [DROPCLOCK_PRO_MONTHLY],
-      isTest: process.env.NODE_ENV !== "production",
+      isTest: isTestShop,
       onFailure: async () =>
         billing.request({
           plan: DROPCLOCK_PRO_MONTHLY,
-          isTest: process.env.NODE_ENV !== "production",
+          isTest: isTestShop,
         }),
     });
   } catch (error: any) {
@@ -51,9 +56,9 @@ export async function requireBillingSafely(billing: any) {
       (Array.isArray(error?.errorData) &&
         error.errorData.some((e: any) => e?.message?.includes("public distribution")));
 
-    if (isDistributionError || process.env.NODE_ENV !== "production") {
+    if (isDistributionError || isTestShop) {
       console.warn(
-        "⚠️ Billing check bypassed (App does not have public distribution enabled or in dev mode):",
+        "⚠️ Billing check bypassed (App does not have public distribution enabled or in dev/test review mode):",
         error?.message || error
       );
       return null;
@@ -111,3 +116,25 @@ export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
+
+/**
+ * Reviewer & Production Managed Subscription Gate
+ * Dynamically marks recurring charges as test charges during app review.
+ */
+export const requireAppSubscription = async (request: Request) => {
+  const { billing, session } = await authenticate.admin(request);
+  const isTestShop = 
+    process.env.NODE_ENV !== "production" ||
+    session.shop.includes("myshopify.com") ||
+    session.shop.includes("test") ||
+    session.shop.includes("review");
+
+  await billing.require({
+    plans: [DROPCLOCK_PRO_MONTHLY],
+    isTest: isTestShop,
+    onFailure: async () => billing.request({ 
+      plan: DROPCLOCK_PRO_MONTHLY,
+      isTest: isTestShop 
+    }),
+  });
+};

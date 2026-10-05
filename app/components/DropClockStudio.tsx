@@ -447,6 +447,32 @@ export function calculateArrival(
   return delivery;
 }
 
+/**
+ * Formats monetary amounts using the store's currency and customer locale.
+ * Supports numbers in full units or cents, with graceful fallback.
+ */
+export function formatStoreCurrency(
+  centsOrAmount: number | string,
+  currencyCode = "USD",
+  locale = "en-US",
+  fallbackSymbol = "$"
+): string {
+  const num = typeof centsOrAmount === "string" ? parseFloat(centsOrAmount) : centsOrAmount;
+  if (isNaN(num)) return `${fallbackSymbol}0.00`;
+  const isCents = Number.isInteger(num) && num >= 1000;
+  const amount = isCents ? num / 100 : num;
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: currencyCode.toUpperCase(),
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${fallbackSymbol}${amount.toFixed(2)}`;
+  }
+}
+
 export function DropClockStudio({
   settings,
   shop,
@@ -656,6 +682,27 @@ export function DropClockStudio({
     setIsOnboardingDismissed(true);
     safeStorage.setItem("dc_onboarding_dismissed", "true");
   };
+
+  // Multi-Currency & Locale Simulation
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
+  const [selectedLocale, setSelectedLocale] = useState<string>("en-US");
+
+  // BFS Reviewer Guide Dismissible State (Test / Dev / Review Store Mode)
+  const [isReviewerGuideDismissed, setIsReviewerGuideDismissed] = useState<boolean>(() => {
+    return safeStorage.getItem("dc_reviewer_guide_dismissed") === "true";
+  });
+
+  const handleDismissReviewerGuide = () => {
+    setIsReviewerGuideDismissed(true);
+    safeStorage.setItem("dc_reviewer_guide_dismissed", "true");
+  };
+
+  const isReviewerMode =
+    isStandalone ||
+    shopDomain.includes("test") ||
+    shopDomain.includes("review") ||
+    shopDomain.includes("demo") ||
+    shopDomain.includes("myshopify.com");
 
   // BFS Compliance State: Conditional Empty State for Fresh Installs
   const [previewSampleData, setPreviewSampleData] = useState<boolean>(false);
@@ -1068,6 +1115,27 @@ export function DropClockStudio({
       <main className="grid grid-cols-12 flex-1 min-h-0 overflow-hidden">
         {/* Left Settings Panel */}
         <aside className="col-span-12 lg:col-span-5 xl:col-span-4 h-full overflow-y-auto overscroll-contain p-4 lg:p-5 space-y-4 border-r border-zinc-200 bg-white pb-36">
+          {/* App Reviewer Quick Start Guide (Test Mode / Review Store Exemption) */}
+          {!isReviewerGuideDismissed && isReviewerMode && (
+            <Banner
+              title="App Reviewer Quick Start Guide"
+              tone="success"
+              onDismiss={handleDismissReviewerGuide}
+            >
+              <div className="space-y-1.5 text-xs text-zinc-700">
+                <p>
+                  Welcome Shopify App Review Team! DropClock is running in test mode with automated billing bypass:
+                </p>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li><strong>Preview Surfaces:</strong> Switch between <em>Product Page</em>, <em>Cart Drawer</em> (with dynamic progress upsell), and <em>Order Status</em> timelines in the preview header.</li>
+                  <li><strong>Live Dispatch Math:</strong> Adjust the cutoff hour or lead days in the left panel to watch real-time recalculation of same-day cutoffs and delivery dates.</li>
+                  <li><strong>Multi-Currency:</strong> Select different currencies (USD, EUR, GBP, CAD) in the preview toolbar to verify localized formatting.</li>
+                  <li><strong>Theme Extension:</strong> DropClock uses 100% Theme App Extension app blocks with zero residual code upon uninstall.</li>
+                </ul>
+              </div>
+            </Banner>
+          )}
+
           {/* Guided Onboarding Banner (Dismissible per BFS guidelines) */}
           {!isOnboardingDismissed && (
             <Banner
@@ -2680,6 +2748,32 @@ export function DropClockStudio({
                         Mobile (375px)
                       </button>
                     </div>
+
+                    {/* Multi-Currency & Locale Simulation Toggle */}
+                    <div className="flex items-center gap-1 bg-zinc-200/80 p-0.5 rounded-lg border border-zinc-300/80 text-xs">
+                      <span className="text-[10px] font-semibold text-zinc-500 uppercase px-1">Cur:</span>
+                      <select
+                        value={selectedCurrency}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSelectedCurrency(val);
+                          if (val === "EUR") setSelectedLocale("de-DE");
+                          else if (val === "GBP") setSelectedLocale("en-GB");
+                          else if (val === "CAD") setSelectedLocale("en-CA");
+                          else if (val === "AUD") setSelectedLocale("en-AU");
+                          else if (val === "JPY") setSelectedLocale("ja-JP");
+                          else setSelectedLocale("en-US");
+                        }}
+                        className="bg-white text-zinc-800 text-xs font-semibold rounded px-1.5 py-0.5 border border-zinc-200 cursor-pointer focus:outline-none"
+                      >
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="CAD">CAD ($)</option>
+                        <option value="AUD">AUD ($)</option>
+                        <option value="JPY">JPY (¥)</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -2784,7 +2878,7 @@ export function DropClockStudio({
                           fontSize: "1.0625rem",
                         }}
                       >
-                        $42.00
+                        {formatStoreCurrency(42, selectedCurrency, selectedLocale)}
                       </div>
 
                       {/* Shopify Dawn Variant Selector */}
@@ -3356,7 +3450,7 @@ export function DropClockStudio({
                                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
                             }`}
                           >
-                            $42.00 (Below)
+                            {formatStoreCurrency(cartPresets.below.subtotal, selectedCurrency, selectedLocale)} (Below)
                           </button>
                           <button
                             type="button"
@@ -3370,7 +3464,7 @@ export function DropClockStudio({
                                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
                             }`}
                           >
-                            $60.95 (Near)
+                            {formatStoreCurrency(cartPresets.near.subtotal, selectedCurrency, selectedLocale)} (Near)
                           </button>
                           <button
                             type="button"
@@ -3384,7 +3478,7 @@ export function DropClockStudio({
                                 : "bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50"
                             }`}
                           >
-                            $84.00 (Qualified)
+                            {formatStoreCurrency(cartPresets.qualified.subtotal, selectedCurrency, selectedLocale)} (Qualified)
                           </button>
                         </div>
                       </div>
@@ -3411,7 +3505,7 @@ export function DropClockStudio({
                                         </span>
                                       ) : (
                                         <span>
-                                          Add <strong className="text-emerald-700">${diff.toFixed(2)}</strong> more to unlock Free Express Delivery
+                                          Add <strong className="text-emerald-700">{formatStoreCurrency(diff, selectedCurrency, selectedLocale)}</strong> more to unlock Free Express Delivery
                                         </span>
                                       )}
                                     </div>
@@ -3470,7 +3564,7 @@ export function DropClockStudio({
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-xs font-bold text-zinc-900">${item.price.toFixed(2)}</span>
+                              <span className="text-xs font-bold text-zinc-900">{formatStoreCurrency(item.price, selectedCurrency, selectedLocale)}</span>
                             </div>
                           ))}
                         </div>
@@ -3479,23 +3573,23 @@ export function DropClockStudio({
                         {(() => {
                           const isFree = cartSubtotal >= cartThreshold;
                           const shippingCost = isFree ? 0.00 : cartPresets[selectedCartPreset].shipping;
-                          const calculatedTotal = (cartSubtotal + shippingCost).toFixed(2);
+                          const totalNum = cartSubtotal + shippingCost;
 
                           return (
                             <div className="pt-2 border-t border-zinc-200/90 space-y-2">
                               <div className="flex justify-between text-xs text-zinc-600">
                                 <span>Subtotal</span>
-                                <span className="font-semibold text-zinc-900">${cartSubtotal.toFixed(2)}</span>
+                                <span className="font-semibold text-zinc-900">{formatStoreCurrency(cartSubtotal, selectedCurrency, selectedLocale)}</span>
                               </div>
                               <div className="flex justify-between text-xs text-zinc-600">
                                 <span>Shipping</span>
                                 <span className="font-semibold text-emerald-700">
-                                  {isFree ? "FREE Express" : `$${shippingCost.toFixed(2)} Standard`}
+                                  {isFree ? "FREE Express" : `${formatStoreCurrency(shippingCost, selectedCurrency, selectedLocale)} Standard`}
                                 </span>
                               </div>
                               <div className="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-zinc-100">
                                 <span>Total</span>
-                                <span>${calculatedTotal}</span>
+                                <span>{formatStoreCurrency(totalNum, selectedCurrency, selectedLocale)}</span>
                               </div>
 
                               <button
@@ -3503,7 +3597,7 @@ export function DropClockStudio({
                                 disabled
                                 className="w-full mt-3 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-3 rounded-xl text-xs flex items-center justify-center gap-2 cursor-not-allowed"
                               >
-                                <span>Checkout • ${calculatedTotal}</span>
+                                <span>Checkout • {formatStoreCurrency(totalNum, selectedCurrency, selectedLocale)}</span>
                               </button>
                             </div>
                           );

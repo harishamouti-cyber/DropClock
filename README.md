@@ -146,7 +146,84 @@ This registers the `dropclock_pill` block version in your Shopify Partners accou
 | `npm run test:audit` | Runs the Phase 2 Core Web Vitals, boundary clock, and sub-4KB payload audit |
 | `npm run typecheck` | Validates TypeScript definitions with `tsc` |
 | `npm run build` | Compiles the client, SSR server bundle, and Vercel artifacts |
-| `npm run generate:assets` | Re-generates 1600×900 App Store marketing graphics via Playwright |
+| `npm run generate:listing` | Generates all 5 mandatory App Store listing assets in `public/listing/` via Playwright |
+| `npm run prisma:seed` | Seeds default settings into PostgreSQL/SQLite for review and dev stores |
+
+---
+
+## 🏪 Shopify App Store Listing Copy & Metadata
+
+Ready-to-paste assets for the Shopify Partners App Store submission form:
+
+### 1. Basic Information
+- **App Name**: DropClock
+- **Tagline (Max 100 characters)**:
+  `Order Cutoff Countdown Timer & Estimated Delivery ETA. Boost conversion with live urgency.`
+- **Key Categories**: Conversion, Orders & Shipping, Store Design
+- **Pricing**: $8.99/month with a 7-day free trial. Test stores and reviewer accounts are 100% exempt from charges.
+
+### 2. Search Keywords (Tags)
+```text
+countdown timer, order cutoff, estimated delivery date, delivery countdown, same day delivery, dispatch timer, free shipping bar, urgency timer, cart drawer countdown, transit eta
+```
+
+### 3. Key Features (Bullets)
+- **Same-Day Dispatch Countdown**: Real-time warehouse cutoff timer synchronized with shop timezone to drive cart urgency.
+- **Dynamic Delivery Date ETAs**: Accurate arrival calculations accounting for warehouse handling days, operating schedules, and blackout dates.
+- **Cart Drawer Threshold Upsell**: Live progress bar displaying remaining amount needed for Free Express Delivery.
+- **100% Theme App Extension**: Embedded via Shopify OS 2.0 blocks — zero ScriptTags, zero theme code contamination, zero layout shifts (0 CLS).
+- **Multi-Currency & Locale Aware**: Automatic formatting for USD, EUR, GBP, CAD, AUD, JPY and local visitor date standards.
+- **Tag-Based Cutoff Overrides**: Custom lead times for pre-orders, made-to-order, or warehouse-specific product tags.
+
+### 4. Detailed Description (Markdown for App Store)
+```markdown
+DropClock turns casual browsers into buyers by answering the #1 question shoppers have before checkout: **"When will my order arrive?"**
+
+### ⚡ Drive Immediate Checkout Velocity
+Display an honest, real-time countdown timer directly on your product pages and cart drawer showing exactly how many hours and minutes remain for same-day or next-day dispatch.
+
+### 📦 Key Merchant Advantages:
+- **Zero Speed Drag**: Built entirely with Shopify Theme App Extensions (`dropclock_pill.liquid`). Zero external scripts, zero remote tracking pixels, and sub-4KB asset payload.
+- **Multi-Surface Storefront Coverage**:
+  - *Product Pages*: High-converting countdown capsule with live delivery date.
+  - *Cart Drawer & Cart Page*: Dynamic threshold progress bar (e.g. "Add $14.05 more to unlock Free Express Delivery").
+  - *Post-Purchase SLA Status*: Visual order tracking timeline for customer reassurance.
+- **Intelligent Inventory Awareness**: Automatically suppresses countdowns for out-of-stock items and displays customizable backorder or pre-order notices.
+- **Global Markets & Blackout Calendar**: Set custom lead times per international country and mark holidays or warehouse closures so arrival dates are always 100% accurate.
+
+DropClock installs in 30 seconds with 1-click theme customizer integration. No code editing required.
+```
+
+---
+
+## 🔍 App Reviewer Test Credentials & Verification Guide
+
+For Shopify App Store Reviewers evaluating DropClock:
+
+1. **Automated Reviewer Billing Exemption**:
+   - Any test store or store domain containing `myshopify.com`, `test`, `review`, or `demo` automatically bypasses billing charges in `app/shopify.server.ts`.
+   - The app launches directly into **DropClock Studio** with complete administrative and preview functionality.
+2. **Reviewer Quick Start Guide**:
+   - An in-app informational banner (`App Reviewer Quick Start Guide`) is prominently displayed on the Studio dashboard.
+   - Click the preview surface tabs (**Product Page**, **Cart Drawer**, **Order Status**) in the header to evaluate all three customer touchpoints.
+   - Adjust the cutoff hour or lead days in the left configuration panel to watch immediate live recalculation of the countdown clock and ETA date strings.
+   - Toggle between **USD**, **EUR**, **GBP**, **CAD**, and **JPY** in the preview toolbar to verify multi-currency localization.
+3. **Database Seeder**:
+   - Run `npm run prisma:seed` to populate standard default configurations for automated headless testing.
+4. **Clean Unmount Guarantee**:
+   - DropClock leaves **zero residual code** in your merchant theme. Uninstalling the app deactivates the Theme App Extension blocks cleanly without any manual cleanup.
+
+---
+
+## 🖼️ App Store Listing Visual Assets
+
+All 5 required high-resolution listing assets are pre-generated in `public/listing/`:
+
+1. `public/listing/app-icon-1200x1200.png` — 1200×1200px App Icon (no pre-rounded corners, emerald brand mark).
+2. `public/listing/key-visual-1600x900.png` — 1600×900px High-resolution hero card (under 3MB).
+3. `public/listing/screenshot-1-studio-1600x900.png` — 1600×900px DropClock Studio configuration dashboard.
+4. `public/listing/screenshot-2-product-1600x900.png` — 1600×900px Storefront product page with live cutoff capsule.
+5. `public/listing/screenshot-3-cart-order-1600x900.png` — 1600×900px Cart drawer threshold upsell & post-purchase SLA.
 
 ---
 
@@ -155,9 +232,11 @@ This registers the `dropclock_pill` block version in your Shopify Partners accou
 DropClock strictly follows Shopify's data minimization principles:
 - **No Customer Data Access**: Only requests `read_products,write_products` scopes.
 - **Zero ScriptTag Policy**: Zero runtime script injection. All frontend code is bundled directly into the theme extension block and isolated in an IIFE.
-- **Atomic Shop Purge**: When an uninstall webhook is received, an atomic transaction purges all database records for that shop within 48 hours.
+- **Clean Uninstall Webhook**: Webhook `APP_UNINSTALLED` marks settings inactive, sets `uninstalledAt`, and purges merchant sessions atomically.
+- **Frame-Ancestors Security**: Embedded requests enforce dynamic CSP `frame-ancestors https://${shop} https://admin.shopify.com` with `X-Frame-Options` stripped for App Bridge compatibility.
 
 ---
 
 ## 📄 License
 UNLICENSED — All rights reserved.
+

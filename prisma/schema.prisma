@@ -51,6 +51,8 @@ model DropClockSettings {
   etaText         String?  @default("Estimated Delivery:")
   enableTagRules  Boolean  @default(true)
   marketOverrides String   @default("{}")          @db.Text
+  isActive        Boolean  @default(true)
+  uninstalledAt   DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
