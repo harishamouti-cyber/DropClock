@@ -512,13 +512,14 @@ export function DropClockStudio({
 
   const handleManageBilling = () => {
     const cleanShop = shopDomain.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    const billingUrl = `https://${cleanShop}/admin/charges/dropclock/pricing_plans`;
-    if (typeof window !== "undefined") {
-      if (window.shopify && typeof window.shopify.open === "function") {
-        window.shopify.open(billingUrl, "_blank");
-      } else {
-        window.open(billingUrl, "_blank", "noopener,noreferrer");
-      }
+    // Canonical Shopify Admin Billing settings route (always active, never 404s)
+    const billingUrl = `https://${cleanShop}/admin/settings/billing`;
+    if (shopify && typeof shopify.open === "function") {
+      shopify.open(billingUrl, "_blank");
+    } else if (typeof window !== "undefined" && window.shopify && typeof window.shopify.open === "function") {
+      window.shopify.open(billingUrl, "_blank");
+    } else if (typeof window !== "undefined") {
+      window.open(billingUrl, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -591,11 +592,37 @@ export function DropClockStudio({
     return `${resolvedTimezone} (UTC${sign}${hours}${minsStr})`;
   }, [resolvedTimezone, resolvedOffsetMinutes]);
 
+  const safeDefaults: StudioSettings = {
+    shop: shop || "my-store.myshopify.com",
+    cutoffHour: 14,
+    cutoffMinute: 0,
+    leadDays: 2,
+    workingDays: "[1,2,3,4,5]",
+    blackoutDates: "[]",
+    tagRules: "[]",
+    tagRulesJson: "[]",
+    marketOverrides: "{}",
+    widgetStyle: "capsule",
+    presetStyle: "capsule",
+    accentColor: "#008060",
+    primaryColor: "#008060",
+    cardBg: "#F4F6F8",
+    bgColor: "#F4F6F8",
+    textColor: "#202223",
+    leadText: "Order within",
+    sameDayText: "for same-day dispatch",
+    nextDayText: "for tomorrow's dispatch",
+    etaText: "Estimated Delivery:",
+    translations: "{}",
+    freeShippingThreshold: 75,
+  };
+  const safeSettings: StudioSettings = { ...safeDefaults, ...(settings || {}) };
+
   // Form State
-  const [cutoffHour, setCutoffHour] = useState(settings.cutoffHour);
-  const [cutoffMinute, setCutoffMinute] = useState(settings.cutoffMinute);
-  const [hourInput, setHourInput] = useState(settings.cutoffHour.toString().padStart(2, "0"));
-  const [minuteInput, setMinuteInput] = useState(settings.cutoffMinute.toString().padStart(2, "0"));
+  const [cutoffHour, setCutoffHour] = useState(safeSettings.cutoffHour ?? 14);
+  const [cutoffMinute, setCutoffMinute] = useState(safeSettings.cutoffMinute ?? 0);
+  const [hourInput, setHourInput] = useState((safeSettings.cutoffHour ?? 14).toString().padStart(2, "0"));
+  const [minuteInput, setMinuteInput] = useState((safeSettings.cutoffMinute ?? 0).toString().padStart(2, "0"));
 
   useEffect(() => {
     setHourInput(cutoffHour.toString().padStart(2, "0"));
@@ -605,15 +632,15 @@ export function DropClockStudio({
     setMinuteInput(cutoffMinute.toString().padStart(2, "0"));
   }, [cutoffMinute]);
 
-  const [leadDays, setLeadDays] = useState(settings.leadDays);
-  const [isCustomLeadDays, setIsCustomLeadDays] = useState(settings.leadDays > 2);
-  const [presetStyle, setPresetStyle] = useState(settings.widgetStyle || settings.presetStyle || "capsule");
-  const [primaryColor, setPrimaryColor] = useState(settings.accentColor || settings.primaryColor || "#008060");
-  const [bgColor, setBgColor] = useState(settings.cardBg || settings.bgColor || "#F4F6F8");
-  const [textColor, setTextColor] = useState(settings.textColor || "#202223");
+  const [leadDays, setLeadDays] = useState(safeSettings.leadDays ?? 2);
+  const [isCustomLeadDays, setIsCustomLeadDays] = useState((safeSettings.leadDays ?? 2) > 2);
+  const [presetStyle, setPresetStyle] = useState(safeSettings.widgetStyle || safeSettings.presetStyle || "capsule");
+  const [primaryColor, setPrimaryColor] = useState(safeSettings.accentColor || safeSettings.primaryColor || "#008060");
+  const [bgColor, setBgColor] = useState(safeSettings.cardBg || safeSettings.bgColor || "#F4F6F8");
+  const [textColor, setTextColor] = useState(safeSettings.textColor || "#202223");
   const [workingDays, setWorkingDays] = useState<number[]>(() => {
     try {
-      const parsed = JSON.parse(settings.workingDays || "[1,2,3,4,5]");
+      const parsed = JSON.parse(safeSettings.workingDays || "[1,2,3,4,5]");
       if (Array.isArray(parsed) && parsed.length > 0) {
         if (parsed.length === 1 && (parsed[0] === 0 || parsed[0] === 6)) {
           return [1, 2, 3, 4, 5];
@@ -629,7 +656,7 @@ export function DropClockStudio({
   // Warehouse Holiday & Blackout Dates State
   const [blackoutDates, setBlackoutDates] = useState<string[]>(() => {
     try {
-      const parsed = JSON.parse(settings.blackoutDates || "[]");
+      const parsed = JSON.parse(safeSettings.blackoutDates || "[]");
       return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
@@ -641,7 +668,7 @@ export function DropClockStudio({
   // Product Tag Overrides State
   const [tagRules, setTagRules] = useState<Array<{ tag: string; leadDays: number }>>(() => {
     try {
-      const parsed = JSON.parse(settings.tagRules || settings.tagRulesJson || "[]");
+      const parsed = JSON.parse(safeSettings.tagRules || safeSettings.tagRulesJson || "[]");
       return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
@@ -650,10 +677,10 @@ export function DropClockStudio({
   const [isTagRulesOpen, setIsTagRulesOpen] = useState(true);
 
   // Storefront Text & Translations State
-  const [leadText, setLeadText] = useState(settings.leadText || "Order within");
-  const [sameDayText, setSameDayText] = useState(settings.sameDayText || "for same-day dispatch");
-  const [nextDayText, setNextDayText] = useState(settings.nextDayText || "for tomorrow's dispatch");
-  const [etaText, setEtaText] = useState(settings.etaText || "Estimated Delivery:");
+  const [leadText, setLeadText] = useState(safeSettings.leadText || "Order within");
+  const [sameDayText, setSameDayText] = useState(safeSettings.sameDayText || "for same-day dispatch");
+  const [nextDayText, setNextDayText] = useState(safeSettings.nextDayText || "for tomorrow's dispatch");
+  const [etaText, setEtaText] = useState(safeSettings.etaText || "Estimated Delivery:");
   const [isTranslationsOpen, setIsTranslationsOpen] = useState(true);
 
   // Mock Storefront Stock State & Dawn Variant Selector
@@ -732,10 +759,10 @@ export function DropClockStudio({
   // Save feedback states
   const [isSaving, setIsSaving] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
-  const [baselineSettings, setBaselineSettings] = useState(settings);
+  const [baselineSettings, setBaselineSettings] = useState<StudioSettings>(safeSettings);
 
   useEffect(() => {
-    setBaselineSettings(settings);
+    setBaselineSettings({ ...safeDefaults, ...(settings || {}) });
   }, [settings]);
 
   const baselineWorkingDaysStr = useMemo(() => {
@@ -756,9 +783,9 @@ export function DropClockStudio({
   // Calculate Form Dirty State for App Bridge SaveBar
   const isDirty = useMemo(() => {
     return (
-      cutoffHour !== baselineSettings.cutoffHour ||
-      cutoffMinute !== baselineSettings.cutoffMinute ||
-      leadDays !== baselineSettings.leadDays ||
+      cutoffHour !== (baselineSettings.cutoffHour ?? 14) ||
+      cutoffMinute !== (baselineSettings.cutoffMinute ?? 0) ||
+      leadDays !== (baselineSettings.leadDays ?? 2) ||
       cartThreshold !== (baselineSettings.freeShippingThreshold || 75) ||
       presetStyle !== (baselineSettings.presetStyle || "capsule") ||
       primaryColor.toLowerCase() !== (baselineSettings.primaryColor || "#008060").toLowerCase() ||
@@ -809,13 +836,16 @@ export function DropClockStudio({
   }, []);
 
   const handleDiscard = () => {
-    setCutoffHour(baselineSettings.cutoffHour);
-    setCutoffMinute(baselineSettings.cutoffMinute);
-    setHourInput(baselineSettings.cutoffHour.toString().padStart(2, "0"));
-    setMinuteInput(baselineSettings.cutoffMinute.toString().padStart(2, "0"));
-    setLeadDays(baselineSettings.leadDays);
+    const bCutoffHour = baselineSettings.cutoffHour ?? 14;
+    const bCutoffMinute = baselineSettings.cutoffMinute ?? 0;
+    const bLeadDays = baselineSettings.leadDays ?? 2;
+    setCutoffHour(bCutoffHour);
+    setCutoffMinute(bCutoffMinute);
+    setHourInput(bCutoffHour.toString().padStart(2, "0"));
+    setMinuteInput(bCutoffMinute.toString().padStart(2, "0"));
+    setLeadDays(bLeadDays);
     setCartThreshold(baselineSettings.freeShippingThreshold || 75);
-    setIsCustomLeadDays(baselineSettings.leadDays > 2);
+    setIsCustomLeadDays(bLeadDays > 2);
     setPresetStyle(baselineSettings.presetStyle || "capsule");
     setPrimaryColor(baselineSettings.primaryColor || "#008060");
     setBgColor(baselineSettings.bgColor || "#F4F6F8");
@@ -1223,16 +1253,19 @@ export function DropClockStudio({
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-semibold text-zinc-900">DropClock Pro</div>
-                <div className="text-xs text-zinc-500">$8.99 / month after trial</div>
+                <div className="text-xs text-zinc-500">$8.99 / month · Shopify Managed Billing</div>
               </div>
               <button
                 type="button"
                 onClick={handleManageBilling}
                 className="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors border border-zinc-200 cursor-pointer"
               >
-                Manage Subscription
+                Shopify Billing Settings
               </button>
             </div>
+            <p className="text-[11px] text-zinc-400">
+              Active test mode on development stores. Manage charges and payment methods directly in Shopify Admin Settings.
+            </p>
           </div>
 
           {/* 0. BFS-Compliant Storefront Fulfillment Analytics Card */}

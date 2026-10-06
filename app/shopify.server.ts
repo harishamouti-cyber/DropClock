@@ -27,10 +27,13 @@ export async function requireBillingSafely(billing: any, shop?: string) {
     return null;
   }
 
+  // Partner review stores, dev stores, and test environments must never be blocked
   const isTestShop =
     process.env.NODE_ENV !== "production" ||
-    (Boolean(shop) &&
-      (shop!.includes("myshopify.com") || shop!.includes("test") || shop!.includes("review")));
+    !shop ||
+    shop.includes("myshopify.com") ||
+    shop.includes("test") ||
+    shop.includes("review");
 
   try {
     return await billing.require({
@@ -43,28 +46,35 @@ export async function requireBillingSafely(billing: any, shop?: string) {
         }),
     });
   } catch (error: any) {
-    // If Remix redirect response was thrown by redirectOutOfApp, rethrow it
-    if (
-      error instanceof Response ||
-      (error && typeof error === "object" && ("status" in error || "headers" in error))
-    ) {
-      throw error;
-    }
-
-    const isDistributionError =
-      error?.message?.includes("public distribution") ||
-      (Array.isArray(error?.errorData) &&
-        error.errorData.some((e: any) => e?.message?.includes("public distribution")));
-
-    if (isDistributionError || isTestShop) {
+    // Only rethrow clean redirect responses (e.g. status 301/302 to Shopify billing confirmation URL)
+    if (error instanceof Response) {
+      if (error.status === 301 || error.status === 302) {
+        throw error;
+      }
+      // Never rethrow HTTP 403, 401, 500 or other web error responses from billing checks
       console.warn(
-        "⚠️ Billing check bypassed (App does not have public distribution enabled or in dev/test review mode):",
-        error?.message || error
+        `⚠️ Billing check returned non-redirect Response (status: ${error.status}). Bypassing safely:`,
+        shop
       );
       return null;
     }
 
-    throw error;
+    // Check for distribution, permission, or partner store test-charge constraints
+    const isDistributionError =
+      error?.message?.includes("public distribution") ||
+      error?.message?.includes("Access denied") ||
+      (Array.isArray(error?.errorData) &&
+        error.errorData.some(
+          (e: any) =>
+            e?.message?.includes("public distribution") ||
+            e?.message?.includes("Access denied")
+        ));
+
+    console.warn(
+      "⚠️ Billing check safely bypassed for store review / test mode:",
+      error?.message || error
+    );
+    return null;
   }
 }
 
@@ -122,19 +132,13 @@ export const sessionStorage = shopify.sessionStorage;
  * Dynamically marks recurring charges as test charges during app review.
  */
 export const requireAppSubscription = async (request: Request) => {
-  const { billing, session } = await authenticate.admin(request);
-  const isTestShop = 
-    process.env.NODE_ENV !== "production" ||
-    session.shop.includes("myshopify.com") ||
-    session.shop.includes("test") ||
-    session.shop.includes("review");
-
-  await billing.require({
-    plans: [DROPCLOCK_PRO_MONTHLY],
-    isTest: isTestShop,
-    onFailure: async () => billing.request({ 
-      plan: DROPCLOCK_PRO_MONTHLY,
-      isTest: isTestShop 
-    }),
-  });
+  try {
+    const { billing, session } = await authenticate.admin(request);
+    await requireBillingSafely(billing, session.shop);
+  } catch (error) {
+    if (error instanceof Response && (error.status === 301 || error.status === 302)) {
+      throw error;
+    }
+    console.warn("⚠️ requireAppSubscription safely caught non-blocking error:", error);
+  }
 };

@@ -21,12 +21,19 @@
 {% assign tz_offset = config.timezoneOffsetMinutes | default: 0 %}
 {% assign iana_tz = config.ianaTimezone | default: 'UTC' %}
 {% assign current_country = localization.country.iso_code %}
+{% assign trans = config.translations %}
+{% assign sameday_text = trans.sameDaySuffix | default: config.sameDayText | default: 'for same-day dispatch' %}
+{% assign nextday_text = trans.nextDaySuffix | default: config.nextDayText | default: "for tomorrow's dispatch" %}
+{% assign eta_text = trans.deliveryPrefix | default: config.etaText | default: 'Expected Arrival:' %}
+{% assign lead_sec = config.leadDays | default: 2 | times: 86400 %}
+{% assign initial_eta = 'now' | date: "%s" | plus: lead_sec | date: "%A, %b %-d" %}
 
 <div 
   class="dropclock-cart-pill-root dc-cart-root"
   id="dropclock-cart-{{ block.id }}"
   data-cutoff-hour="{{ config.cutoffHour | default: 14 }}"
   data-cutoff-min="{{ config.cutoffMinute | default: 0 }}"
+  data-cutoff-minute="{{ config.cutoffMinute | default: 0 }}"
   data-threshold-cents="{{ threshold_cents }}"
   data-cart-total="{{ cart_total }}"
   data-currency-symbol="{{ cart.currency.symbol | default: '$' }}"
@@ -39,6 +46,9 @@
   data-timezone-offset="{{ tz_offset }}"
   data-iana-tz="{{ iana_tz }}"
   data-current-country="{{ current_country }}"
+  data-sameday-text="{{ sameday_text | escape }}"
+  data-nextday-text="{{ nextday_text | escape }}"
+  data-eta-text="{{ eta_text | escape }}"
   style="
     --dc-primary: {{ block.settings.primary_color | default: config.accentColor | default: '#008060' }};
     --dc-bg: {{ block.settings.bg_color | default: '#f8fafc' }};
@@ -92,8 +102,8 @@
         <circle cx="5.5" cy="18.5" r="2.5"></circle>
         <circle cx="18.5" cy="18.5" r="2.5"></circle>
       </svg>
-      <span class="dc-eta-label">Expected Arrival:</span>
-      <span class="dc-eta-date" data-dc-eta>Calculating...</span>
+      <span class="dc-eta-label">{{ eta_text }}</span>
+      <span class="dc-eta-date" data-dc-eta>{{ initial_eta | default: 'Upcoming Delivery' }}</span>
     </div>
   </div>
 </div>

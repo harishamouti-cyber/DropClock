@@ -233,7 +233,7 @@ Here is how to test and verify DropClock in under 2 minutes:
 
 All 5 required high-resolution listing assets are pre-generated in `public/listing/` and `public/`:
 
-1. `public/app-icon.png` — 512×512px Admin Sidebar Icon (no pre-rounded corners, 30% safe zone padding).
+1. `public/app-icon.png` — 1200×1200px App Icon (no pre-rounded corners, 30% safe zone padding).
 2. `public/listing/app-icon-1200x1200.png` — 1200×1200px App Icon (no pre-rounded corners, emerald brand mark).
 3. `public/listing/key-visual-1600x900.png` — 1600×900px High-resolution hero card (under 3MB).
 4. `public/listing/screenshot-1-studio-1600x900.png` — 1600×900px DropClock Studio configuration dashboard.

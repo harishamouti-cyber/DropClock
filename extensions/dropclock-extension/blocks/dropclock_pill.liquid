@@ -104,7 +104,7 @@
         </svg>
       {% endif %}
       <span class="dc-eta-label">{{ eta_text }}</span>
-      <span class="dc-eta-date" data-dc-eta>Calculating...</span>
+      <span class="dc-eta-date" data-dc-eta>{{ 'now' | date: "%s" | plus: 172800 | date: "%A, %b %-d" }}</span>
     </div>
   </div>
 
