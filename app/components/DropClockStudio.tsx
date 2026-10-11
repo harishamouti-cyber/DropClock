@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSubmit, useNavigation } from "@remix-run/react";
+import { useSubmit, useNavigation, Link, useNavigate } from "@remix-run/react";
 import { Page, Badge, Banner } from "@shopify/polaris";
 import { DropClockLogo } from "./DropClockLogo";
 
@@ -489,6 +489,7 @@ export function DropClockStudio({
 }: DropClockStudioProps) {
   const submit = useSubmit();
   const navigation = useNavigation();
+  const navigate = useNavigate();
 
   const shopify = typeof window !== "undefined" ? window.shopify : undefined;
 
@@ -511,16 +512,7 @@ export function DropClockStudio({
   };
 
   const handleManageBilling = () => {
-    const cleanShop = shopDomain.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    // Canonical Shopify Admin Billing settings route (always active, never 404s)
-    const billingUrl = `https://${cleanShop}/admin/settings/billing`;
-    if (shopify && typeof shopify.open === "function") {
-      shopify.open(billingUrl, "_blank");
-    } else if (typeof window !== "undefined" && window.shopify && typeof window.shopify.open === "function") {
-      window.shopify.open(billingUrl, "_blank");
-    } else if (typeof window !== "undefined") {
-      window.open(billingUrl, "_blank", "noopener,noreferrer");
-    }
+    navigate("/app/pricing");
   };
 
   // Defensive App Bridge Environment Detection
@@ -1225,16 +1217,19 @@ export function DropClockStudio({
                   </div>
                   <div className="space-y-1.5 pl-1">
                     <div>
-                      <span className="font-semibold text-zinc-900">1. Studio Setup:</span> Adjust cutoff time (e.g. 14:00) or transit lead time (e.g. 2 Days) on the left to see live dispatch and arrival calculations.
+                      <span className="font-semibold text-zinc-900">1. Shopify Billing API Verification:</span> Navigate to <strong>&ldquo;Plans &amp; Pricing&rdquo;</strong> in the navigation bar or click &ldquo;View Plans &amp; Pricing&rdquo; below to test our 7-Day Free Trial recurring charge flow (configured with <code>isTest: true</code> for risk-free reviewer testing).
                     </div>
                     <div>
-                      <span className="font-semibold text-zinc-900">2. Theme App Extension:</span> Click <em>&ldquo;Add to Theme Editor&rdquo;</em> in the title bar to open Dawn with DropClock pre-selected, then save and view any PDP.
+                      <span className="font-semibold text-zinc-900">2. Studio Setup:</span> Adjust cutoff time (e.g. 14:00) or transit lead time (e.g. 2 Days) on the left to see live dispatch and arrival calculations.
                     </div>
                     <div>
-                      <span className="font-semibold text-zinc-900">3. Surface Previews:</span> Switch between <em>Product Page</em>, <em>Cart Drawer</em> (free delivery upsell), and <em>Order Status</em>; toggle <em>Mobile (375px)</em>.
+                      <span className="font-semibold text-zinc-900">3. Theme App Extension:</span> Click <em>&ldquo;Add to Theme Editor&rdquo;</em> in the title bar to open Dawn with DropClock pre-selected, then save and view any PDP.
                     </div>
                     <div>
-                      <span className="font-semibold text-zinc-900">4. Clean Uninstallation:</span> 100% Theme App Extension architecture (zero `theme.liquid` code). `APP_UNINSTALLED` webhook purges session records.
+                      <span className="font-semibold text-zinc-900">4. Surface Previews:</span> Switch between <em>Product Page</em>, <em>Cart Drawer</em> (free delivery upsell), and <em>Order Status</em>; toggle <em>Mobile (375px)</em>.
+                    </div>
+                    <div>
+                      <span className="font-semibold text-zinc-900">5. Clean Uninstallation:</span> 100% Theme App Extension architecture (zero <code>theme.liquid</code> code). <code>APP_UNINSTALLED</code> webhook purges session records.
                     </div>
                   </div>
                 </div>
@@ -1245,7 +1240,7 @@ export function DropClockStudio({
           {/* Dedicated Subscription & Plan Card */}
           <div className="p-4 bg-white border border-zinc-200/80 rounded-xl shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Subscription & Plan</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Subscription &amp; Plan</span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                 7-Day Free Trial
               </span>
@@ -1253,18 +1248,17 @@ export function DropClockStudio({
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-semibold text-zinc-900">DropClock Pro</div>
-                <div className="text-xs text-zinc-500">$8.99 / month · Shopify Managed Billing</div>
+                <div className="text-xs text-zinc-500">$9.99 / month (or $89.99 / year) · Shopify Managed Billing</div>
               </div>
-              <button
-                type="button"
-                onClick={handleManageBilling}
-                className="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors border border-zinc-200 cursor-pointer"
+              <Link
+                to="/app/pricing"
+                className="px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200 cursor-pointer inline-flex items-center gap-1"
               >
-                Shopify Billing Settings
-              </button>
+                View Plans &amp; Pricing →
+              </Link>
             </div>
             <p className="text-[11px] text-zinc-400">
-              Active test mode on development stores. Manage charges and payment methods directly in Shopify Admin Settings.
+              Active test mode on development stores and reviewer accounts. Test charges never bill your credit card.
             </p>
           </div>
 
@@ -2057,7 +2051,7 @@ export function DropClockStudio({
               </div>
             </div>
 
-            {/* 4c. Order Status & Post-Purchase Checkout */}
+            {/* 4c. Order Status & Post-Purchase */}
             <div
               style={{
                 backgroundColor: "#ffffff",
@@ -2878,7 +2872,7 @@ export function DropClockStudio({
                         ? "yourstore.com/products/classic-boxy-crewneck"
                         : activeSurface === "cart"
                         ? "yourstore.com/cart (Slide-Out Drawer)"
-                        : "yourstore.com/checkout/orders/1084/thank_you"}
+                        : "yourstore.com/orders/1084/status (Order Status Page)"}
                     </span>
                   </div>
 

@@ -30,6 +30,9 @@ export default function App() {
         <Link to="/app" rel="home">
           Studio
         </Link>
+        <Link to="/app/pricing">
+          Plans & Pricing
+        </Link>
         <a href="https://dropclock.app/docs" target="_blank" rel="noreferrer">
           Documentation
         </a>

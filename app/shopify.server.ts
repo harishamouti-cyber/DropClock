@@ -10,12 +10,30 @@ import prisma from "./db.server";
 
 export const apiVersion = LATEST_API_VERSION;
 
-// Standardized Recurring Billing Plan Constant
-export const DROPCLOCK_PRO_MONTHLY = "DropClock Pro";
+import {
+  MONTHLY_PLAN,
+  ANNUAL_PLAN,
+  DROPCLOCK_PRO_MONTHLY,
+} from "./billing.constants";
+
+export { MONTHLY_PLAN, ANNUAL_PLAN, DROPCLOCK_PRO_MONTHLY };
+
 
 export const BILLING_CONFIG = {
+  [MONTHLY_PLAN]: {
+    amount: 9.99,
+    currencyCode: "USD",
+    interval: BillingInterval.Every30Days,
+    trialDays: 7,
+  },
+  [ANNUAL_PLAN]: {
+    amount: 89.99,
+    currencyCode: "USD",
+    interval: BillingInterval.Annual,
+    trialDays: 7,
+  },
   [DROPCLOCK_PRO_MONTHLY]: {
-    amount: 8.99,
+    amount: 9.99,
     currencyCode: "USD",
     interval: BillingInterval.Every30Days,
     trialDays: 7,
@@ -27,7 +45,7 @@ export async function requireBillingSafely(billing: any, shop?: string) {
     return null;
   }
 
-  // Partner review stores, dev stores, and test environments must never be blocked
+  // Partner review stores, dev stores, and test environments run in test mode
   const isTestShop =
     process.env.NODE_ENV !== "production" ||
     !shop ||
@@ -36,42 +54,16 @@ export async function requireBillingSafely(billing: any, shop?: string) {
     shop.includes("review");
 
   try {
-    return await billing.require({
-      plans: [DROPCLOCK_PRO_MONTHLY],
+    return await billing.check({
+      plans: [MONTHLY_PLAN, ANNUAL_PLAN],
       isTest: isTestShop,
-      onFailure: async () =>
-        billing.request({
-          plan: DROPCLOCK_PRO_MONTHLY,
-          isTest: isTestShop,
-        }),
     });
   } catch (error: any) {
-    // Only rethrow clean redirect responses (e.g. status 301/302 to Shopify billing confirmation URL)
-    if (error instanceof Response) {
-      if (error.status === 301 || error.status === 302) {
-        throw error;
-      }
-      // Never rethrow HTTP 403, 401, 500 or other web error responses from billing checks
-      console.warn(
-        `⚠️ Billing check returned non-redirect Response (status: ${error.status}). Bypassing safely:`,
-        shop
-      );
-      return null;
+    if (error instanceof Response && (error.status === 301 || error.status === 302)) {
+      throw error;
     }
-
-    // Check for distribution, permission, or partner store test-charge constraints
-    const isDistributionError =
-      error?.message?.includes("public distribution") ||
-      error?.message?.includes("Access denied") ||
-      (Array.isArray(error?.errorData) &&
-        error.errorData.some(
-          (e: any) =>
-            e?.message?.includes("public distribution") ||
-            e?.message?.includes("Access denied")
-        ));
-
     console.warn(
-      "⚠️ Billing check safely bypassed for store review / test mode:",
+      "⚠️ Billing check safely handled for test / review mode:",
       error?.message || error
     );
     return null;
@@ -99,13 +91,24 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: resilientSessionStorage,
   distribution: AppDistribution.AppStore,
+  // Strict App Store Billing Configuration (Requirement 1.2.2)
   billing: {
-    [DROPCLOCK_PRO_MONTHLY]: {
+    [MONTHLY_PLAN]: {
       lineItems: [
         {
-          amount: 8.99,
+          amount: 9.99,
           currencyCode: "USD",
           interval: BillingInterval.Every30Days,
+        },
+      ],
+      trialDays: 7,
+    },
+    [ANNUAL_PLAN]: {
+      lineItems: [
+        {
+          amount: 89.99,
+          currencyCode: "USD",
+          interval: BillingInterval.Annual,
         },
       ],
       trialDays: 7,
